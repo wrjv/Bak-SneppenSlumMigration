@@ -4,7 +4,7 @@
 #
 
 import numpy as np
-
+import matplotlib.pyplot as plt
 from copy import deepcopy
 
 
@@ -31,7 +31,8 @@ class BaxSneppen2D(object):
         y = min_val // len(new_state)
         x = min_val % len(new_state[0])
         # Stopping criterium
-        if new_state[y][x] > 0.205:
+        # if new_state[y][x] > 0.205:
+        if new_state[y][x] > 0.33:
             return False
 
         # Modify the values around the minimum value
@@ -64,11 +65,15 @@ class BaxSneppen2D(object):
 
         return True
 
+    def plot_ages(self):
+        plt.imshow(self.ages[-1], aspect='auto', cmap='jet_r', interpolation='nearest')
+        plt.show()
 
 def main():
     initial_values = np.random.rand(50, 50)
     bs2d = BaxSneppen2D(initial_values)
-    bs2d.execute(True)
+    bs2d.execute()
+    bs2d.plot_ages()
 
 if __name__ == '__main__':
     main()
