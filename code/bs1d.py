@@ -18,11 +18,18 @@ class BaxSneppen1D(object):
         self.prev_loc = 0
         self.distances = []
 
+        self.avelanches = []
+        self.cur_av_count = 0
+        self.cur_av_start = -1
+
         self.update_freq = 100
 
     def execute(self):
         while self.update_state():
             continue
+
+        # Write down the last avelanche
+        self.avelanches.append(self.cur_av_count)
 
         print(self.ages[-1])
         print(len(self.states))
@@ -37,6 +44,15 @@ class BaxSneppen1D(object):
             new_ages = new_ages + 1
             min_val = np.argmin(new_state)
 
+            # Count avelanches
+            if new_state[min_val] > self.cur_av_start:
+                if self.cur_av_start != -1:
+                    self.avelanches.append(self.cur_av_count)
+                self.cur_av_count = 0
+                self.cur_av_start = new_state[min_val]
+            else:
+                self.cur_av_count += 1
+
             # calculate the distance between succesive mutations
             self.distances.append(np.min(np.abs([self.prev_loc - min_val, min_val - self.prev_loc])))
             self.prev_loc = min_val
@@ -44,7 +60,7 @@ class BaxSneppen1D(object):
             # Stopping criterium
             #if new_state[min_val] > 0.67:
             #    return False
-            if len(self.states) > 1000:
+            if len(self.states) > 10000:
                 return False
 
             # Modify the values around the minimum value
@@ -83,14 +99,19 @@ class BaxSneppen1D(object):
         plt.loglog(keys, [counter[key] for key in keys])
         plt.show()
 
+    def plot_avelanches(self):
+        plt.plot(self.avelanches)
+        plt.show()
+
 def main():
     initial_values = np.random.rand(4096)
     bs1d = BaxSneppen1D(initial_values)
     bs1d.execute()
-    bs1d.plot_ages()
-    bs1d.barrier_distribution()
-    bs1d.distance_distribution()
-    print(len(bs1d.distances))
+    bs1d.plot_avelanches()
+    #bs1d.plot_ages()
+    #bs1d.barrier_distribution()
+    #bs1d.distance_distribution()
+    #print(len(bs1d.distances))
 
 if __name__ == '__main__':
     main()
