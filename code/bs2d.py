@@ -6,10 +6,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
+import matplotlib.animation as animation
 
 
 class BaxSneppen2D(object):
-
     def __init__(self, initial_values):
         self.states = [initial_values]
         self.ages = [np.zeros((len(initial_values), len(initial_values[0])))]
@@ -32,7 +32,10 @@ class BaxSneppen2D(object):
         x = min_val % len(new_state[0])
         # Stopping criterium
         # if new_state[y][x] > 0.205:
-        if new_state[y][x] > 0.33:
+        # if new_state[y][x] > 0.20:
+        #     return False
+
+        if len(self.states) > 50000:
             return False
 
         # Modify the values around the minimum value
@@ -67,13 +70,30 @@ class BaxSneppen2D(object):
 
     def plot_ages(self):
         plt.imshow(self.ages[-1], aspect='auto', cmap='jet_r', interpolation='nearest')
-        plt.show()
+
 
 def main():
-    initial_values = np.random.rand(50, 50)
+    initial_values = np.random.rand(100, 100)
     bs2d = BaxSneppen2D(initial_values)
-    bs2d.execute()
+    bs2d.execute(True)
     bs2d.plot_ages()
+    animate_ages(bs2d.ages)
+
+
+def animate_ages(ages):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    im = ax.imshow(ages[1], aspect='auto', cmap='jet_r', interpolation='nearest', vmin=0, vmax=np.max(ages[-1]))
+
+    def animate(i):
+        im.set_array(ages[i])  # update the data
+        fig.canvas.draw()
+        plt.title('iteration: ' + str(i))
+        return im
+
+    ani = animation.FuncAnimation(fig, animate, range(int(len(ages) * 0.75), len(ages)), interval=2, blit=False)
+    plt.show()
+
 
 if __name__ == '__main__':
     main()
