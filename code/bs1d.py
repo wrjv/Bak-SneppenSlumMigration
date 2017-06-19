@@ -15,6 +15,9 @@ class BaxSneppen1D(object):
         self.ages = [np.zeros(len(initial_values))]
         self.time = 0
 
+        self.prev_loc = 0
+        self.distances = []
+
         self.update_freq = 100
 
     def execute(self):
@@ -34,10 +37,14 @@ class BaxSneppen1D(object):
             new_ages = new_ages + 1
             min_val = np.argmin(new_state)
 
+            # calculate the distance between succesive mutations
+            self.distances.append(np.min(np.abs([self.prev_loc - min_val, min_val - self.prev_loc])))
+            self.prev_loc = min_val
+
             # Stopping criterium
             #if new_state[min_val] > 0.67:
             #    return False
-            if len(self.states) > 100000:
+            if len(self.states) > 1000:
                 return False
 
             # Modify the values around the minimum value
@@ -59,12 +66,31 @@ class BaxSneppen1D(object):
         plt.imshow(self.ages[::100], aspect='auto', cmap='jet_r', interpolation='nearest')
         plt.show()
 
+    def barrier_distribution(self):
+        plt.hist(self.states[-1], bins=30)
+        plt.show()
+
+    def distance_distribution(self):
+        self.distances.pop(0)
+        counter = {}
+        # print(len(self.states[0]))
+        for i in range(0,len(self.states[0])):
+            counter[i] = 0
+        for val in self.distances[int(0.35*len(self.distances)):]:
+            counter[val] += 1
+        keys = list(counter.keys())
+        print(np.sum([counter[key] for key in keys]))
+        plt.loglog(keys, [counter[key] for key in keys])
+        plt.show()
 
 def main():
-    initial_values = np.random.rand(4000)
+    initial_values = np.random.rand(4096)
     bs1d = BaxSneppen1D(initial_values)
     bs1d.execute()
     bs1d.plot_ages()
+    bs1d.barrier_distribution()
+    bs1d.distance_distribution()
+    print(len(bs1d.distances))
 
 if __name__ == '__main__':
     main()
