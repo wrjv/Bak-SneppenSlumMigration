@@ -34,8 +34,8 @@ class BaxSneppen3D(object):
 
         # Stopping criterium
         # if new_state[y][x] > 0.205:
-        # if new_state[y][x] > 0.20:
-        #     return False
+        if new_state[z][y][x] > 0.10:
+            return False
 
         # if len(self.states) > 50000:
         #     return False
@@ -114,10 +114,10 @@ class BaxSneppen3D(object):
 
 def main():
     initial_values = np.random.rand(10, 10, 10)
-    bs2d = BaxSneppen3D(initial_values)
-    bs2d.execute(True)
-    bs2d.plot_ages()
-    animate_ages(bs2d.ages)
+    bs3d = BaxSneppen3D(initial_values)
+    bs3d.execute(True)
+    bs3d.plot_ages()
+    animate_ages(bs3d.ages)
 
 
 def animate_ages(ages):

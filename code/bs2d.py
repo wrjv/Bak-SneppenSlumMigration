@@ -28,7 +28,7 @@ class BaxSneppen2D(object):
         new_state = deepcopy(self.states[-1])
 
         min_val = np.argmin(new_state)
-        y = min_val // len(new_state)
+        y = min_val // len(new_state[0])
         x = min_val % len(new_state[0])
         # Stopping criterium
         # if new_state[y][x] > 0.205:
