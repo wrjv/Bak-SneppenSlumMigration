@@ -2,20 +2,21 @@
 # Bax-Sneppen 2D implementation by
 # Nicky, Maarten, Wessel and Willem
 #
-
+from copy import deepcopy
+import itertools
 import numpy as np
 import matplotlib.pyplot as plt
-from copy import deepcopy
 import matplotlib.animation as animation
-import itertools
 
 
 class BaxSneppen2D(object):
     def __init__(self, slum_size=(15, 15), empty_percent=0.3):
         self.state = np.random.rand(slum_size[0], slum_size[1])
 
-        xs = [x for x in np.random.randint(0, slum_size[1], int(slum_size[0] * slum_size[1] * empty_percent))]
-        ys = [y for y in np.random.randint(0, slum_size[0], int(slum_size[0] * slum_size[1] * empty_percent))]
+        xs = [x for x in np.random.randint(0, slum_size[1],
+                                           int(slum_size[0] * slum_size[1] * empty_percent))]
+        ys = [y for y in np.random.randint(0, slum_size[0],
+                                           int(slum_size[0] * slum_size[1] * empty_percent))]
 
         for i in range(len(xs)):
             self.state[ys[i]][xs[i]] = 2
@@ -37,6 +38,8 @@ class BaxSneppen2D(object):
         return np.argmin(self.state)
 
     def add_to_grid(self, original_value):
+        # TODO use original_value in a useful manner
+        original_value = original_value
         empty = np.where(self.state == 2)
 
         i = np.random.randint(len(empty[0]))
@@ -72,17 +75,19 @@ class BaxSneppen2D(object):
         #     return False
 
         if moore:
-            for xx,yy in itertools.product([-1,0,1],[-1,0,1]):
+            for xx, yy in itertools.product([-1, 0, 1], [-1, 0, 1]):
                 # Modify the values around the minimum value
                 if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
-                    new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = np.random.uniform(0, 1, 1)
+                    new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
+                            np.random.uniform(0, 1, 1)
                     # Modify the cell ages
                     self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
         else:
-            for xx,yy in [[0, 0], [-1,0], [1,0], [0,-1], [0,1]]:
+            for xx, yy in [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]]:
                 # Modify the values around the minimum value
                 if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
-                    new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = np.random.uniform(0, 1, 1)
+                    new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
+                            np.random.uniform(0, 1, 1)
                     # Modify the cell ages
                     self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
 
@@ -101,7 +106,7 @@ class BaxSneppen2D(object):
         plt.show()
 
 def main():
-    bs2d = BaxSneppen2D(initial_values)
+    bs2d = BaxSneppen2D()
     bs2d.execute(False)
     bs2d.plot_avelanches()
     #bs2d.plot_ages()
@@ -111,7 +116,8 @@ def main():
 def animate_ages(ages):
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    im = ax.imshow(ages[1], aspect='auto', cmap='jet_r', interpolation='nearest', vmin=0, vmax=np.max(ages[-1]))
+    im = ax.imshow(ages[1], aspect='auto', cmap='jet_r', interpolation='nearest',
+                   vmin=0, vmax=np.max(ages[-1]))
 
     def animate(i):
         im.set_array(ages[i])  # update the data
@@ -119,7 +125,8 @@ def animate_ages(ages):
         plt.title('iteration: ' + str(i))
         return im
 
-    ani = animation.FuncAnimation(fig, animate, range(int(len(ages) * 0.75), len(ages)), interval=2, blit=False)
+    animation.FuncAnimation(fig, animate, range(int(len(ages) * 0.75), len(ages)),
+                            interval=2, blit=False)
     plt.show()
 
 
