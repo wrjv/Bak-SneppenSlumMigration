@@ -7,8 +7,8 @@ from math import *
 
 class Slums(object):
 
-    def __init__(self, n_slums, slum_size=(15, 15)):
-        self.slum_list = [BaxSneppen2D(slum_size) for _ in range(n_slums)]
+    def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25):
+        self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
         self.states = []
         self.time = 0
 
@@ -30,7 +30,7 @@ class Slums(object):
 
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
-        if self.time > 1000:
+        if self.time > 10000:
             return False
 
         self.time += 1
@@ -75,8 +75,14 @@ class Slums(object):
         cmap = plt.cm.jet_r
         cmap.set_under((1, 1, 1, 1))
 
-        for slum, ax in zip(self.states[0], axarr.flatten()):
-            ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest', vmin=0, vmax=max_age))
+        if len(self.slum_list) > 1:
+            for slum, ax in zip(self.states[0], axarr.flatten()):
+                ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest', vmin=0, vmax=max_age))
+        elif len(self.slum_list) == 1:
+            for slum in self.states[0]:
+                ims.append(axarr.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest', vmin=0, vmax=max_age))
+        else:
+            assert False
 
         def animate(i):
             plt.suptitle('iteration: ' + str(i))
