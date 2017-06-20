@@ -84,7 +84,7 @@ class BaxSneppen2D(object):
                     new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
                             np.random.uniform(0, 1, 1)
                     # Modify the cell ages
-                    self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
+                    #self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
         else:
             for xx, yy in [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]]:
                 # Modify the values around the minimum value
@@ -92,11 +92,11 @@ class BaxSneppen2D(object):
                     new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
                             np.random.uniform(0, 1, 1)
                     # Modify the cell ages
-                    self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
+                    #self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
 
         # Wait, the person who left, left an empty house
         new_state[y][x] = 2
-
+        self.ages[y][x] = -1
         self.state = new_state
 
         return True
