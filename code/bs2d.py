@@ -37,6 +37,9 @@ class BaxSneppen2D(object):
     def get_min_val(self):
         return np.argmin(self.state)
 
+    def get_avg_val(self):
+        return np.average(self.state)
+
     def add_to_grid(self, original_value):
         # TODO use original_value in a useful manner
         original_value = original_value
