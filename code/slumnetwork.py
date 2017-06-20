@@ -26,16 +26,38 @@ class Slums(object):
 
         self.slum_list[np.argmin(min_vals)].update_state(moore)
 
-        # TODO Modify this part to make some network structure
+        to_slum = self.find_optimal_location(np.argmin(min_vals))
 
-        if not self.slum_list[(np.argmin(min_vals) + 1) % len(self.slum_list)].add_to_grid(min(min_vals)):
-            self.slum_list[(np.argmin(min_vals) + 2) % len(self.slum_list)].add_to_grid(min(min_vals))
+        self.slum_list[to_slum].add_to_grid(min(min_vals))
 
         if self.time > 1000:
             return False
 
         self.time += 1
         return True
+
+    def find_optimal_location(self, origin_slum):
+        # Te vol is niet fijn
+        origin_avg = self.slum_list[origin_slum].get_avg_val()
+
+        parameters = {}
+
+        # De average satisfaction moet het liefst hoger zijn!
+        for i in range(len(self.slum_list)):
+            parameters[i] = [self.slum_list[i].get_avg_val(),
+                             self.slum_list[i].has_empty()]
+
+        total_fitness = sum([parameters[slum][0] for slum in parameters])
+
+        pvalues = []
+
+        for i in range(len(self.slum_list)):
+            parameters[i][0] /= total_fitness
+
+
+            pvalues.append(parameters[i][0])
+
+        return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
     def plot_slums(self):
         cols = ceil(len(self.slum_list)**0.5)
