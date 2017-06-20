@@ -28,7 +28,7 @@ class Slums(object):
         # TODO Modify this part to make some network structure
 
         self.slum_list[(np.argmin(min_vals) + 1) % len(self.slum_list)].add_to_grid(min(min_vals))
-        if self.time > 100:
+        if self.time > 1000:
             return False
 
         self.time += 1
@@ -37,8 +37,10 @@ class Slums(object):
     def plot_slums(self):
         f, axarr = plt.subplots(4, sharex=True, sharey=True)
         ims = list()
+        max_ages = [np.max(slum.ages) for slum in self.slum_list]
+        max_age = max(max_ages)
         for slum, ax in zip(self.slum_list, axarr):
-            ims.append(ax.imshow(slum.ages, aspect='auto', cmap='jet_r', interpolation='nearest'))
+            ims.append(ax.imshow(slum.ages, aspect='auto', cmap='jet_r', interpolation='nearest', vmin=0, vmax=max_age))
 
         def animate(i):
             plt.title('iteration: ' + str(i))
