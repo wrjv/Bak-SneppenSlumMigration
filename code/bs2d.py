@@ -46,10 +46,15 @@ class BaxSneppen2D(object):
         original_value = original_value
         empty = np.where(self.state == 2)
 
+        if len(empty[0]) == 0:
+            return False
+
         i = np.random.randint(len(empty[0]))
 
         self.state[empty[0][i], empty[1][i]] = np.random.uniform(0, 1, 1)
         self.ages[empty[0][i], empty[1][i]] = 0
+
+        return True
 
     def update_ages(self):
         self.ages[np.where(self.ages != -1)] += 1
