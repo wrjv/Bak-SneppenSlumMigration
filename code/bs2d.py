@@ -42,6 +42,7 @@ class BaxSneppen2D(object):
         i = np.random.randint(len(empty[0]))
 
         self.state[empty[0][i], empty[1][i]] = np.random.uniform(0, 1, 1)
+        self.ages[empty[0][i], empty[1][i]] = 0
 
     def update_ages(self):
         self.ages += 1
