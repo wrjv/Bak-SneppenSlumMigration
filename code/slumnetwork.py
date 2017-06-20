@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
 import matplotlib.animation as animation
+from math import *
 
 class Slums(object):
 
@@ -35,7 +36,10 @@ class Slums(object):
         return True
 
     def plot_slums(self):
-        f, axarr = plt.subplots(4, sharex=True, sharey=True)
+        cols = ceil(len(self.slum_list)**0.5)
+        rows = ceil(len(self.slum_list)/cols)
+
+        f, axarr = plt.subplots(nrows=rows, ncols=cols, sharex=True, sharey=True)
         ims = list()
         max_ages = [np.max(slum.ages) for slum in self.slum_list]
         max_age = max(max_ages)
@@ -43,11 +47,11 @@ class Slums(object):
         cmap = plt.cm.jet_r
         cmap.set_under((1, 1, 1, 1))
 
-        for slum, ax in zip(self.states[0], axarr):
+        for slum, ax in zip(self.states[0], axarr.flatten()):
             ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest', vmin=0, vmax=max_age))
 
         def animate(i):
-            plt.title('iteration: ' + str(i))
+            plt.suptitle('iteration: ' + str(i))
             for slum, im, in zip(self.states[i], ims):
                 im.set_array(slum.ages)
             f.canvas.draw()
