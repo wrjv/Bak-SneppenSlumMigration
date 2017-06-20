@@ -39,7 +39,15 @@ class BaxSneppen2D(object):
         return np.argmin(self.state)
 
     def get_avg_val(self):
-        return np.average(self.state)
+        return np.average([i for i in self.state.flatten() if i != 2])
+
+    def has_empty(self):
+        empty = np.where(self.state == 2)
+
+        if len(empty[0]) == 0:
+            return False
+
+        return True
 
     def add_to_grid(self, original_value):
         # TODO use original_value in a useful manner
