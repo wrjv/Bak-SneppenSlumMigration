@@ -75,7 +75,7 @@ class BaxSneppen2D(object):
         #     return False
 
         if moore:
-            for xx, yy in itertools.product([-1, 0, 1], [-1, 0, 1]):
+            for xx, yy in itertools.product([-1, 0, 1],[-1, 0, 1]):
                 # Modify the values around the minimum value
                 if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
                     new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
