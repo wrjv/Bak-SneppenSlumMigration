@@ -20,7 +20,7 @@ class BaxSneppen2D(object):
         for i in range(len(xs)):
             self.state[ys[i]][xs[i]] = 2
 
-        self.ages = [np.zeros(slum_size)]
+        self.ages = np.zeros(slum_size)
 
         self.avelanches = []
         self.cur_av_count = 0
@@ -30,7 +30,7 @@ class BaxSneppen2D(object):
         while self.update_state(moore):
             continue
 
-        print(self.ages[-1])
+        print(self.ages)
         print(len(self.state))
 
     def get_min_val(self):
@@ -43,9 +43,10 @@ class BaxSneppen2D(object):
 
         self.state[empty[0][i], empty[1][i]] = np.random.uniform(0, 1, 1)
 
-    def update_state(self, moore=False):
-        new_ages = self.ages[-1] + 1
+    def update_ages(self):
+        self.ages += 1
 
+    def update_state(self, moore=False):
         # Build a new state
         new_state = deepcopy(self.state)
 
@@ -75,20 +76,19 @@ class BaxSneppen2D(object):
                 if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
                     new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = np.random.uniform(0, 1, 1)
                     # Modify the cell ages
-                    new_ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
+                    self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
         else:
             for xx,yy in [[0, 0], [-1,0], [1,0], [0,-1], [0,1]]:
                 # Modify the values around the minimum value
                 if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
                     new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = np.random.uniform(0, 1, 1)
                     # Modify the cell ages
-                    new_ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
+                    self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
 
         # Wait, the person who left, left an empty house
         new_state[y][x] = 2
 
         self.state = new_state
-        self.ages.append(new_ages)
 
         return True
 

@@ -8,7 +8,7 @@ class Slums(object):
 
     def __init__(self, n_slums, slum_size=(15, 15)):
         self.slum_list = [BaxSneppen2D(slum_size) for _ in range(n_slums)]
-        self.states = list()
+        self.states = []
         self.time = 0
 
     def execute(self, moore=False):
@@ -19,6 +19,9 @@ class Slums(object):
 
     def update_state(self, moore=False):
         min_vals = [slum.get_min_val() for slum in self.slum_list]
+
+        for slum in self.slum_list:
+            slum.update_ages()
 
         self.slum_list[np.argmin(min_vals)].update_state(moore)
 
@@ -35,12 +38,12 @@ class Slums(object):
         f, axarr = plt.subplots(4, sharex=True, sharey=True)
         ims = list()
         for slum, ax in zip(self.slum_list, axarr):
-            ims.append(ax.imshow(slum.state, aspect='auto', cmap='jet_r', interpolation='nearest'))
+            ims.append(ax.imshow(slum.ages, aspect='auto', cmap='jet_r', interpolation='nearest'))
 
         def animate(i):
             plt.title('iteration: ' + str(i))
             for slum, im, in zip(self.states[i], ims):
-                im.set_array(slum.state)
+                im.set_array(slum.ages)
             f.canvas.draw()
             return ims
 
