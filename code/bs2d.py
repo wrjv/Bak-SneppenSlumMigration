@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from copy import deepcopy
 import matplotlib.animation as animation
+import itertools
 
 
 class BaxSneppen2D(object):
@@ -51,30 +52,20 @@ class BaxSneppen2D(object):
         if len(self.states) > 50000:
             return False
 
-        # Modify the values around the minimum value
-        new_state[y][x] = np.random.uniform(0, 1, 1)
-        new_state[y - 1][x] = np.random.uniform(0, 1, 1)
-        new_state[y][x - 1] = np.random.uniform(0, 1, 1)
-        new_state[(y + 1) % len(new_state)][x] = np.random.uniform(0, 1, 1)
-        new_state[y][(x + 1) % len(new_state[0])] = np.random.uniform(0, 1, 1)
-
-        # Modify the cell ages
-        new_ages[y][x] = 0
-        new_ages[y - 1][x] = 0
-        new_ages[(y + 1) % len(new_state)][x] = 0
-        new_ages[y][x - 1] = 0
-        new_ages[y][(x + 1) % len(new_state[0])] = 0
-
         if moore:
-            new_state[y - 1][x - 1] = np.random.uniform(0, 1, 1)
-            new_state[(y + 1) % len(new_state)][(x + 1) % len(new_state[0])] = np.random.uniform(0, 1, 1)
-            new_state[(y + 1) % len(new_state)][x - 1] = np.random.uniform(0, 1, 1)
-            new_state[y - 1][(x + 1) % len(new_state[0])] = np.random.uniform(0, 1, 1)
-
-            new_ages[y - 1][x - 1] = 0
-            new_ages[(y + 1) % len(new_state)][(x + 1) % len(new_state[0])] = 0
-            new_ages[(y + 1) % len(new_state)][x - 1] = 0
-            new_ages[y - 1][(x + 1) % len(new_state[0])] = 0
+            for xx,yy in itertools.product([-1,0,1],[-1,0,1]):
+                # Modify the values around the minimum value
+                new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = np.random.uniform(0, 1, 1)
+                # Modify the cell ages
+                new_ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
+        else:
+                new_ages[y][x] = 0
+                new_state[y][x] = np.random.uniform(0, 1, 1)
+                for xx,yy in [[-1,0], [1,0], [0,-1], [0,1]]:
+                    # Modify the values around the minimum value
+                    new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = np.random.uniform(0, 1, 1)
+                    # Modify the cell ages
+                    new_ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
 
         self.states.append(new_state)
         self.ages.append(new_ages)
