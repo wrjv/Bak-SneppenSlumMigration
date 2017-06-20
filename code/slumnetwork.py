@@ -4,13 +4,24 @@ import numpy as np
 class Slums(object):
 
     def __init__(self, n_slums, slum_size=(15, 15)):
-        slum_list = [BaxSneppen2D(np.random.rand(slum_size[0], slum_size[1])) for _ in range(n_slums)]
+        self.slum_list = [BaxSneppen2D(slum_size) for _ in range(n_slums)]
 
-    def execute():
-        pass
+    def execute(self, moore=False):
+        while self.update_state(moore):
+            continue
+
+    def update_state(self, moore=False):
+        min_vals = [slum.get_min_val() for slum in self.slum_list]
+
+        self.slum_list[np.argmin(min_vals)].update_state(moore)
+
+        # TODO Modify this part to make some network structure
+
+        self.slum_list[(np.argmin(min_vals) + 1) % len(self.slum_list)].add_to_grid(min(min_vals))
 
 def main():
-    pass
+    slums = Slums(4)
+    slums.execute()
 
 if __name__ == '__main__':
     main()
