@@ -39,8 +39,12 @@ class Slums(object):
         ims = list()
         max_ages = [np.max(slum.ages) for slum in self.slum_list]
         max_age = max(max_ages)
+
+        cmap = plt.cm.jet_r
+        cmap.set_under((1, 1, 1, 1))
+
         for slum, ax in zip(self.slum_list, axarr):
-            ims.append(ax.imshow(slum.ages, aspect='auto', cmap='jet_r', interpolation='nearest', vmin=0, vmax=max_age))
+            ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest', vmin=0, vmax=max_age))
 
         def animate(i):
             plt.title('iteration: ' + str(i))
