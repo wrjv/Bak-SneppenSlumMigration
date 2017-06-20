@@ -43,7 +43,7 @@ class Slums(object):
         cmap = plt.cm.jet_r
         cmap.set_under((1, 1, 1, 1))
 
-        for slum, ax in zip(self.slum_list, axarr):
+        for slum, ax in zip(self.states[0], axarr):
             ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest', vmin=0, vmax=max_age))
 
         def animate(i):

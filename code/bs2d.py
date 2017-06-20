@@ -12,7 +12,7 @@ import matplotlib.animation as animation
 class BaxSneppen2D(object):
     def __init__(self, slum_size=(15, 15), empty_percent=0.3):
         self.state = np.random.rand(slum_size[0], slum_size[1])
-
+        self.ages = np.zeros(slum_size)
         xs = [x for x in np.random.randint(0, slum_size[1],
                                            int(slum_size[0] * slum_size[1] * empty_percent))]
         ys = [y for y in np.random.randint(0, slum_size[0],
@@ -20,8 +20,9 @@ class BaxSneppen2D(object):
 
         for i in range(len(xs)):
             self.state[ys[i]][xs[i]] = 2
+            self.ages[ys[i]][xs[i]] = -1
 
-        self.ages = np.zeros(slum_size)
+
 
         self.avelanches = []
         self.cur_av_count = 0
@@ -51,7 +52,7 @@ class BaxSneppen2D(object):
         self.ages[empty[0][i], empty[1][i]] = 0
 
     def update_ages(self):
-        self.ages += 1
+        self.ages[np.where(self.ages != -1)] += 1
 
     def update_state(self, moore=False):
         # Build a new state
@@ -78,21 +79,21 @@ class BaxSneppen2D(object):
         #     return False
 
         if moore:
-            for xx, yy in itertools.product([-1, 0, 1],[-1, 0, 1]):
+            for xx, yy in itertools.product([-1, 0, 1], [-1, 0, 1]):
                 # Modify the values around the minimum value
                 if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
                     new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
-                            np.random.uniform(0, 1, 1)
+                        np.random.uniform(0, 1, 1)
                     # Modify the cell ages
-                    #self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
+                    # self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
         else:
             for xx, yy in [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]]:
                 # Modify the values around the minimum value
                 if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
                     new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
-                            np.random.uniform(0, 1, 1)
+                        np.random.uniform(0, 1, 1)
                     # Modify the cell ages
-                    #self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
+                    # self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
 
         # Wait, the person who left, left an empty house
         new_state[y][x] = 2
@@ -108,12 +109,13 @@ class BaxSneppen2D(object):
         plt.plot(self.avelanches)
         plt.show()
 
+
 def main():
     bs2d = BaxSneppen2D()
     bs2d.execute(False)
     bs2d.plot_avelanches()
-    #bs2d.plot_ages()
-    #animate_ages(bs2d.ages)
+    # bs2d.plot_ages()
+    # animate_ages(bs2d.ages)
 
 
 def animate_ages(ages):
