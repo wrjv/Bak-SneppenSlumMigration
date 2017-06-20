@@ -47,13 +47,15 @@ class Slums(object):
             parameters[i] = [self.slum_list[i].get_avg_val(),
                              self.slum_list[i].has_empty()]
 
-        total_fitness = sum([parameters[slum][0] for slum in parameters])
+        total_fitness = sum([slum[0] if slum[1] else 0 for slum in parameters.values()])
 
         pvalues = []
 
         for i in range(len(self.slum_list)):
-            parameters[i][0] /= total_fitness
-
+            if parameters[i][1]:
+                parameters[i][0] /= total_fitness
+            else:
+                parameters[i][0] = 0
 
             pvalues.append(parameters[i][0])
 
