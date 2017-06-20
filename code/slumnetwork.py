@@ -27,7 +27,9 @@ class Slums(object):
 
         # TODO Modify this part to make some network structure
 
-        self.slum_list[(np.argmin(min_vals) + 1) % len(self.slum_list)].add_to_grid(min(min_vals))
+        if not self.slum_list[(np.argmin(min_vals) + 1) % len(self.slum_list)].add_to_grid(min(min_vals)):
+            self.slum_list[(np.argmin(min_vals) + 2) % len(self.slum_list)].add_to_grid(min(min_vals))
+
         if self.time > 1000:
             return False
 
