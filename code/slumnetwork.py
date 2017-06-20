@@ -42,6 +42,10 @@ class Slums(object):
         rows = ceil(len(self.slum_list)/cols)
 
         f, axarr = plt.subplots(nrows=rows, ncols=cols, sharex=True, sharey=True)
+
+        plt.subplots_adjust(wspace=0.05, hspace=0.05)
+        plt.xticks([]); plt.yticks([])
+
         ims = list()
         max_ages = [np.max(slum.ages) for slum in self.slum_list]
         max_age = max(max_ages)
