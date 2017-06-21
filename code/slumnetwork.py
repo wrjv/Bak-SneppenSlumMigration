@@ -1,20 +1,20 @@
+from math import ceil
+from copy import deepcopy
 from bs2d import BaxSneppen2D
 import numpy as np
 import matplotlib.pyplot as plt
-from copy import deepcopy
 import matplotlib.animation as animation
-from math import *
 import scipy.stats
 
 
 class Slums(object):
 
-    def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.75):
+    def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25):
         self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
         assert slum_size[0] == slum_size[1]
         self.slum_size = slum_size[0]
         self.total_cells = slum_size[0] * slum_size[1] * n_slums
-        self.empty_percent = empty_percent        
+        self.empty_percent = empty_percent
         self.states = []
         self.time = 0
         self.previous_location = [(0,0) for _ in range(n_slums)]
@@ -45,7 +45,7 @@ class Slums(object):
 
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
-        if self.time > 3000:
+        if self.time > 10000:
             return False
 
         self.time += 1
@@ -54,7 +54,8 @@ class Slums(object):
     def find_optimal_location(self, origin_slum):
         parameters = []
 
-        slot_distrib = scipy.stats.norm(self.total_cells * (1 - self.empty_percent), self.total_cells * self.empty_percent * 0.5)
+        # slot_distrib = scipy.stats.norm(self.total_cells * (1 - self.empty_percent),
+        # self.total_cells * self.empty_percent)
 
         # De average satisfaction moet het liefst zo hoog mogelijk zijn!
         for i in range(len(self.slum_list)):
@@ -75,20 +76,21 @@ class Slums(object):
             else:
                 parameters[i][0] = 0
 
-            pvalues.append(parameters[i][0] * slot_distrib.pdf(parameters[i][2]))
+            pvalues.append(parameters[i][0])# * slot_distrib.pdf(parameters[i][2]))
 
         pvalues = pvalues / sum(pvalues)
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
-    def plot_slums(self):
+    def plot_slums(self, start, show_steps):
         cols = ceil(len(self.slum_list)**0.5)
         rows = ceil(len(self.slum_list)/cols)
 
         f, axarr = plt.subplots(nrows=rows, ncols=cols, sharex=True, sharey=True)
 
         plt.subplots_adjust(wspace=0.05, hspace=0.05)
-        plt.xticks([]); plt.yticks([])
+        plt.xticks([])
+        plt.yticks([])
 
         ims = list()
         max_ages = [np.max(slum.ages) for slum in self.slum_list]
@@ -99,10 +101,12 @@ class Slums(object):
 
         if len(self.slum_list) > 1:
             for slum, ax in zip(self.states[0], axarr.flatten()):
-                ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest', vmin=0, vmax=max_age))
+                ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
+                                     vmin=0, vmax=max_age))
         elif len(self.slum_list) == 1:
             for slum in self.states[0]:
-                ims.append(axarr.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest', vmin=0, vmax=max_age))
+                ims.append(axarr.imshow(slum.ages, aspect='auto', cmap=cmap,
+                                        interpolation='nearest', vmin=0, vmax=max_age))
         else:
             assert False
 
@@ -113,7 +117,8 @@ class Slums(object):
             f.canvas.draw()
             return ims
 
-        ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * 0.3), len(self.states)), interval=2, blit=False)
+        ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
+                                                        len(self.states), show_steps), interval=2, blit=False)
         plt.show()
 
 
@@ -148,15 +153,16 @@ class Slums(object):
         plt.title("distance between succesive mutations")
         plt.xlabel(r"$log_{10}(X)$")
         plt.ylabel(r"$log_{10}(C(X))$")
+        plt.hist(barriers, bins=30, range=(0, 1))
         plt.show()
 
 
 def main():
-    slums = Slums(4, (20, 20))
+    slums = Slums(9, (25, 25), empty_percent=0.06)
     slums.execute()
-    slums.plot_slums()
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
+    slums.plot_slums(start=0, show_steps=25)
 
 if __name__ == '__main__':
     main()
