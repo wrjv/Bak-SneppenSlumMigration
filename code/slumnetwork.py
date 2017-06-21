@@ -109,7 +109,6 @@ class Slums(object):
         barriers = []
         for slum in self.states[-1]:
             barriers = barriers + list(slum.state[np.where(slum.state <= 1)].flatten())
-        print(barriers)
         plt.hist(barriers, bins=30, range=(0,1))
         plt.show()
 
