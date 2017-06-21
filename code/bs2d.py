@@ -27,14 +27,26 @@ class BaxSneppen2D(object):
         self.mvn = multivariate_normal([xmean, ymean], cov)
 
     def populate(self, empty_percent, slum_size):
-        r = math.sqrt(slum_size[0]*slum_size[1]*(1-empty_percent)/math.pi)
-        mx = slum_size[0]*0.5
-        my = slum_size[1]*0.5
         for x in range(slum_size[0]):
             for y in range(slum_size[1]):
-                if (y-my)**2 + (x-mx)**2 < r**2:
-                    self.state[y][x] = np.random.uniform(0, 1, 1)
-                    self.ages[y][x] = 0
+                self.state[y][x] = np.random.uniform(0, 1, 1)
+                self.ages[y][x] = 0
+
+        empty = np.random.choice(range(len(self.state[0]) * len(self.state)),
+                                 empty_percent * slum_size[0] * slum_size[1])
+
+        for i in empty:
+            self.state[i % slum_size[0]][i // slum_size[0]] = 2
+            self.ages[i % slum_size[0]][i // slum_size[0]] = -1
+
+        # r = math.sqrt(slum_size[0]*slum_size[1]*(1-empty_percent)/math.pi)
+        # mx = slum_size[0]*0.5
+        # my = slum_size[1]*0.5
+        # for x in range(slum_size[0]):
+        #     for y in range(slum_size[1]):
+        #         if (y-my)**2 + (x-mx)**2 < r**2:
+        #             self.state[y][x] = np.random.uniform(0, 1, 1)
+        #             self.ages[y][x] = 0
 
     def execute(self, moore=False):
         while self.update_state(moore):

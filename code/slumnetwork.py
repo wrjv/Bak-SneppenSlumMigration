@@ -33,7 +33,7 @@ class Slums(object):
 
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
-        if self.time > 3000:
+        if self.time > 10000:
             return False
 
         self.time += 1
@@ -105,7 +105,7 @@ class Slums(object):
             f.canvas.draw()
             return ims
 
-        ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * 0.3),
+        ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * 0.8),
                                                         len(self.states)), interval=2, blit=False)
         plt.show()
 
@@ -119,7 +119,7 @@ class Slums(object):
 
 
 def main():
-    slums = Slums(9, (20, 20), 0.05)
+    slums = Slums(4, (20, 20), 0.25)
     slums.execute()
     slums.plot_slums()
 
