@@ -98,10 +98,6 @@ class Slums(object):
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
-<<<<<<< HEAD
-    def plot_slums(self, start):
-=======
-
     def alt_find_optimal_location(self, origin_slum):
         parameters = []
 
@@ -124,7 +120,6 @@ class Slums(object):
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
     def plot_slums(self, start, show_steps):
->>>>>>> 991fa70420be7d3aa66fa475dc0e2a460dfefd6e
         cols = ceil(len(self.slum_list)**0.5)
         rows = ceil(len(self.slum_list)/cols)
 
