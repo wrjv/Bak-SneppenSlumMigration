@@ -11,10 +11,14 @@ class Slums(object):
 
     def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.75):
         self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
+        assert slum_size[0] == slum_size[1]
+        self.slum_size = slum_size[0]
         self.total_cells = slum_size[0] * slum_size[1] * n_slums
         self.empty_percent = empty_percent        
         self.states = []
         self.time = 0
+        self.previous_location = [(0,0) for _ in range(n_slums)]
+        self.distances = [[] for _ in range(n_slums)]
 
     def execute(self, moore=False):
         while self.update_state(moore):
@@ -23,6 +27,14 @@ class Slums(object):
 
     def update_state(self, moore=False):
         min_vals = [slum.get_min_val() for slum in self.slum_list]
+
+        # calculate the distance between mutations
+        min_vals_indexes = [slum.get_min_val_index() for slum in self.slum_list]
+        x, y = min_vals_indexes[np.argmin(min_vals)]//self.slum_size, min_vals_indexes[np.argmin(min_vals)]%self.slum_size
+        xold, yold = self.previous_location[np.argmin(min_vals)]
+        distance = ((x-xold)**2 + (y-yold)**2)**0.5
+        self.distances[np.argmin(min_vals)].append(distance)
+        self.previous_location[np.argmin(min_vals)] = (x,y)
 
         for slum in self.slum_list:
             slum.update_ages()
@@ -124,11 +136,27 @@ class Slums(object):
         plt.ylabel("P(B)")
         plt.show()
 
+    def plot_avalanche_distance(self):
+        avalanches = []
+        for each in self.distances:
+            avalanches = avalanches + each
+            # print(avalanches)
+
+        (counts, bins, _) = plt.hist(avalanches, bins=30)
+        plt.clf()
+        plt.loglog(bins[:-1], counts/sum(counts))
+        plt.title("distance between succesive mutations")
+        plt.xlabel(r"$log_{10}(X)$")
+        plt.ylabel(r"$log_{10}(C(X))$")
+        plt.show()
+
 
 def main():
     slums = Slums(4, (20, 20))
     slums.execute()
     slums.plot_slums()
+    # slums.plot_barrier_distribution()
+    # slums.plot_avalanche_distance()
 
 if __name__ == '__main__':
     main()
