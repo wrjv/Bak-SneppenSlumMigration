@@ -30,7 +30,7 @@ class Slums(object):
 
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
-        if self.time > 1000:
+        if self.time > 10000:
             return False
 
         self.time += 1
@@ -40,14 +40,17 @@ class Slums(object):
         # Te vol is niet fijn
         origin_avg = self.slum_list[origin_slum].get_avg_val()
 
-        parameters = {}
+        parameters = []
 
         # De average satisfaction moet het liefst hoger zijn!
         for i in range(len(self.slum_list)):
-            parameters[i] = [self.slum_list[i].get_avg_val(),
-                             self.slum_list[i].has_empty()]
+            parameters.append([self.slum_list[i].get_avg_val(),
+                               self.slum_list[i].has_empty()])
 
-        total_fitness = sum([slum[0] if slum[1] else 0 for slum in parameters.values()])
+        total_fitness = sum([slum[0] if slum[1] else 0 for slum in parameters])
+
+        if total_fitness == 0:
+            return origin_slum
 
         pvalues = []
 
@@ -94,7 +97,7 @@ class Slums(object):
 
 
 def main():
-    slums = Slums(4, (50,50))
+    slums = Slums(4, (50, 50))
     slums.execute()
 
 if __name__ == '__main__':
