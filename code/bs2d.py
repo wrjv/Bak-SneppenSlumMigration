@@ -24,7 +24,7 @@ class BaxSneppen2D(object):
 
 
 
-        self.avelanches = []
+        self.avalanches = []
         self.cur_av_count = 0
         self.cur_av_start = -1
 
@@ -79,10 +79,10 @@ class BaxSneppen2D(object):
         # if new_state[y][x] > 0.20:
         #     return False
 
-        # Count avelanches
+        # Count avalanches
         if new_state[y][x] > self.cur_av_start:
             if self.cur_av_start != -1:
-                self.avelanches.append(self.cur_av_count)
+                self.avalanches.append(self.cur_av_count)
             self.cur_av_count = 0
             self.cur_av_start = new_state[y][x]
         else:
@@ -117,16 +117,17 @@ class BaxSneppen2D(object):
 
     def plot_ages(self):
         plt.imshow(self.ages[-1], aspect='auto', cmap='jet_r', interpolation='nearest')
+    def plot_avalanches(self):
+        plt.plot(self.avalanches)
+        plt.show()
 
-    def plot_avelanches(self):
-        plt.plot(self.avelanches)
         plt.show()
 
 
 def main():
     bs2d = BaxSneppen2D()
     bs2d.execute(False)
-    bs2d.plot_avelanches()
+    bs2d.plot_avalanches()
     # bs2d.plot_ages()
     # animate_ages(bs2d.ages)
 
