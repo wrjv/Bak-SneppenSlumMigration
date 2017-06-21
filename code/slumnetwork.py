@@ -9,7 +9,8 @@ import scipy.stats
 
 class Slums(object):
 
-    def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25, random_select=False):
+    def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25, random_select=False,
+                 time_limit=10000):
         self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
         assert slum_size[0] == slum_size[1]
         self.slum_size = slum_size[0]
@@ -22,6 +23,7 @@ class Slums(object):
         self.distances = [[] for _ in range(n_slums)]
         self.avalanche_size = [0]
         self.aval_start_val = 0
+        self.time_limit = time_limit
 
     def execute(self, moore=False, save_steps=25):
         iterator = 0
@@ -62,7 +64,7 @@ class Slums(object):
 
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
-        if self.time > 10000:
+        if self.time > self.time_limit:
             return False
 
         self.time += 1
@@ -203,7 +205,7 @@ class Slums(object):
         plt.show()
 
 def main():
-    slums = Slums(4, (30, 30), empty_percent=0.06)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=5000)
     slums.execute(save_steps=50)
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
