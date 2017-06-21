@@ -9,7 +9,7 @@ import scipy.stats
 
 class Slums(object):
 
-    def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.75):
+    def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25):
         self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
         self.total_cells = slum_size[0] * slum_size[1] * n_slums
         self.empty_percent = empty_percent        
@@ -42,7 +42,7 @@ class Slums(object):
     def find_optimal_location(self, origin_slum):
         parameters = []
 
-        slot_distrib = scipy.stats.norm(self.total_cells * (1 - self.empty_percent), self.total_cells * self.empty_percent * 0.5)
+        #slot_distrib = scipy.stats.norm(self.total_cells * (1 - self.empty_percent), self.total_cells * self.empty_percent)
 
         # De average satisfaction moet het liefst zo hoog mogelijk zijn!
         for i in range(len(self.slum_list)):
@@ -63,7 +63,7 @@ class Slums(object):
             else:
                 parameters[i][0] = 0
 
-            pvalues.append(parameters[i][0] * slot_distrib.pdf(parameters[i][2]))
+            pvalues.append(parameters[i][0])# * slot_distrib.pdf(parameters[i][2]))
 
         pvalues = pvalues / sum(pvalues)
 
