@@ -70,7 +70,7 @@ class Slums(object):
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
-    def plot_slums(self):
+    def plot_slums(self, start, show_steps):
         cols = ceil(len(self.slum_list)**0.5)
         rows = ceil(len(self.slum_list)/cols)
 
@@ -105,8 +105,8 @@ class Slums(object):
             f.canvas.draw()
             return ims
 
-        ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * 0.8),
-                                                        len(self.states)), interval=2, blit=False)
+        ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
+                                                        len(self.states), show_steps), interval=2, blit=False)
         plt.show()
 
 
@@ -119,9 +119,9 @@ class Slums(object):
 
 
 def main():
-    slums = Slums(4, (20, 20), 0.25)
+    slums = Slums(9, (25, 25), empty_percent=0.06)
     slums.execute()
-    slums.plot_slums()
+    slums.plot_slums(start=0, show_steps=25)
 
 if __name__ == '__main__':
     main()
