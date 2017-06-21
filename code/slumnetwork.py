@@ -4,11 +4,15 @@ import matplotlib.pyplot as plt
 from copy import deepcopy
 import matplotlib.animation as animation
 from math import *
+import scipy.stats
+
 
 class Slums(object):
 
-    def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25):
+    def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.75):
         self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
+        self.total_cells = slum_size[0] * slum_size[1] * n_slums
+        self.empty_percent = empty_percent        
         self.states = []
         self.time = 0
 
@@ -29,24 +33,27 @@ class Slums(object):
 
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
-        if self.time > 10000:
+        if self.time > 3000:
             return False
 
         self.time += 1
         return True
 
     def find_optimal_location(self, origin_slum):
-        # Te vol is niet fijn
-        origin_avg = self.slum_list[origin_slum].get_avg_val()
+        parameters = []
 
-        parameters = {}
+        slot_distrib = scipy.stats.norm(self.total_cells * (1 - self.empty_percent), self.total_cells * self.empty_percent * 0.5)
 
-        # De average satisfaction moet het liefst hoger zijn!
+        # De average satisfaction moet het liefst zo hoog mogelijk zijn!
         for i in range(len(self.slum_list)):
-            parameters[i] = [self.slum_list[i].get_avg_val(),
-                             self.slum_list[i].has_empty()]
+            parameters.append([self.slum_list[i].get_avg_val(),
+                               self.slum_list[i].has_empty(),
+                               self.slum_list[i].full_cells()])
 
-        total_fitness = sum([slum[0] if slum[1] else 0 for slum in parameters.values()])
+        total_fitness = sum([slum[0] if slum[1] else 0 for slum in parameters])
+
+        if total_fitness == 0:
+            return origin_slum
 
         pvalues = []
 
@@ -56,7 +63,9 @@ class Slums(object):
             else:
                 parameters[i][0] = 0
 
-            pvalues.append(parameters[i][0])
+            pvalues.append(parameters[i][0] * slot_distrib.pdf(parameters[i][2]))
+
+        pvalues = pvalues / sum(pvalues)
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
@@ -92,7 +101,7 @@ class Slums(object):
             f.canvas.draw()
             return ims
 
-        ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * 0), len(self.states)), interval=2, blit=False)
+        ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * 0.3), len(self.states)), interval=2, blit=False)
         plt.show()
 
 
@@ -106,7 +115,7 @@ class Slums(object):
 
 
 def main():
-    slums = Slums(4, (50,50))
+    slums = Slums(4, (20, 20))
     slums.execute()
 
 if __name__ == '__main__':
