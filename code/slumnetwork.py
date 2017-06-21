@@ -109,6 +109,8 @@ class Slums(object):
         if has_any_empty == 0:
             return origin_slum
 
+        pvalues = []
+
         for i in range(len(self.slum_list)):
             if parameters[i]:
                 pvalues.append(1)
