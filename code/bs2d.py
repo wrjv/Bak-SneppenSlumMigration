@@ -44,10 +44,13 @@ class BaxSneppen2D(object):
         print(len(self.state))
 
     def get_min_val(self):
-        return np.argmin(self.state)
+        return np.min(self.state)
 
     def get_avg_val(self):
         return np.average([i for i in self.state.flatten() if i != 2])
+
+    def full_cells(self):
+        return len(np.where(self.state < 2)[0])
 
     def has_empty(self):
         empty = np.where(self.state == 2)
