@@ -107,9 +107,21 @@ class Slums(object):
 
     def plot_barrier_distribution(self):
         barriers = []
+        minima = []
         for slum in self.states[-1]:
             barriers = barriers + list(slum.state[np.where(slum.state <= 1)].flatten())
-        plt.hist(barriers, bins=30, range=(0,1))
+        for timestep in self.states:
+            minima.append(min([state.get_min_val() for state in timestep]))
+
+        (counts_min, bins_min, _) = plt.hist(minima, bins=30)
+        (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
+        plt.clf()
+        plt.plot(bins_min[:-1], counts_min/sum(counts_min), label="minimum barriers")
+        plt.plot(bins_bar[:-1], counts_bar/sum(counts_bar), label="barrier distribution")
+        plt.title("barrier and minumum barriers distribution")
+        plt.legend()
+        plt.xlabel("B")
+        plt.ylabel("P(B)")
         plt.show()
 
 
