@@ -9,10 +9,11 @@ import scipy.stats
 
 class Slums(object):
 
-    def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25):
+    def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25, random_select=False):
         self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
         self.total_cells = slum_size[0] * slum_size[1] * n_slums
         self.empty_percent = empty_percent
+        self.random_select = random_select
         self.states = []
         self.time = 0
 
@@ -29,7 +30,10 @@ class Slums(object):
 
         self.slum_list[np.argmin(min_vals)].update_state(moore)
 
-        to_slum = self.find_optimal_location(np.argmin(min_vals))
+        if self.random_select:
+            to_slum = self.alt_find_optimal_location(np.argmin(min_vals))
+        else:
+            to_slum = self.find_optimal_location(np.argmin(min_vals))
 
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
@@ -41,9 +45,6 @@ class Slums(object):
 
     def find_optimal_location(self, origin_slum):
         parameters = []
-
-        # slot_distrib = scipy.stats.norm(self.total_cells * (1 - self.empty_percent),
-        # self.total_cells * self.empty_percent)
 
         # De average satisfaction moet het liefst zo hoog mogelijk zijn!
         for i in range(len(self.slum_list)):
@@ -65,6 +66,28 @@ class Slums(object):
                 parameters[i][0] = 0
 
             pvalues.append(parameters[i][0])# * slot_distrib.pdf(parameters[i][2]))
+
+        pvalues = pvalues / sum(pvalues)
+
+        return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
+
+
+    def alt_find_optimal_location(self, origin_slum):
+        parameters = []
+
+        for i in range(len(self.slum_list)):
+            parameters.append(self.slum_list[i].has_empty())
+
+        has_any_empty = sum([1 if has_empty else 0 for has_empty in parameters])
+
+        if has_any_empty == 0:
+            return origin_slum
+
+        for i in range(len(self.slum_list)):
+            if parameters[i]:
+                pvalues.append(1)
+            else:
+                pvalues.append(0)
 
         pvalues = pvalues / sum(pvalues)
 
