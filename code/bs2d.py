@@ -3,30 +3,38 @@
 # Nicky, Maarten, Wessel and Willem
 #
 from copy import deepcopy
+from scipy.stats import mvn
+import math
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from scipy.stats import multivariate_normal
 
 
 class BaxSneppen2D(object):
     def __init__(self, slum_size=(15, 15), empty_percent=0.3):
-        self.state = np.random.rand(slum_size[0], slum_size[1])
-        self.ages = np.zeros(slum_size)
-        xs = [x for x in np.random.randint(0, slum_size[1],
-                                           int(slum_size[0] * slum_size[1] * empty_percent))]
-        ys = [y for y in np.random.randint(0, slum_size[0],
-                                           int(slum_size[0] * slum_size[1] * empty_percent))]
-
-        for i in range(len(xs)):
-            self.state[ys[i]][xs[i]] = 2
-            self.ages[ys[i]][xs[i]] = -1
-
-
-
+        self.state = np.ones(slum_size) * 2
+        self.ages = np.ones(slum_size) * -1
+        self.populate(empty_percent, slum_size)
         self.avalanches = []
         self.cur_av_count = 0
         self.cur_av_start = -1
+        self.size = slum_size
+        xmean = self.size[0]*0.5
+        ymean = self.size[1]*0.5
+        cov = np.array([[xmean*0.2, 0], [0, ymean*0.2]])
+        self.mvn = multivariate_normal([xmean, ymean], cov)
+
+    def populate(self, empty_percent, slum_size):
+        r = math.sqrt(slum_size[0]*slum_size[1]*(1-empty_percent)/math.pi)
+        mx = slum_size[0]*0.5
+        my = slum_size[1]*0.5
+        for x in range(slum_size[0]):
+            for y in range(slum_size[1]):
+                if (y-my)**2 + (x-mx)**2 < r**2:
+                    self.state[y][x] = np.random.uniform(0, 1, 1)
+                    self.ages[y][x] = 0
 
     def execute(self, moore=False):
         while self.update_state(moore):
@@ -53,14 +61,19 @@ class BaxSneppen2D(object):
         # TODO use original_value in a useful manner
         original_value = original_value
         empty = np.where(self.state == 2)
-
         if len(empty[0]) == 0:
             return False
 
-        i = np.random.randint(len(empty[0]))
 
-        self.state[empty[0][i], empty[1][i]] = np.random.uniform(0, 1, 1)
-        self.ages[empty[0][i], empty[1][i]] = 0
+        es = [(x,y) for x,y in zip(empty[0], empty[1])]
+        pvalues = np.array([self.mvn.pdf([e[0], e[1]]) for e in es])
+        pvalues /= np.sum(pvalues)
+        empty_choice = es[np.random.choice(range(len(es)), p=pvalues)]
+
+        #i = np.random.randint(len(empty[0]))
+
+        self.state[empty_choice[0], empty_choice[1]] = np.random.uniform(0, 1, 1)
+        self.ages[empty_choice[0], empty_choice[1]] = 0
 
         return True
 
@@ -117,6 +130,7 @@ class BaxSneppen2D(object):
 
     def plot_ages(self):
         plt.imshow(self.ages[-1], aspect='auto', cmap='jet_r', interpolation='nearest')
+
     def plot_avalanches(self):
         plt.plot(self.avalanches)
         plt.show()
