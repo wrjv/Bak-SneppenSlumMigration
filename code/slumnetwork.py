@@ -16,7 +16,6 @@ class Slums(object):
         while self.update_state(moore):
             self.states.append(deepcopy(self.slum_list))
             continue
-        self.plot_slums()
 
     def update_state(self, moore=False):
         min_vals = [slum.get_min_val() for slum in self.slum_list]
@@ -97,6 +96,13 @@ class Slums(object):
         plt.show()
 
 
+    def plot_barrier_distribution(self):
+        barriers = []
+        for slum in self.states[-1]:
+            barriers = barriers + list(slum.state[np.where(slum.state <= 1)].flatten())
+        print(barriers)
+        plt.hist(barriers, bins=30, range=(0,1))
+        plt.show()
 
 
 def main():
