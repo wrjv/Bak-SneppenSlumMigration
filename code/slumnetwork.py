@@ -116,6 +116,7 @@ class Slums(object):
 def main():
     slums = Slums(4, (20, 20))
     slums.execute()
+    slums.plot_slums()
 
 if __name__ == '__main__':
     main()
