@@ -11,11 +11,15 @@ class Slums(object):
 
     def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25, random_select=False):
         self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
+        assert slum_size[0] == slum_size[1]
+        self.slum_size = slum_size[0]
         self.total_cells = slum_size[0] * slum_size[1] * n_slums
         self.empty_percent = empty_percent
         self.random_select = random_select
         self.states = []
         self.time = 0
+        self.previous_location = [(0,0) for _ in range(n_slums)]
+        self.distances = [[] for _ in range(n_slums)]
 
     def execute(self, moore=False):
         while self.update_state(moore):
@@ -24,6 +28,14 @@ class Slums(object):
 
     def update_state(self, moore=False):
         min_vals = [slum.get_min_val() for slum in self.slum_list]
+
+        # calculate the distance between mutations
+        min_vals_indexes = [slum.get_min_val_index() for slum in self.slum_list]
+        x, y = min_vals_indexes[np.argmin(min_vals)]//self.slum_size, min_vals_indexes[np.argmin(min_vals)]%self.slum_size
+        xold, yold = self.previous_location[np.argmin(min_vals)]
+        distance = ((x-xold)**2 + (y-yold)**2)**0.5
+        self.distances[np.argmin(min_vals)].append(distance)
+        self.previous_location[np.argmin(min_vals)] = (x,y)
 
         for slum in self.slum_list:
             slum.update_ages()
@@ -135,8 +147,35 @@ class Slums(object):
 
     def plot_barrier_distribution(self):
         barriers = []
+        minima = []
         for slum in self.states[-1]:
             barriers = barriers + list(slum.state[np.where(slum.state <= 1)].flatten())
+        for timestep in self.states:
+            minima.append(min([state.get_min_val() for state in timestep]))
+
+        (counts_min, bins_min, _) = plt.hist(minima, bins=30)
+        (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
+        plt.clf()
+        plt.plot(bins_min[:-1], counts_min/sum(counts_min), label="minimum barriers")
+        plt.plot(bins_bar[:-1], counts_bar/sum(counts_bar), label="barrier distribution")
+        plt.title("barrier and minumum barriers distribution")
+        plt.legend()
+        plt.xlabel("B")
+        plt.ylabel("P(B)")
+        plt.show()
+
+    def plot_avalanche_distance(self):
+        avalanches = []
+        for each in self.distances:
+            avalanches = avalanches + each
+            # print(avalanches)
+
+        (counts, bins, _) = plt.hist(avalanches, bins=30)
+        plt.clf()
+        plt.loglog(bins[:-1], counts/sum(counts))
+        plt.title("distance between succesive mutations")
+        plt.xlabel(r"$log_{10}(X)$")
+        plt.ylabel(r"$log_{10}(C(X))$")
         plt.hist(barriers, bins=30, range=(0, 1))
         plt.show()
 
@@ -144,6 +183,8 @@ class Slums(object):
 def main():
     slums = Slums(9, (25, 25), empty_percent=0.06)
     slums.execute()
+    # slums.plot_barrier_distribution()
+    # slums.plot_avalanche_distance()
     slums.plot_slums(start=0, show_steps=25)
 
 if __name__ == '__main__':
