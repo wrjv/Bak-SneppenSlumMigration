@@ -48,7 +48,7 @@ class Slums(object):
         self.previous_location = [(0, 0) for _ in range(n_slums)]
         self.distances = [[] for _ in range(n_slums)]
 
-    def execute(self, moore=False, save_steps=1):
+    def execute(self, moore=False, save_steps=25):
         '''
         Executes the slum simulation.
 
@@ -267,8 +267,7 @@ class Slums(object):
 
         # initialize the plot
         ims = list()
-        if len(self.slum_list) == 1:
-            axarr = np.array([axarr])
+        if len(self.slum_list) == 1: axarr = np.array([axarr])
         ns = len(self.states[0])
         for slum, ax in zip(self.states[0], axarr.flatten()):
             ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
@@ -278,10 +277,9 @@ class Slums(object):
         def animate(i):
             global ns
             if len(self.states[i]) > ns:
-                for slum, ax in zip(self.states[i][ns:len(self.states[i])],
-                                    axarr.flatten()[ns:len(self.states[i])]):
-                    ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap,
-                                         interpolation='nearest', vmin=0, vmax=max_age))
+                for slum, ax in zip(self.states[i][ns:len(self.states[i])], axarr.flatten()[ns:len(self.states[i])]):
+                    ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
+                                         vmin=0, vmax=max_age))
                 ns = len(self.states[i])
 
             plt.suptitle('iteration: ' + str(i * self.save_steps))
@@ -293,10 +291,8 @@ class Slums(object):
                     im.set_array(np.ones((self.slum_size, self.slum_size))*-1)
 
             return ims
-
-        animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
-                                                  len(self.states), 1), interval=2, blit=False)
-
+        ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
+                                                        len(self.states), 1), interval=2, blit=False)
         plt.show()
 
     def plot_barrier_distribution(self):
@@ -322,6 +318,7 @@ class Slums(object):
         avalanches = []
         for each in self.distances:
             avalanches = avalanches + each
+            # print(avalanches)
 
         (counts, bins, _) = plt.hist(avalanches, bins=30)
         plt.clf()
@@ -346,8 +343,8 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(n_slums=4, slum_size=(30, 30), empty_percent=0.1, time_limit=5000)
-    slums.execute(save_steps=50)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=1000)
+    slums.execute(save_steps=25)
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     #slums.plot_avalanche_size()
