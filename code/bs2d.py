@@ -16,7 +16,8 @@ class BaxSneppen2D(object):
     def __init__(self, slum_size=(15, 15), empty_percent=0.3, rand_draws=(2, 1)):
         self.state = np.ones(slum_size) * 2
         self.ages = np.ones(slum_size) * -1
-        self.populate(empty_percent, slum_size)
+        if empty_percent != 1:
+            self.populate(empty_percent, slum_size)
         self.avalanches = []
         self.cur_av_count = 0
         self.cur_av_start = -1
@@ -33,9 +34,8 @@ class BaxSneppen2D(object):
                 self.state[y][x] = np.random.uniform(0, 1, 1)
                 self.ages[y][x] = 0
 
-        empty = np.random.choice(range(len(self.state[0]) * len(self.state)),
-                                 empty_percent * slum_size[0] * slum_size[1])
-
+        empty = np.random.choice(range(slum_size[0] * slum_size[1]),
+                                 empty_percent * slum_size[0] * slum_size[1], replace=False)
         for i in empty:
             self.state[i % slum_size[0]][i // slum_size[0]] = 2
             self.ages[i % slum_size[0]][i // slum_size[0]] = -1
