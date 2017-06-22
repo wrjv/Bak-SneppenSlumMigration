@@ -13,7 +13,7 @@ from scipy.stats import multivariate_normal
 
 
 class BaxSneppen2D(object):
-    def __init__(self, slum_size=(15, 15), empty_percent=0.3, rand_draws=(2, 1)):
+    def __init__(self, slum_size=(15, 15), empty_percent=0.3, rand_draws=(4, 1)):
         self.state = np.ones(slum_size) * 2
         self.ages = np.ones(slum_size) * -1
         if empty_percent != 1:
@@ -25,7 +25,7 @@ class BaxSneppen2D(object):
         self.rand_draws = rand_draws
         xmean = self.size[0]*0.5
         ymean = self.size[1]*0.5
-        cov = np.array([[xmean*0.2, 0], [0, ymean*0.2]])
+        cov = np.array([[xmean*0.8, 0], [0, ymean*0.8]])
         self.mvn = multivariate_normal([xmean, ymean], cov)
 
     def populate(self, empty_percent, slum_size):
