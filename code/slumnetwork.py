@@ -88,13 +88,13 @@ class Slums(object):
 
         for i in range(len(self.slum_list)):
             if parameters[i][1]:
-                parameters[i][0] /= total_fitness
+                parameters[i].append((parameters[i][1] - parameters[origin_slum][1] + 1)**2)
             else:
-                parameters[i][0] = 0
+                parameters[i].append(0)
 
-            pvalues.append(parameters[i][0])# * slot_distrib.pdf(parameters[i][2]))
+            pvalues.append(parameters[i][3])
 
-        pvalues = pvalues / sum(pvalues)
+        pvalues = np.array(pvalues) / sum(pvalues)
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
@@ -121,7 +121,7 @@ class Slums(object):
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
-    def plot_slums(self, start, show_steps):
+    def plot_slums(self, start):
         cols = ceil(len(self.slum_list)**0.5)
         rows = ceil(len(self.slum_list)/cols)
 
@@ -192,7 +192,6 @@ class Slums(object):
         plt.title("distance between succesive mutations")
         plt.xlabel(r"$log_{10}(X)$")
         plt.ylabel(r"$log_{10}(C(X))$")
-        plt.hist(barriers, bins=30, range=(0, 1))
         plt.show()
 
     def plot_avalanche_size(self):
@@ -202,12 +201,12 @@ class Slums(object):
         plt.show()
 
 def main():
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=5000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=15000)
     slums.execute(save_steps=50)
-    # slums.plot_barrier_distribution()
-    # slums.plot_avalanche_distance()
+    slums.plot_barrier_distribution()
+    slums.plot_avalanche_distance()
     slums.plot_avalanche_size()
-    # slums.plot_slums(start=0)
+    #slums.plot_slums(start=0)
 
 if __name__ == '__main__':
     main()
