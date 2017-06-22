@@ -8,7 +8,6 @@ import scipy.stats
 
 
 class Slums(object):
-
     def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25, random_select=False,
                  time_limit=10000):
         self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
@@ -19,10 +18,11 @@ class Slums(object):
         self.random_select = random_select
         self.states = []
         self.time = 0
-        self.previous_location = [(0,0) for _ in range(n_slums)]
+        self.previous_location = [(0, 0) for _ in range(n_slums)]
         self.distances = [[] for _ in range(n_slums)]
         self.avalanche_size = [0]
         self.aval_start_val = 0
+        self.threshold = 0.01
         self.time_limit = time_limit
 
     def execute(self, moore=False, save_steps=25):
@@ -35,15 +35,17 @@ class Slums(object):
             continue
 
     def update_state(self, moore=False):
+        print(self.time)
         min_vals = [slum.get_min_val() for slum in self.slum_list]
-
+        min_slum = np.argmin(min_vals)
         # calculate the distance between mutations
         min_vals_indexes = [slum.get_min_val_index() for slum in self.slum_list]
-        x, y = min_vals_indexes[np.argmin(min_vals)]//self.slum_size, min_vals_indexes[np.argmin(min_vals)]%self.slum_size
-        xold, yold = self.previous_location[np.argmin(min_vals)]
-        distance = ((x-xold)**2 + (y-yold)**2)**0.5
-        self.distances[np.argmin(min_vals)].append(distance)
-        self.previous_location[np.argmin(min_vals)] = (x,y)
+        x, y = min_vals_indexes[min_slum] // self.slum_size, min_vals_indexes[
+            np.argmin(min_vals)] % self.slum_size
+        xold, yold = self.previous_location[min_slum]
+        distance = ((x - xold) ** 2 + (y - yold) ** 2) ** 0.5
+        self.distances[min_slum].append(distance)
+        self.previous_location[min_slum] = (x, y)
 
         # calculate the size of the avalanche
         if min(min_vals) >= self.aval_start_val:
@@ -55,17 +57,33 @@ class Slums(object):
         for slum in self.slum_list:
             slum.update_ages()
 
-        self.slum_list[np.argmin(min_vals)].update_state(moore)
+        self.slum_list[min_slum].update_state(moore)
 
         if self.random_select:
             to_slum = self.alt_find_optimal_location(np.argmin(min_vals))
         else:
             to_slum = self.find_optimal_location(np.argmin(min_vals))
 
+        if np.random.uniform(0,1,1) < self.threshold:
+            print("new slum")
+            self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
+            self.previous_location.append((0,0))
+            self.distances.append([])
+            to_slum = -1
+
+        self.slum_list[to_slum].add_to_grid(min(min_vals))
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
         if self.time > self.time_limit:
             return False
+
+        # check if new slum needs to be created
+        # if np.mean(self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]) < self.threshold:
+        #     print("new slum")
+        #     self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=0.99))
+        #     self.previous_location.append((0,0))
+        #     self.distances.append([])
+
 
         self.time += 1
         return True
@@ -88,13 +106,15 @@ class Slums(object):
 
         for i in range(len(self.slum_list)):
             if parameters[i][1]:
-                parameters[i][0] /= total_fitness
+                parameters[i].append((parameters[i][1] - parameters[origin_slum][1] + 1)**2)
             else:
-                parameters[i][0] = 0
+                parameters[i].append(0)
 
-            pvalues.append(parameters[i][0])# * slot_distrib.pdf(parameters[i][2]))
 
-        pvalues = pvalues / sum(pvalues)
+            pvalues.append(parameters[i][3])
+
+
+        pvalues = np.array(pvalues) / sum(pvalues)
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
@@ -121,7 +141,10 @@ class Slums(object):
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
-    def plot_slums(self, start, show_steps):
+
+
+    def plot_slums(self, start):
+        global ns
         cols = ceil(len(self.slum_list)**0.5)
         rows = ceil(len(self.slum_list)/cols)
 
@@ -142,13 +165,21 @@ class Slums(object):
         # initialize the plot
         ims = list()
         if len(self.slum_list) == 1: axarr = np.array([axarr])
+        ns = len(self.states[0])
         for slum, ax in zip(self.states[0], axarr.flatten()):
             ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
                                  vmin=0, vmax=max_age))
 
         # animate
         def animate(i):
-            plt.suptitle('iteration: ' + str(i*self.save_steps))
+            global ns
+            if len(self.states[i]) > ns:
+                for slum, ax in zip(self.states[i][ns:len(self.states[i])], axarr.flatten()[ns:len(self.states[i])]):
+                    ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
+                                         vmin=0, vmax=max_age))
+                ns = len(self.states[i])
+
+            plt.suptitle('iteration: ' + str(i * self.save_steps))
             for slum, im, in zip(self.states[i], ims):
                 im.set_array(slum.ages)
             f.canvas.draw()
@@ -156,7 +187,6 @@ class Slums(object):
         ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
                                                         len(self.states), 1), interval=2, blit=False)
         plt.show()
-
 
     def plot_barrier_distribution(self):
         barriers = []
@@ -169,8 +199,8 @@ class Slums(object):
         (counts_min, bins_min, _) = plt.hist(minima, bins=30)
         (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
         plt.clf()
-        plt.plot(bins_min[:-1], counts_min/sum(counts_min), label="minimum barriers")
-        plt.plot(bins_bar[:-1], counts_bar/sum(counts_bar), label="barrier distribution")
+        plt.plot(bins_min[:-1], counts_min / sum(counts_min), label="minimum barriers")
+        plt.plot(bins_bar[:-1], counts_bar / sum(counts_bar), label="barrier distribution")
         plt.title("barrier and minumum barriers distribution")
         plt.legend()
         plt.xlabel("B")
@@ -185,7 +215,7 @@ class Slums(object):
 
         (counts, bins, _) = plt.hist(avalanches, bins=30)
         plt.clf()
-        plt.loglog(bins[:-1], counts/sum(counts))
+        plt.loglog(bins[:-1], counts / sum(counts))
         plt.title("distance between succesive mutations")
         plt.xlabel(r"$log_{10}(X)$")
         plt.ylabel(r"$log_{10}(C(X))$")
@@ -194,19 +224,20 @@ class Slums(object):
     def plot_avalanche_size(self):
         (counts, bins, _) = plt.hist(self.avalanche_size, bins=30)
         plt.clf()
-        plt.loglog(bins[:-1], counts/sum(counts))
+        plt.loglog(bins[:-1], counts / sum(counts))
         plt.title("avalanche sizes")
         plt.xlabel(r"$log_{10}(S)$")
         plt.ylabel(r"$log_{10}(P(S))$")
         plt.show()
 
+
 def main():
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=5000)
-    slums.execute(save_steps=50)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=500)
+    slums.execute(save_steps=1)
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
-    slums.plot_avalanche_size()
-    # slums.plot_slums(start=0,show_steps=1)
+    #slums.plot_avalanche_size()
+    slums.plot_slums(start=0)
 
 if __name__ == '__main__':
     main()
