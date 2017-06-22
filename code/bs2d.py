@@ -16,7 +16,8 @@ class BaxSneppen2D(object):
     def __init__(self, slum_size=(15, 15), empty_percent=0.3):
         self.state = np.ones(slum_size) * 2
         self.ages = np.ones(slum_size) * -1
-        self.populate(empty_percent, slum_size)
+        if empty_percent != 1:
+            self.populate(empty_percent, slum_size)
         self.avalanches = []
         self.cur_av_count = 0
         self.cur_av_start = -1

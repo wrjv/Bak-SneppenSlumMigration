@@ -22,7 +22,7 @@ class Slums(object):
         self.distances = [[] for _ in range(n_slums)]
         self.avalanche_size = [0]
         self.aval_start_val = 0
-        self.threshold = 0.01
+        self.threshold = 0.001
         self.time_limit = time_limit
 
     def execute(self, moore=False, save_steps=25):
@@ -59,11 +59,8 @@ class Slums(object):
 
         self.slum_list[min_slum].update_state(moore)
 
-        if self.random_select:
-            to_slum = self.alt_find_optimal_location(np.argmin(min_vals))
-        else:
-            to_slum = self.find_optimal_location(np.argmin(min_vals))
 
+        to_slum = self.get_to_slum(min_vals)
         if np.random.uniform(0,1,1) < self.threshold:
             print("new slum")
             self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
@@ -72,7 +69,8 @@ class Slums(object):
             to_slum = -1
 
         self.slum_list[to_slum].add_to_grid(min(min_vals))
-        self.slum_list[to_slum].add_to_grid(min(min_vals))
+        # to_slum = self.get_to_slum(min_vals)
+        # self.slum_list[to_slum].add_to_grid(min(min_vals))
 
         if self.time > self.time_limit:
             return False
@@ -87,6 +85,13 @@ class Slums(object):
 
         self.time += 1
         return True
+
+    def get_to_slum(self, min_vals):
+        if self.random_select:
+            to_slum = self.alt_find_optimal_location(np.argmin(min_vals))
+        else:
+            to_slum = self.find_optimal_location(np.argmin(min_vals))
+        return to_slum
 
     def find_optimal_location(self, origin_slum):
         parameters = []
@@ -236,8 +241,8 @@ class Slums(object):
 
 
 def main():
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=1000)
-    slums.execute(save_steps=25)
+    slums = Slums(4, (30, 30), empty_percent=0.1, time_limit=5000)
+    slums.execute(save_steps=50)
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     #slums.plot_avalanche_size()
