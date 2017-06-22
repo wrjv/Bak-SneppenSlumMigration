@@ -18,24 +18,37 @@ class Slums(object):
     Encapsules a slum simulation based on 2D Bax-Sneppen models joined together in a network.
     '''
 
+    # pylint: disable=too-many-instance-attributes, too-many-arguments
+
+    # It's reasonable to have 12 variables, to be able to keep track of all parameters
+    # and all slums.
+
     def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25, random_select=False,
                  time_limit=10000):
-        self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
-        assert slum_size[0] == slum_size[1]
-        self.slum_size = slum_size[0]
-        self.total_cells = slum_size[0] * slum_size[1] * n_slums
-        self.empty_percent = empty_percent
-        self.random_select = random_select
-        self.states = []
+        # Set some overall parameters
         self.time = 0
-        self.previous_location = [(0, 0) for _ in range(n_slums)]
-        self.distances = [[] for _ in range(n_slums)]
-        self.avalanche_size = [0]
-        self.aval_start_val = 0
-        self.threshold = 0.001
         self.time_limit = time_limit
 
-    def execute(self, moore=False, save_steps=25):
+        self.save_steps = 1
+
+        assert slum_size[0] == slum_size[1]
+        self.slum_size = slum_size[0]
+
+        self.random_select = random_select
+
+        self.threshold = 0.001
+
+        self.avalanche_size = [0]
+        self.aval_start_val = 0
+
+        # Set some variables to keep track of all slums
+        self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
+        self.states = []
+
+        self.previous_location = [(0, 0) for _ in range(n_slums)]
+        self.distances = [[] for _ in range(n_slums)]
+
+    def execute(self, moore=False, save_steps=1):
         '''
         Executes the slum simulation.
 
@@ -86,13 +99,13 @@ class Slums(object):
 
         min_vals_indexes = [slum.get_min_val_index() for slum in self.slum_list]
 
-        x, y = min_vals_indexes[min_slum] // self.slum_size, min_vals_indexes[
+        xnew, ynew = min_vals_indexes[min_slum] // self.slum_size, min_vals_indexes[
             np.argmin(min_vals)] % self.slum_size
 
         # Calculate the distances between both mutations
-        distance = ((x - xold) ** 2 + (y - yold) ** 2) ** 0.5
+        distance = ((xnew - xold) ** 2 + (ynew - yold) ** 2) ** 0.5
         self.distances[min_slum].append(distance)
-        self.previous_location[min_slum] = (x, y)
+        self.previous_location[min_slum] = (xnew, ynew)
 
         # Start a new avalanche or update the size of a current one.
         if min(min_vals) >= self.aval_start_val:
@@ -156,7 +169,7 @@ class Slums(object):
     def find_optimal_location(self, origin_slum):
         '''
         Determines the next slum a cell wants to go to,
-        with a preference to cells with cells that are more 
+        with a preference to cells with cells that are more
         satisfied.
 
         PARAMETERS
@@ -309,7 +322,6 @@ class Slums(object):
         avalanches = []
         for each in self.distances:
             avalanches = avalanches + each
-            # print(avalanches)
 
         (counts, bins, _) = plt.hist(avalanches, bins=30)
         plt.clf()
