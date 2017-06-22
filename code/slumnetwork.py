@@ -35,7 +35,7 @@ class Slums(object):
             continue
 
     def update_state(self, moore=False):
-        print(self.time)
+        #print(self.time)
         min_vals = [slum.get_min_val() for slum in self.slum_list]
         min_slum = np.argmin(min_vals)
         # calculate the distance between mutations
@@ -186,6 +186,10 @@ class Slums(object):
             for slum, im, in zip(self.states[i], ims):
                 im.set_array(slum.ages)
             f.canvas.draw()
+            if i == len(self.states) - 1:
+                for im in ims:
+                    im.set_array(np.ones((self.slum_size, self.slum_size))*-1)
+
             return ims
 
         ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
@@ -233,8 +237,8 @@ class Slums(object):
 
 
 def main():
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=500)
-    slums.execute(save_steps=1)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=1000)
+    slums.execute(save_steps=25)
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     #slums.plot_avalanche_size()
