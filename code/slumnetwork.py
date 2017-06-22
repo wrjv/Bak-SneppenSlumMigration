@@ -127,35 +127,32 @@ class Slums(object):
 
         f, axarr = plt.subplots(nrows=rows, ncols=cols, sharex=True, sharey=True)
 
+        # remove the axes labels and set spacing
         plt.subplots_adjust(wspace=0.05, hspace=0.05)
         plt.xticks([])
         plt.yticks([])
 
-        ims = list()
-        max_ages = [np.max(slum.ages) for slum in self.slum_list]
-        max_age = max(max_ages)
-
+        # set the colour map
         cmap = plt.cm.jet_r
         cmap.set_under((1, 1, 1, 1))
 
-        if len(self.slum_list) > 1:
-            for slum, ax in zip(self.states[0], axarr.flatten()):
-                ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
-                                     vmin=0, vmax=max_age))
-        elif len(self.slum_list) == 1:
-            for slum in self.states[0]:
-                ims.append(axarr.imshow(slum.ages, aspect='auto', cmap=cmap,
-                                        interpolation='nearest', vmin=0, vmax=max_age))
-        else:
-            assert False
+        # calculate the max age for the plot
+        max_age = max([np.max(slum.ages) for slum in self.slum_list])
 
+        # initialize the plot
+        ims = list()
+        if len(self.slum_list) == 1: axarr = np.array([axarr])
+        for slum, ax in zip(self.states[0], axarr.flatten()):
+            ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
+                                 vmin=0, vmax=max_age))
+
+        # animate
         def animate(i):
             plt.suptitle('iteration: ' + str(i*self.save_steps))
             for slum, im, in zip(self.states[i], ims):
                 im.set_array(slum.ages)
             f.canvas.draw()
             return ims
-
         ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
                                                         len(self.states), 1), interval=2, blit=False)
         plt.show()
@@ -192,13 +189,15 @@ class Slums(object):
         plt.title("distance between succesive mutations")
         plt.xlabel(r"$log_{10}(X)$")
         plt.ylabel(r"$log_{10}(C(X))$")
-        plt.hist(barriers, bins=30, range=(0, 1))
         plt.show()
 
     def plot_avalanche_size(self):
         (counts, bins, _) = plt.hist(self.avalanche_size, bins=30)
         plt.clf()
         plt.loglog(bins[:-1], counts/sum(counts))
+        plt.title("avalanche sizes")
+        plt.xlabel(r"$log_{10}(S)$")
+        plt.ylabel(r"$log_{10}(P(S))$")
         plt.show()
 
 def main():
@@ -207,7 +206,7 @@ def main():
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     slums.plot_avalanche_size()
-    # slums.plot_slums(start=0)
+    # slums.plot_slums(start=0,show_steps=1)
 
 if __name__ == '__main__':
     main()
