@@ -267,7 +267,10 @@ class Slums(object):
 
         # initialize the plot
         ims = list()
-        if len(self.slum_list) == 1: axarr = np.array([axarr])
+
+        if len(self.slum_list) == 1:
+            axarr = np.array([axarr])
+
         ns = len(self.states[0])
         for slum, ax in zip(self.states[0], axarr.flatten()):
             ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
@@ -277,9 +280,10 @@ class Slums(object):
         def animate(i):
             global ns
             if len(self.states[i]) > ns:
-                for slum, ax in zip(self.states[i][ns:len(self.states[i])], axarr.flatten()[ns:len(self.states[i])]):
-                    ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
-                                         vmin=0, vmax=max_age))
+                for slum, ax in zip(self.states[i][ns:len(self.states[i])],
+                                    axarr.flatten()[ns:len(self.states[i])]):
+                    ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap,
+                                         interpolation='nearest', vmin=0, vmax=max_age))
                 ns = len(self.states[i])
 
             plt.suptitle('iteration: ' + str(i * self.save_steps))
@@ -291,8 +295,8 @@ class Slums(object):
                     im.set_array(np.ones((self.slum_size, self.slum_size))*-1)
 
             return ims
-        ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
-                                                        len(self.states), 1), interval=2, blit=False)
+        _ = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
+                                                      len(self.states), 1), interval=2, blit=False)
         plt.show()
 
     def plot_barrier_distribution(self):
