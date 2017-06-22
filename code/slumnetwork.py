@@ -238,7 +238,7 @@ def main():
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     #slums.plot_avalanche_size()
-    slums.plot_slums(start=0, show_steps=1)
+    slums.plot_slums(start=0)
 
 if __name__ == '__main__':
     main()
