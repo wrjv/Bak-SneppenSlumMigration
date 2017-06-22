@@ -149,7 +149,7 @@ class Slums(object):
         '''
 
         if self.random_select:
-            return self.alt_find_optimal_location(min_slum)
+            return self.alt_find_optimal_location()
 
         return self.find_optimal_location(min_slum)
 
@@ -197,20 +197,38 @@ class Slums(object):
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
-    def alt_find_optimal_location(self, origin_slum):
+    def alt_find_optimal_location(self):
+        '''
+        Determines the next slum a cell wants to go to,
+        randomised.
+
+        PARAMETERS
+        ===================================================
+        None
+
+        RETURNS
+        ===================================================
+        integer
+        The index of the slum assigned to the cell.
+        '''
+
+        # Gather information on each slum whether it has room for a new cell or not.
         parameters = []
 
         for i in range(len(self.slum_list)):
             parameters.append(self.slum_list[i].has_empty())
 
+        # Assign an equal probability to each slum.
         pvalues = []
 
         for i in range(len(self.slum_list)):
+            # Check if there is room for a new cell in the grid.
             if parameters[i]:
                 pvalues.append(1)
             else:
                 pvalues.append(0)
 
+        # Normalise the pvalues and make a choice of a location for a cell to go to.
         pvalues = pvalues / sum(pvalues)
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
