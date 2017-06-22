@@ -259,8 +259,7 @@ class Slums(object):
         plt.yticks([])
 
         # set the colour map
-        cmap = plt.cm.jet_r
-        cmap.set_under((1, 1, 1, 1))
+        cmap = self.get_colormap()
 
         # calculate the max age for the plot
         max_age = max([np.max(slum.ages) for slum in self.slum_list])
@@ -356,6 +355,77 @@ class Slums(object):
         plt.ylabel("population size of slum")
         plt.show()
 
+    def get_colormap(self):
+        cmap = plt.cm.jet_r
+        cmap.set_under((1, 1, 1, 1))
+        return cmap
+
+    def setup_slum_anim(self):
+        slumaxarr = []
+        size = len(self.states[-1])
+        cols = ceil(size**0.5)
+        rows = ceil(size/cols)
+        f = plt.figure()
+        for i in range(size):
+            slumaxarr.append(plt.subplot2grid((1+rows,1+cols), (i//rows,(i%rows)%cols)))
+        for i, slumax in enumerate(slumaxarr):
+            # plt.subplots_adjust(wspace=0.05, hspace=0.05)
+            slumax.imshow(self.states[-1][i].ages)
+            slumax.set_xticklabels([])
+            slumax.set_yticklabels([])
+
+        ims = list()
+        if len(self.slum_list) == 1: slumaxarr = np.array([slumaxarr])
+        ns = len(self.states[0])
+        for slum, ax in zip(self.states[0], slumaxarr):
+            ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
+                                 vmin=0, vmax=max_age))
+        return f, ims, rows, cols, ns
+
+    def make_dashboard(self):
+        global coolax, ns, cmap, max_age
+
+        cmap = self.get_colormap()
+        max_age = max([np.max(slum.ages) for slum in self.slum_list])
+
+        f, ims, rows, cols, ns = self.setup_slum_anim()
+
+        # TODO store parameters in such a way that we have the history of them
+        coolax = plt.subplot2grid((1+rows,1+cols), (rows,0))
+        coolax.hist(np.random.uniform(-10,10,50))
+
+        def animate(i):
+            global ns
+
+            # some fake data
+            coolax.cla()
+            coolax.hist(np.random.uniform(-10,10,50))
+
+            # show variable 1
+
+            # show variable 2
+
+            # show the slums
+            if len(self.states[i]) > ns:
+                for slum, ax in zip(self.states[i][ns:len(self.states[i])],
+                                    slumaxarr.flatten()[ns:len(self.states[i])]):
+                    ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap,
+                                         interpolation='nearest', vmin=0, vmax=max_age))
+                ns = len(self.states[i])
+
+            plt.suptitle('iteration: ' + str(i * self.save_steps))
+            for slum, im, in zip(self.states[i], ims):
+                im.set_array(slum.ages)
+            f.canvas.draw()
+            if i == len(self.states) - 1:
+                for im in ims:
+                    im.set_array(np.ones((self.slum_size, self.slum_size))*-1)
+
+
+        _ = animation.FuncAnimation(f, animate, range(0,len(self.states)), interval=2, blit=False)
+        plt.show()
+
+
 def main():
     '''
     Runs a sample slum and shows different related plots.
@@ -363,6 +433,7 @@ def main():
 
     slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=1000)
     slums.execute(save_steps=25)
+    slums.make_dashboard()
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     # slums.plot_avalanche_size()
