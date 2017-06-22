@@ -13,7 +13,7 @@ from scipy.stats import multivariate_normal
 
 
 class BaxSneppen2D(object):
-    def __init__(self, slum_size=(15, 15), empty_percent=0.3):
+    def __init__(self, slum_size=(15, 15), empty_percent=0.3, rand_draws=(2, 1)):
         self.state = np.ones(slum_size) * 2
         self.ages = np.ones(slum_size) * -1
         self.populate(empty_percent, slum_size)
@@ -21,6 +21,7 @@ class BaxSneppen2D(object):
         self.cur_av_count = 0
         self.cur_av_start = -1
         self.size = slum_size
+        self.rand_draws = rand_draws
         xmean = self.size[0]*0.5
         ymean = self.size[1]*0.5
         cov = np.array([[xmean*0.2, 0], [0, ymean*0.2]])
@@ -127,17 +128,34 @@ class BaxSneppen2D(object):
                 # Modify the values around the minimum value
                 if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
                     new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
-                        np.random.uniform(0, 1, 1)
+                            np.random.uniform(0, 1, 1)
                     # Modify the cell ages
                     # self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
         else:
-            for xx, yy in [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]]:
-                # Modify the values around the minimum value
-                if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
-                    new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
-                        np.random.uniform(0, 1, 1)
-                    # Modify the cell ages
-                    # self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
+            if self.rand_draws == None:
+                new_state[y][x] = np.random.uniform(0, 1, 1)
+                for xx, yy in [[-1, 0], [1, 0], [0, -1], [0, 1]]:
+                    # Modify the values around the minimum value
+                    if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
+                        new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
+                                np.random.uniform(0, 1, 1)
+                        # Modify the cell ages
+                        # self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
+            else:
+                cur_val = new_state[y][x]
+                new_state[y][x] = np.random.choice(np.concatenate((
+                        np.random.uniform(cur_val, 1, self.rand_draws[0]),
+                        np.random.uniform(0, cur_val, self.rand_draws[1]))))
+                for xx, yy in [[-1, 0], [1, 0], [0, -1], [0, 1]]:
+                    # Modify the values around the minimum value
+                    cur_val = new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)]
+                    if cur_val != 2:
+                        new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
+                                np.random.choice(np.concatenate((
+                                        np.random.uniform(0, cur_val, self.rand_draws[0]),
+                                        np.random.uniform(cur_val, 1, self.rand_draws[1]))))
+                        # Modify the cell ages
+                        # self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
 
         # Wait, the person who left, left an empty house
         new_state[y][x] = 2
