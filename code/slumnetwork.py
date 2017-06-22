@@ -36,7 +36,7 @@ class Slums(object):
 
         self.random_select = random_select
 
-        self.threshold = 0.001
+        self.threshold = 0.49
 
         self.avalanche_size = [0]
         self.aval_start_val = 0
@@ -125,7 +125,8 @@ class Slums(object):
         to_slum = self.get_to_slum(min_slum)
 
         # Add another new slum with a small chance.
-        if np.random.uniform(0, 1, 1) < self.threshold:
+        #print(np.mean(self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]))
+        if np.random.uniform(0,1,1) < self.threshold - np.mean(self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]):
             print("New slum built.")
             self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
             self.previous_location.append((0, 0))

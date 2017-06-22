@@ -25,7 +25,7 @@ class BaxSneppen2D(object):
         self.draw_prob = draw_prob
         xmean = self.size[0]*0.5
         ymean = self.size[1]*0.5
-        cov = np.array([[xmean*0.2, 0], [0, ymean*0.2]])
+        cov = np.array([[xmean*0.8, 0], [0, ymean*0.8]])
         self.mvn = multivariate_normal([xmean, ymean], cov)
 
     def populate(self, empty_percent, slum_size):
