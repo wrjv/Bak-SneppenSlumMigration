@@ -26,64 +26,95 @@ class Slums(object):
         self.time_limit = time_limit
 
     def execute(self, moore=False, save_steps=25):
+        '''
+        Executes the slum simulation.
+
+        PARAMETERS
+        ===================================================
+        moore: boolean
+        Wether a moore neighbourhood should be used or not.
+
+        save_steps: integer
+        The number of steps between each state saved, used
+        in further animations.
+        '''
+
         iterator = 0
+
+        # Make sure the animation function knows the distance between
+        # each step.
         self.save_steps = save_steps
+
+        # Keep updating the states until the time limit is reached.
         while self.update_state(moore):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
+
             iterator += 1
-            continue
 
     def update_state(self, moore=False):
-        #print(self.time)
+        '''
+        Updates the current state. Used by the execution
+        function.
+
+        PARAMETERS
+        ===================================================
+        moore: boolean
+        Wether a moore neighbourhood should be used or not.
+        '''
+
         min_vals = [slum.get_min_val() for slum in self.slum_list]
         min_slum = np.argmin(min_vals)
-        # calculate the distance between mutations
+
+        # Find the last location and new location
+        xold, yold = self.previous_location[min_slum]
+
         min_vals_indexes = [slum.get_min_val_index() for slum in self.slum_list]
+    
         x, y = min_vals_indexes[min_slum] // self.slum_size, min_vals_indexes[
             np.argmin(min_vals)] % self.slum_size
-        xold, yold = self.previous_location[min_slum]
+
+        # Calculate the distances between both mutations
         distance = ((x - xold) ** 2 + (y - yold) ** 2) ** 0.5
         self.distances[min_slum].append(distance)
         self.previous_location[min_slum] = (x, y)
 
-        # calculate the size of the avalanche
+        # Start a new avalanche or update the size of a current one.
         if min(min_vals) >= self.aval_start_val:
             self.avalanche_size.append(1)
             self.aval_start_val = min(min_vals)
         else:
             self.avalanche_size[-1] += 1
 
+        # Update the ages of all cells in all slums.
         for slum in self.slum_list:
             slum.update_ages()
 
+        # Update the state of the slum containing the minimum value.
         self.slum_list[min_slum].update_state(moore)
 
+        # Determine to what other slum the cell goes.
         if self.random_select:
             to_slum = self.alt_find_optimal_location(np.argmin(min_vals))
         else:
             to_slum = self.find_optimal_location(np.argmin(min_vals))
 
+        # Add another new slum with a small chance.
         if np.random.uniform(0,1,1) < self.threshold:
-            print("new slum")
+            print("New slum built.")
             self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
             self.previous_location.append((0,0))
             self.distances.append([])
             to_slum = -1
 
-        self.slum_list[to_slum].add_to_grid(min(min_vals))
-        self.slum_list[to_slum].add_to_grid(min(min_vals))
+            # Add new people to the grid.
+            self.slum_list[to_slum].add_to_grid(min(min_vals))
+            self.slum_list[to_slum].add_to_grid(min(min_vals))
 
+        # Check if the time limit is reached, otherwise return False (and
+        # the execution ends)
         if self.time > self.time_limit:
             return False
-
-        # check if new slum needs to be created
-        # if np.mean(self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]) < self.threshold:
-        #     print("new slum")
-        #     self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=0.99))
-        #     self.previous_location.append((0,0))
-        #     self.distances.append([])
-
 
         self.time += 1
         return True
