@@ -268,7 +268,10 @@ class Slums(object):
 
         # initialize the plot
         ims = list()
-        if len(self.slum_list) == 1: axarr = np.array([axarr])
+
+        if len(self.slum_list) == 1:
+            axarr = np.array([axarr])
+
         ns = len(self.states[0])
         for slum, ax in zip(self.states[0], axarr.flatten()):
             ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
@@ -278,9 +281,10 @@ class Slums(object):
         def animate(i):
             global ns
             if len(self.states[i]) > ns:
-                for slum, ax in zip(self.states[i][ns:len(self.states[i])], axarr.flatten()[ns:len(self.states[i])]):
-                    ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
-                                         vmin=0, vmax=max_age))
+                for slum, ax in zip(self.states[i][ns:len(self.states[i])],
+                                    axarr.flatten()[ns:len(self.states[i])]):
+                    ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap,
+                                         interpolation='nearest', vmin=0, vmax=max_age))
                 ns = len(self.states[i])
 
             plt.suptitle('iteration: ' + str(i * self.save_steps))
@@ -292,8 +296,8 @@ class Slums(object):
                     im.set_array(np.ones((self.slum_size, self.slum_size))*-1)
 
             return ims
-        ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
-                                                        len(self.states), 1), interval=2, blit=False)
+        _ = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
+                                                      len(self.states), 1), interval=2, blit=False)
         plt.show()
 
     def plot_barrier_distribution(self):
@@ -338,6 +342,20 @@ class Slums(object):
         plt.ylabel(r"$log_{10}(P(S))$")
         plt.show()
 
+    def plot_growth_over_time(self):
+        growths = [[] for _ in range(len(self.states[-1]))]
+        scaler = self.save_steps
+        for state in self.states:
+            for index in range(len(state)):
+                growths[index].append(state[index].full_cells())
+        for slum in growths:
+            maxim = len(growths[0])
+            minim = len(slum)
+            plt.plot(range((maxim-minim)*scaler, maxim*scaler, scaler), slum)
+        plt.title("growth of slums over time")
+        plt.xlabel("number of iterations")
+        plt.ylabel("population size of slum")
+        plt.show()
 
 def main():
     '''
@@ -348,7 +366,8 @@ def main():
     slums.execute(save_steps=50)
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
-    #slums.plot_avalanche_size()
+    # slums.plot_avalanche_size()
+    # slums.plot_growth_over_time()
     slums.plot_slums(start=0)
 
 if __name__ == '__main__':
