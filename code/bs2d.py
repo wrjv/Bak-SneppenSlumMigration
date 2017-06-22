@@ -124,6 +124,7 @@ class BaxSneppen2D(object):
         #     return False
 
         if moore:
+            assert self.rand_draws == None, "With Moore, the new fitnes is not biased"
             for xx, yy in itertools.product([-1, 0, 1], [-1, 0, 1]):
                 # Modify the values around the minimum value
                 if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
@@ -133,8 +134,7 @@ class BaxSneppen2D(object):
                     # self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
         else:
             if self.rand_draws == None:
-                new_state[y][x] = np.random.uniform(0, 1, 1)
-                for xx, yy in [[-1, 0], [1, 0], [0, -1], [0, 1]]:
+                for xx, yy in [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]]:
                     # Modify the values around the minimum value
                     if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
                         new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
