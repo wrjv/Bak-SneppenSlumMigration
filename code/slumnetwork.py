@@ -150,30 +150,27 @@ class Slums(object):
 
         f, axarr = plt.subplots(nrows=rows, ncols=cols, sharex=True, sharey=True)
 
+        # remove the axes labels and set spacing
         plt.subplots_adjust(wspace=0.05, hspace=0.05)
         plt.xticks([])
         plt.yticks([])
 
-        ims = list()
-        max_ages = [np.max(slum.ages) for slum in self.slum_list]
-        max_age = max(max_ages)
-
+        # set the colour map
         cmap = plt.cm.jet_r
         cmap.set_under((1, 1, 1, 1))
 
-        if len(self.slum_list) > 1:
-            ns = len(self.states[0])
-            for slum, ax in zip(self.states[0], axarr.flatten()):
-                ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
-                                     vmin=0, vmax=max_age))
-        elif len(self.slum_list) == 1:
-            for slum in self.states[0]:
-                ims.append(axarr.imshow(slum.ages, aspect='auto', cmap=cmap,
-                                        interpolation='nearest', vmin=0, vmax=max_age))
-            ns = 1
-        else:
-            assert False
+        # calculate the max age for the plot
+        max_age = max([np.max(slum.ages) for slum in self.slum_list])
 
+        # initialize the plot
+        ims = list()
+        if len(self.slum_list) == 1: axarr = np.array([axarr])
+        ns = len(self.states[0])
+        for slum, ax in zip(self.states[0], axarr.flatten()):
+            ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
+                                 vmin=0, vmax=max_age))
+
+        # animate
         def animate(i):
             global ns
             if len(self.states[i]) > ns:
@@ -191,7 +188,6 @@ class Slums(object):
                     im.set_array(np.ones((self.slum_size, self.slum_size))*-1)
 
             return ims
-
         ani = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
                                                         len(self.states), 1), interval=2, blit=False)
         plt.show()
@@ -233,6 +229,9 @@ class Slums(object):
         (counts, bins, _) = plt.hist(self.avalanche_size, bins=30)
         plt.clf()
         plt.loglog(bins[:-1], counts / sum(counts))
+        plt.title("avalanche sizes")
+        plt.xlabel(r"$log_{10}(S)$")
+        plt.ylabel(r"$log_{10}(P(S))$")
         plt.show()
 
 
