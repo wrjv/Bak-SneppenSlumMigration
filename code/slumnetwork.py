@@ -35,7 +35,7 @@ class Slums(object):
 
         self.random_select = random_select
 
-        self.threshold = 0.44
+        self.threshold = 0
 
         self.avalanche_size = [0]
         self.avalanche_sizes = []
@@ -138,7 +138,7 @@ class Slums(object):
             to_slum = -1
 
         # Add new people to the grid.
-        self.slum_list[to_slum].add_to_grid()
+        self.slum_list[to_slum].add_to_grid(min(min_vals))
         # to_slum = self.get_to_slum(min_vals)
         # self.slum_list[to_slum].add_to_grid()
 
@@ -378,6 +378,8 @@ class Slums(object):
         return cmap
 
     def setup_slum_anim(self):
+        # TODO: 2 plots doesnt seem to work?
+
         slumaxarr = []
         size = len(self.states[-1])
         cols = ceil(size**0.5)
@@ -392,7 +394,6 @@ class Slums(object):
             slumax.set_yticklabels([])
 
         ims = list()
-        if len(self.slum_list) == 1: slumaxarr = np.array([slumaxarr])
         ns = len(self.states[0])
         for slum, ax in zip(self.states[0], slumaxarr):
             ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
@@ -416,16 +417,14 @@ class Slums(object):
 
         min_x = self.barrier_dists[-1][1][1]
         min_y = self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0])
-        print(len(min_x))
-        print(len(min_y))
         bdax = plt.subplot2grid((1+rows,cols+1), (rows,1))
         line_min, = bdax.plot(self.barrier_dists[-1][0][1][:-1], self.barrier_dists[-1][0][0] / sum(self.barrier_dists[-1][0][0]), label='minima')
         line_bd, = bdax.plot(self.barrier_dists[-1][1][1][:-1],
                            self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0]), label='barriers')
-        # plt.title("barrier and minumum barriers distribution")
-        # plt.legend()
-        # plt.xlabel("B")
-        # plt.ylabel("P(B)")
+        plt.title("barrier and minumum barriers distribution")
+        plt.legend()
+        plt.xlabel("B")
+        plt.ylabel("P(B)")
 
         def animate(i):
             global ns
@@ -468,7 +467,8 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (20, 20), empty_percent=0.06, time_limit=10000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=8000)
+
     slums.execute(save_steps=25)
     plt.close()
     slums.make_dashboard()
