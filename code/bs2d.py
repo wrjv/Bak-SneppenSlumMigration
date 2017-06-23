@@ -132,14 +132,14 @@ class BaxSneppen2D(object):
 
         empty = np.where(self.state == 2)
 
-        if len(empty[0]) == 0:
+        if not empty[0].any():
             return False
 
         return True
 
     def add_to_grid(self, previous_value=0):
         '''
-        Fills a cell with a higher fitting value than 
+        Fills a cell with a higher fitting value than
         given to the function.
 
         PARAMETERS
@@ -157,7 +157,7 @@ class BaxSneppen2D(object):
         empty_list = np.where(self.state == 2)
 
         # Check if there are any cells to fill.
-        if len(empty_list[0]) == 0:
+        if not empty_list[0].any():
             return False
 
         empty_cells = [(x, y) for x, y in zip(empty_list[0], empty_list[1])]
@@ -192,7 +192,7 @@ class BaxSneppen2D(object):
 
     def update_state(self, moore=False):
         '''
-        Updates the current state. 
+        Updates the current state.
 
         PARAMETERS
         ===================================================
@@ -231,6 +231,10 @@ class BaxSneppen2D(object):
 
 
 def main():
+    '''
+    Makes a simple call to the initialiser of the Bax-Sneppen 2D model.
+    '''
+
     BaxSneppen2D()
 
 if __name__ == '__main__':

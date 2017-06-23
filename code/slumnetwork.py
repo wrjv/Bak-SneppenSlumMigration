@@ -384,15 +384,17 @@ class Slums(object):
         return cmap
 
     def setup_slum_anim(self):
-        # TODO: 2 plots doesnt seem to work?
+        # TODO Maarten: 2, 5 & 6 plots dont seem to work?
 
         slumaxarr = []
         size = len(self.states[-1])
         cols = ceil(size**0.5)
-        rows = ceil(size/cols)
+        rows = ceil(size / cols)
+
         f = plt.figure()
         for i in range(size):
-            slumaxarr.append(plt.subplot2grid((1+rows,1+cols), (i//rows,(i%rows)%cols)))
+            slumaxarr.append(plt.subplot2grid((1 + rows, 1 + cols), (i // rows, (i % rows) % cols)))
+
         for i, slumax in enumerate(slumaxarr):
             # plt.subplots_adjust(wspace=0.05, hspace=0.05)
             slumax.imshow(self.states[-1][i].ages)
@@ -476,7 +478,7 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=8000)
+    slums = Slums(5, (30, 30), empty_percent=0.06, time_limit=250)
 
     slums.execute(save_steps=25)
     plt.close()
