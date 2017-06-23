@@ -364,6 +364,8 @@ class Slums(object):
         return cmap
 
     def setup_slum_anim(self):
+        # TODO: 2 plots doesnt seem to work?
+
         slumaxarr = []
         size = len(self.states[-1])
         cols = ceil(size**0.5)
@@ -379,7 +381,6 @@ class Slums(object):
 
         ims = list()
         ns = len(self.states[0])
-
         for slum, ax in zip(self.states[0], slumaxarr):
             ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
                                  vmin=0, vmax=max_age))
@@ -439,7 +440,7 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (20, 20), empty_percent=0.06, time_limit=1000)
+    slums = Slums(4, (50, 50), empty_percent=0.06, time_limit=1000)
     slums.execute(save_steps=25)
     plt.cla()
     slums.make_dashboard()
