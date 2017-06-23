@@ -11,6 +11,7 @@ from bs2d import BaxSneppen2D
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from scipy.stats import gaussian_kde
 
 
 class Slums(object):
@@ -330,9 +331,14 @@ class Slums(object):
         for timestep in self.states:
             minima.append(min([state.get_min_val() for state in timestep]))
 
-        (counts_min, bins_min, _) = plt.hist(minima, bins=30)
-        (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
-        return (counts_min, bins_min), (counts_bar, bins_bar)
+        # (counts_min, bins_min, _) = plt.hist(minima, bins=30)
+        # (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
+        if len(minima) == 1:
+            minima.append(0)
+
+        min_density = gaussian_kde(minima)
+        bar_density = gaussian_kde(barriers)
+        return bar_density, min_density
 
     def plot_avalanche_distance(self):
         avalanches = []
@@ -415,14 +421,17 @@ class Slums(object):
         plt.xlabel(r"$log_{10}(S)$")
         plt.ylabel(r"$log_{10}(P(S))$")
 
-        min_x = self.barrier_dists[-1][1][1]
-        min_y = self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0])
+        # min_x = self.barrier_dists[-1][1][1]
+        # min_y = self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0])
         bdax = plt.subplot2grid((1+rows,cols+1), (rows,1))
-        line_min, = bdax.plot(self.barrier_dists[-1][0][1][:-1], self.barrier_dists[-1][0][0] / sum(self.barrier_dists[-1][0][0]), label='minima')
-        line_bd, = bdax.plot(self.barrier_dists[-1][1][1][:-1],
-                           self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0]), label='barriers')
+        # line_min, = bdax.plot(self.barrier_dists[-1][0][1][:-1], self.barrier_dists[-1][0][0] / sum(self.barrier_dists[-1][0][0]), label='minima')
+        # line_bd, = bdax.plot(self.barrier_dists[-1][1][1][:-1],
+        #                    self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0]), label='barriers')
+        xs = np.linspace(0,1, 300)
+        line_min, = bdax.plot(xs, self.barrier_dists[-1][0](xs), label='minima')
+        line_bd, = bdax.plot(xs, self.barrier_dists[-1][1](xs), label='barriers')
         plt.title("barrier and minumum barriers distribution")
-        plt.legend()
+        #plt.legend()
         plt.xlabel("B")
         plt.ylabel("P(B)")
 
@@ -434,8 +443,8 @@ class Slums(object):
             x = self.avalanche_sizes[i][1][:-1]
             y = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
             line.set_data(x, y)
-            line_min.set_data(self.barrier_dists[i][0][1][:-1], self.barrier_dists[i][0][0] / sum(self.barrier_dists[i][0][0]))
-            line_bd.set_data(self.barrier_dists[i][1][1][:-1], self.barrier_dists[i][1][0] / sum(self.barrier_dists[i][1][0]))
+            line_min.set_data(xs, self.barrier_dists[i][0](xs))
+            line_bd.set_data(xs, self.barrier_dists[i][1](xs))
             #line.axes.draw()
             # show variable 1
 
