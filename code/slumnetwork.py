@@ -440,8 +440,8 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (50, 50), empty_percent=0.06, time_limit=1000)
-    slums.execute(save_steps=25)
+    slums = Slums(4, (100, 100), empty_percent=0.06, time_limit=15000)
+    slums.execute(save_steps=100)
     plt.cla()
     slums.make_dashboard()
     # slums.plot_barrier_distribution()

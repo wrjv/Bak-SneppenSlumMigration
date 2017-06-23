@@ -35,6 +35,21 @@ class BaxSneppen2D(object):
         self.mvn = multivariate_normal([x_mean, y_mean], cov)
 
     def populate(self, empty_percent, slum_size):
+        '''
+        Determines the next slum a cell wants to go to,
+        with a preference to cells with cells that are more
+        satisfied.
+
+        PARAMETERS
+        ===================================================
+        empty_percent: float
+        The percent of cells which have to become empty.
+        Range between 0 and 1.
+
+        slum_size: (int, int)
+        The size of the slum which has to be populated.
+        '''
+
         if empty_percent == 1:
             return
 
@@ -50,23 +65,75 @@ class BaxSneppen2D(object):
             self.ages[i % slum_size[0]][i // slum_size[0]] = -1
 
     def get_min_val(self):
+        '''
+        Returns the minimum cell value in the state.
+
+        PARAMETERS
+        ===================================================
+        None
+
+        RETURNS
+        ===================================================
+        float
+        The minimum cell value in the state. Range between
+        0 and 1.
+        '''
+
         return np.min(self.state)
 
     def get_min_val_index(self):
+        '''
+        Returns the index of the cell with the minimum cell
+        value in the state.
+
+        PARAMETERS
+        ===================================================
+        None
+
+        RETURNS
+        ===================================================
+        float
+        The index of the cell with the minimum cell value
+        in the state.
+        '''
+
         return np.argmin(self.state)
 
     def get_avg_val(self):
+        '''
+        Returns the average cell value in the state.
+
+        PARAMETERS
+        ===================================================
+        None
+
+        RETURNS
+        ===================================================
+        float
+        The average cell value in the state. Range between
+        0 and 1.
+        '''
+
         return np.average([i for i in self.state.flatten() if i != 2])
 
-    def has_empty(self):
-        empty = np.where(self.state == 2)
-
-        if len(empty[0]) == 0:
-            return False
-
-        return True
-
     def add_to_grid(self):
+        '''
+        Fills a cell with a higher fitting value than 
+        given to the function.
+
+        PARAMETERS
+        ===================================================
+        None
+
+        RETURNS
+        ===================================================
+        boolean
+        Whether the function has succeeded in adding a cell
+        to the grid.
+        '''
+
+        #TODO: Use some smart function to make cells happier than before.
+
         empty_list = np.where(self.state == 2)
 
         # Check if there are any cells to fill.
@@ -88,9 +155,26 @@ class BaxSneppen2D(object):
         return True
 
     def update_ages(self):
+        '''
+        Update the ages of all cells within the state.
+
+        PARAMETERS
+        ===================================================
+        None
+        '''
+
         self.ages[np.where(self.ages != -1)] += 1
 
     def update_state(self, moore=False):
+        '''
+        Updates the current state. 
+
+        PARAMETERS
+        ===================================================
+        moore: boolean
+        Whether a moore neighbourhood should be used or not.
+        '''
+
         # Build a new state.
         new_state = deepcopy(self.state)
 
@@ -119,8 +203,6 @@ class BaxSneppen2D(object):
 
         # Save the state.
         self.state = new_state
-
-        return True
 
 
 def main():
