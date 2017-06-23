@@ -2,27 +2,25 @@
 # Bax-Sneppen 2D implementation by
 # Nicky, Maarten, Wessel and Willem
 #
-from copy import deepcopy
-from scipy.stats import mvn
-import math
 import itertools
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+
+from copy import deepcopy
 from scipy.stats import multivariate_normal
+
+import numpy as np
 
 
 class BaxSneppen2D(object):
-    def __init__(self, slum_size=(15, 15), empty_percent=0.3, draw_prob=0.75):
+    def __init__(self, slum_size=(15, 15), empty_percent=0.3, cell_decrease_factor=0.8):
         self.state = np.ones(slum_size) * 2
         self.ages = np.ones(slum_size) * -1
         if empty_percent != 1:
             self.populate(empty_percent, slum_size)
-        self.avalanches = []
+
         self.cur_av_count = 0
         self.cur_av_start = -1
         self.size = slum_size
-        self.draw_prob = draw_prob
+        self.cell_decrease_factor = cell_decrease_factor
         xmean = self.size[0]*0.5
         ymean = self.size[1]*0.5
         cov = np.array([[xmean*0.8, 0], [0, ymean*0.8]])
@@ -39,22 +37,6 @@ class BaxSneppen2D(object):
         for i in empty:
             self.state[i % slum_size[0]][i // slum_size[0]] = 2
             self.ages[i % slum_size[0]][i // slum_size[0]] = -1
-
-        # r = math.sqrt(slum_size[0]*slum_size[1]*(1-empty_percent)/math.pi)
-        # mx = slum_size[0]*0.5
-        # my = slum_size[1]*0.5
-        # for x in range(slum_size[0]):
-        #     for y in range(slum_size[1]):
-        #         if (y-my)**2 + (x-mx)**2 < r**2:
-        #             self.state[y][x] = np.random.uniform(0, 1, 1)
-        #             self.ages[y][x] = 0
-
-    def execute(self, moore=False):
-        while self.update_state(moore):
-            continue
-
-        print(self.ages)
-        print(len(self.state))
 
     def get_min_val(self):
         return np.min(self.state)
@@ -73,15 +55,12 @@ class BaxSneppen2D(object):
 
         return True
 
-    def add_to_grid(self, original_value):
-        # TODO use original_value in a useful manner
-        original_value = original_value
+    def add_to_grid(self):
         empty = np.where(self.state == 2)
         if len(empty[0]) == 0:
             return False
 
-
-        es = [(x,y) for x,y in zip(empty[0], empty[1])]
+        es = [(x, y) for x, y in zip(empty[0], empty[1])]
         pvalues = np.array([self.mvn.pdf([e[0], e[1]]) for e in es])
         pvalues /= np.sum(pvalues)
         empty_choice = es[np.random.choice(range(len(es)), p=pvalues)]
@@ -97,106 +76,39 @@ class BaxSneppen2D(object):
         self.ages[np.where(self.ages != -1)] += 1
 
     def update_state(self, moore=False):
-        # Build a new state
+        # Build a new state.
         new_state = deepcopy(self.state)
 
+        # Find the current minimum value within the state.
         min_val = np.argmin(new_state)
         y = min_val // len(new_state[0])
         x = min_val % len(new_state[0])
-        # Stopping criterium
-        # if new_state[y][x] > 0.205:
-        # if new_state[y][x] > 0.20:
-        #     return False
 
-        # Count avalanches
-        if new_state[y][x] > self.cur_av_start:
-            if self.cur_av_start != -1:
-                self.avalanches.append(self.cur_av_count)
-            self.cur_av_count = 0
-            self.cur_av_start = new_state[y][x]
-        else:
-            self.cur_av_count += 1
-
-        # if len(self.ages) > 50000:
-        #     return False
-
+        # Change the surrounding cells.
         if moore:
-            assert self.draw_prob == None, "With Moore, the new fitnes is not biased"
-            for xx, yy in itertools.product([-1, 0, 1], [-1, 0, 1]):
-                # Modify the values around the minimum value
-                if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
-                    new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
-                            np.random.uniform(0, 1, 1)
-                    # Modify the cell ages
-                    # self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
+            combinations = itertools.product([-1, 0, 1], [-1, 0, 1])
         else:
-            if self.draw_prob == None:
-                for xx, yy in [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]]:
-                    # Modify the values around the minimum value
-                    if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
-                        new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
-                                np.random.uniform(0, 1, 1)
-                        # Modify the cell ages
-                        # self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
-            else:
-                cur_val = new_state[y][x]
-                new_state[y][x] = np.random.choice(np.concatenate((
-                        np.random.uniform(cur_val, 1, 1),
-                        np.random.uniform(0, cur_val, 1))),
-                    p=[self.draw_prob, 1 - self.draw_prob])
-                for xx, yy in [[-1, 0], [1, 0], [0, -1], [0, 1]]:
-                    # Modify the values around the minimum value
-                    cur_val = new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)]
-                    if cur_val != 2:
-                        new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
-                                np.random.choice(np.concatenate((
-                                        np.random.uniform(0, cur_val, 1),
-                                        np.random.uniform(cur_val, 1, 1))),
-                                    p=[self.draw_prob, 1 - self.draw_prob])
-                        # Modify the cell ages
-                        # self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
+            combinations = [[-1, 0], [1, 0], [0, -1], [0, 1]]
 
-        # Wait, the person who left, left an empty house
+        for xx, yy in combinations:
+            xx = (xx + x) % len(new_state)
+            yy = (yy + x) % len(new_state)
+
+            if new_state[xx][yy] != 2:
+                new_state[xx][yy] *= self.cell_decrease_factor
+
+        # The cell with the minimum value moves to another grid, an empty cell is left.
         new_state[y][x] = 2
         self.ages[y][x] = -1
+
+        # Save the state.
         self.state = new_state
 
         return True
 
-    def plot_ages(self):
-        plt.imshow(self.ages[-1], aspect='auto', cmap='jet_r', interpolation='nearest')
-
-    def plot_avalanches(self):
-        plt.plot(self.avalanches)
-        plt.show()
-
-        plt.show()
-
 
 def main():
-    bs2d = BaxSneppen2D()
-    bs2d.execute(False)
-    bs2d.plot_avalanches()
-    # bs2d.plot_ages()
-    # animate_ages(bs2d.ages)
-
-
-def animate_ages(ages):
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    im = ax.imshow(ages[1], aspect='auto', cmap='jet_r', interpolation='nearest',
-                   vmin=0, vmax=np.max(ages[-1]))
-
-    def animate(i):
-        im.set_array(ages[i])  # update the data
-        fig.canvas.draw()
-        plt.title('iteration: ' + str(i))
-        return im
-
-    animation.FuncAnimation(fig, animate, range(int(len(ages) * 0.75), len(ages)),
-                            interval=2, blit=False)
-    plt.show()
-
+    BaxSneppen2D()
 
 if __name__ == '__main__':
     main()
