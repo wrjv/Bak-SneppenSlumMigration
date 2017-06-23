@@ -25,7 +25,7 @@ class Slums(object):
 
     def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25, random_select=False,
                  time_limit=10000):
-        # Set some overall parameters
+        # Set some overall parameters.
         self.time = 0
         self.time_limit = time_limit
 
@@ -42,7 +42,7 @@ class Slums(object):
         self.avalanche_sizes = []
         self.aval_start_val = 0
 
-        # Set some variables to keep track of all slums
+        # Set some variables to keep track of all slums.
         self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
         self.states = []
 
