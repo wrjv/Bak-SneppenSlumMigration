@@ -11,7 +11,7 @@ import numpy as np
 
 
 class BaxSneppen2D(object):
-    def __init__(self, slum_size=(15, 15), empty_percent=0.3, draw_prob=0.75):
+    def __init__(self, slum_size=(15, 15), empty_percent=0.3, cell_decrease_factor=0.8):
         self.state = np.ones(slum_size) * 2
         self.ages = np.ones(slum_size) * -1
         if empty_percent != 1:
@@ -20,7 +20,7 @@ class BaxSneppen2D(object):
         self.cur_av_count = 0
         self.cur_av_start = -1
         self.size = slum_size
-        self.draw_prob = draw_prob
+        self.cell_decrease_factor = cell_decrease_factor
         xmean = self.size[0]*0.5
         ymean = self.size[1]*0.5
         cov = np.array([[xmean*0.8, 0], [0, ymean*0.8]])
@@ -76,52 +76,32 @@ class BaxSneppen2D(object):
         self.ages[np.where(self.ages != -1)] += 1
 
     def update_state(self, moore=False):
-        # Build a new state
+        # Build a new state.
         new_state = deepcopy(self.state)
 
+        # Find the current minimum value within the state.
         min_val = np.argmin(new_state)
         y = min_val // len(new_state[0])
         x = min_val % len(new_state[0])
 
+        # Change the surrounding cells.
         if moore:
-            assert self.draw_prob is None, "With Moore, the new fitness is not biased"
-            for xx, yy in itertools.product([-1, 0, 1], [-1, 0, 1]):
-                # Modify the values around the minimum value
-                if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
-                    new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
-                            np.random.uniform(0, 1, 1)
-                    # Modify the cell ages
-                    # self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
+            combinations = itertools.product([-1, 0, 1], [-1, 0, 1])
         else:
-            if self.draw_prob is None:
-                for xx, yy in [[0, 0], [-1, 0], [1, 0], [0, -1], [0, 1]]:
-                    # Modify the values around the minimum value
-                    if new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] != 2:
-                        new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
-                                np.random.uniform(0, 1, 1)
-                        # Modify the cell ages
-                        # self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
-            else:
-                cur_val = new_state[y][x]
-                new_state[y][x] = np.random.choice(np.concatenate((
-                    np.random.uniform(cur_val, 1, 1),
-                    np.random.uniform(0, cur_val, 1))),
-                                                   p=[self.draw_prob, 1 - self.draw_prob])
-                for xx, yy in [[-1, 0], [1, 0], [0, -1], [0, 1]]:
-                    # Modify the values around the minimum value
-                    cur_val = new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)]
-                    if cur_val != 2:
-                        new_state[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = \
-                                np.random.choice(np.concatenate((
-                                    np.random.uniform(0, cur_val, 1),
-                                    np.random.uniform(cur_val, 1, 1))),
-                                                 p=[self.draw_prob, 1 - self.draw_prob])
-                        # Modify the cell ages
-                        # self.ages[(y + yy) % len(new_state)][(x + xx) % len(new_state)] = 0
+            combinations = [[-1, 0], [1, 0], [0, -1], [0, 1]]
 
-        # Wait, the person who left, left an empty house
+        for xx, yy in combinations:
+            xx = (xx + x) % len(new_state)
+            yy = (yy + x) % len(new_state)
+
+            if new_state[xx][yy] != 2:
+                new_state[xx][yy] *= self.cell_decrease_factor
+
+        # The cell with the minimum value moves to another grid, an empty cell is left.
         new_state[y][x] = 2
         self.ages[y][x] = -1
+
+        # Save the state.
         self.state = new_state
 
         return True
