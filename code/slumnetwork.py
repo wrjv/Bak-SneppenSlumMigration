@@ -36,9 +36,10 @@ class Slums(object):
 
         self.random_select = random_select
 
-        self.threshold = 0.49
+        self.threshold = 0.44
 
         self.avalanche_size = [0]
+        self.avalanche_sizes = []
         self.aval_start_val = 0
 
         # Set some variables to keep track of all slums
@@ -72,6 +73,7 @@ class Slums(object):
         while self.update_state(moore):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
+                self.avalanche_sizes.append(deepcopy(self.avalanche_size))
 
             iterator += 1
 
@@ -381,7 +383,7 @@ class Slums(object):
         for slum, ax in zip(self.states[0], slumaxarr):
             ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
                                  vmin=0, vmax=max_age))
-        return f, ims, rows, cols, ns
+        return f, ims, rows, cols, ns, slumaxarr
 
     def make_dashboard(self):
         global coolax, ns, cmap, max_age
@@ -389,7 +391,7 @@ class Slums(object):
         cmap = self.get_colormap()
         max_age = max([np.max(slum.ages) for slum in self.slum_list])
 
-        f, ims, rows, cols, ns = self.setup_slum_anim()
+        f, ims, rows, cols, ns, slumaxarr = self.setup_slum_anim()
 
         # TODO store parameters in such a way that we have the history of them
         coolax = plt.subplot2grid((1+rows,1+cols), (rows,0))
@@ -399,8 +401,9 @@ class Slums(object):
             global ns
 
             # some fake data
+            (counts, bins, _) = coolax.hist(self.avalanche_sizes[i], bins=30)
             coolax.cla()
-            coolax.hist(np.random.uniform(-10,10,50))
+            coolax.loglog(bins[:-1], counts / sum(counts))
 
             # show variable 1
 
@@ -432,14 +435,14 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=1000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=5000)
     slums.execute(save_steps=25)
     slums.make_dashboard()
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     # slums.plot_avalanche_size()
     # slums.plot_growth_over_time()
-    slums.plot_slums(start=0)
+    # slums.plot_slums(start=0)
 
 if __name__ == '__main__':
     main()
