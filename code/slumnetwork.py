@@ -12,6 +12,7 @@ from scipy.optimize import curve_fit
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from scipy.stats import gaussian_kde
 
 
 class Slums(object):
@@ -74,7 +75,7 @@ class Slums(object):
         while self.update_state(moore):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
-                (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
+                (counts, bins, _) = plt.hist(self.avalanche_size, bins=200)
                 self.avalanche_sizes.append((counts, bins))
                 self.barrier_dists.append(self.get_barrier_distribution())
 
@@ -130,8 +131,9 @@ class Slums(object):
         to_slum = self.get_to_slum(min_slum)
 
         # Add another new slum with a small chance.
-        #print(np.mean(self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]))
-        if np.random.uniform(0,1,1) < self.threshold - np.mean(self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]):
+        # print(np.mean(self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]))
+        if np.random.uniform(0, 1, 1) < self.threshold - np.mean(
+                self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]):
             print("New slum built.")
             self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
             self.previous_location.append((0, 0))
@@ -205,7 +207,7 @@ class Slums(object):
             # to the slum. Slums with a lower satisfaction than the original slum are less likely
             # to be chosen by a cell.
             if parameters[i][1]:
-                parameters[i].append((parameters[i][1] - parameters[origin_slum][1] + 1)**2)
+                parameters[i].append((parameters[i][1] - parameters[origin_slum][1] + 1) ** 2)
             else:
                 parameters[i].append(0)
 
@@ -254,8 +256,8 @@ class Slums(object):
 
     def plot_slums(self, start):
         global ns
-        cols = ceil(len(self.slum_list)**0.5)
-        rows = ceil(len(self.slum_list)/cols)
+        cols = ceil(len(self.slum_list) ** 0.5)
+        rows = ceil(len(self.slum_list) / cols)
 
         f, axarr = plt.subplots(nrows=rows, ncols=cols, sharex=True, sharey=True)
 
@@ -297,9 +299,10 @@ class Slums(object):
             f.canvas.draw()
             if i == len(self.states) - 1:
                 for im in ims:
-                    im.set_array(np.ones((self.slum_size, self.slum_size))*-1)
+                    im.set_array(np.ones((self.slum_size, self.slum_size)) * -1)
 
             return ims
+
         _ = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
                                                       len(self.states), 1), interval=2, blit=False)
         plt.show()
@@ -331,9 +334,16 @@ class Slums(object):
         for timestep in self.states:
             minima.append(min([state.get_min_val() for state in timestep]))
 
-        (counts_min, bins_min, _) = plt.hist(minima, bins=30)
-        (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
-        return (counts_min, bins_min), (counts_bar, bins_bar)
+        # (counts_min, bins_min, _) = plt.hist(minima, bins=30)
+        # (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
+        if len(minima) == 1:
+            minima.append(0)
+
+        minima = np.array(minima)
+        barriers = np.array(barriers)
+        min_density = gaussian_kde(minima)
+        bar_density = gaussian_kde(barriers)
+        return bar_density, min_density
 
     def plot_avalanche_distance(self):
         avalanches = []
@@ -354,8 +364,8 @@ class Slums(object):
         plt.clf()
         plt.loglog(bins[:-1], counts / sum(counts))
         plt.title("avalanche sizes")
-        plt.xlabel(r"$log_{10}(S)$")
-        plt.ylabel(r"$log_{10}(P(S))$")
+        plt.xlabel(r"S$")
+        plt.ylabel(r"P(S)$")
         plt.show()
 
     def plot_growth_over_time(self):
@@ -367,7 +377,7 @@ class Slums(object):
         for slum in growths:
             maxim = len(growths[0])
             minim = len(slum)
-            plt.plot(range((maxim-minim)*scaler, maxim*scaler, scaler), slum)
+            plt.plot(range((maxim - minim) * scaler, maxim * scaler, scaler), slum)
         plt.title("growth of slums over time")
         plt.xlabel("number of iterations")
         plt.ylabel("population size of slum")
@@ -383,7 +393,7 @@ class Slums(object):
 
         slumaxarr = []
         size = len(self.states[-1])
-        cols = ceil(size**0.5)
+        cols = ceil(size ** 0.5)
         rows = ceil(size / cols)
 
         f = plt.figure()
@@ -412,7 +422,7 @@ class Slums(object):
         f, ims, rows, cols, ns, slumaxarr = self.setup_slum_anim()
 
         # TODO store parameters in such a way that we have the history of them
-        coolax = plt.subplot2grid((1+rows,cols+1), (rows,0))
+        coolax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
 
         xs = self.avalanche_sizes[-1][1][:-1]
         xs_original = self.avalanche_sizes[-1][1][:-1]
@@ -435,12 +445,15 @@ class Slums(object):
         plt.xlabel(r"$log_{10}(S)$")
         plt.ylabel(r"$log_{10}(P(S))$")
 
-        min_x = self.barrier_dists[-1][1][1]
-        min_y = self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0])
-        bdax = plt.subplot2grid((1+rows,cols+1), (rows,1))
-        line_min, = bdax.plot(self.barrier_dists[-1][0][1][:-1], self.barrier_dists[-1][0][0] / sum(self.barrier_dists[-1][0][0]), label='minima')
-        line_bd, = bdax.plot(self.barrier_dists[-1][1][1][:-1],
-                           self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0]), label='barriers')
+        # min_x = self.barrier_dists[-1][1][1]
+        # min_y = self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0])
+        bdax = plt.subplot2grid((1 + rows, cols + 1), (rows, 1))
+        # line_min, = bdax.plot(self.barrier_dists[-1][0][1][:-1], self.barrier_dists[-1][0][0] / sum(self.barrier_dists[-1][0][0]), label='minima')
+        # line_bd, = bdax.plot(self.barrier_dists[-1][1][1][:-1],
+        #                    self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0]), label='barriers')
+        xs_space = np.linspace(0, 1, 300)
+        line_min, = bdax.plot(xs, self.barrier_dists[-1][1](xs), label='minima')
+        line_bd, = bdax.plot(xs, self.barrier_dists[-1][0](xs), label='barriers')
         plt.title("barrier and minumum barriers distribution")
         plt.legend()
         plt.xlabel("B")
@@ -449,8 +462,6 @@ class Slums(object):
         def animate(i):
             global ns
 
-            # some fake data
-            #coolax.cla()
             xs = self.avalanche_sizes[i][1][:-1]
             xs_original = self.avalanche_sizes[i][1][:-1]
             ys = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
@@ -470,9 +481,9 @@ class Slums(object):
                 line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
                 coolax.legend()
 
-            line_min.set_data(self.barrier_dists[i][0][1][:-1], self.barrier_dists[i][0][0] / sum(self.barrier_dists[i][0][0]))
-            line_bd.set_data(self.barrier_dists[i][1][1][:-1], self.barrier_dists[i][1][0] / sum(self.barrier_dists[i][1][0]))
-            #line.axes.draw()
+            line_min.set_data(xs_space, self.barrier_dists[i][1](xs))
+            line_bd.set_data(xs_space, self.barrier_dists[i][0](xs))
+
             # show variable 1
 
             # show variable 2
@@ -491,10 +502,9 @@ class Slums(object):
             f.canvas.draw()
             if i == len(self.states) - 1:
                 for im in ims:
-                    im.set_array(np.ones((self.slum_size, self.slum_size))*-1)
+                    im.set_array(np.ones((self.slum_size, self.slum_size)) * -1)
 
-
-        _ = animation.FuncAnimation(f, animate, range(0,len(self.states)), interval=2, blit=False)
+        _ = animation.FuncAnimation(f, animate, range(0, len(self.states)), interval=2, blit=False)
         plt.show()
 
 def powerlaw(x, a, k):
@@ -515,6 +525,7 @@ def main():
     # slums.plot_avalanche_size()
     # slums.plot_growth_over_time()
     # slums.plot_slums(start=0)
+
 
 if __name__ == '__main__':
     main()
