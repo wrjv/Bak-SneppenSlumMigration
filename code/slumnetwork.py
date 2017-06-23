@@ -378,8 +378,8 @@ class Slums(object):
             slumax.set_yticklabels([])
 
         ims = list()
-        if len(self.slum_list) == 1: slumaxarr = np.array([slumaxarr])
         ns = len(self.states[0])
+
         for slum, ax in zip(self.states[0], slumaxarr):
             ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
                                  vmin=0, vmax=max_age))
@@ -439,7 +439,7 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=1000)
+    slums = Slums(4, (20, 20), empty_percent=0.06, time_limit=1000)
     slums.execute(save_steps=25)
     plt.cla()
     slums.make_dashboard()
