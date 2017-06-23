@@ -134,9 +134,9 @@ class Slums(object):
             to_slum = -1
 
         # Add new people to the grid.
-        self.slum_list[to_slum].add_to_grid(min(min_vals))
+        self.slum_list[to_slum].add_to_grid()
         # to_slum = self.get_to_slum(min_vals)
-        # self.slum_list[to_slum].add_to_grid(min(min_vals))
+        # self.slum_list[to_slum].add_to_grid()
 
         # Check if the time limit is reached, otherwise return False (and
         # the execution ends)
