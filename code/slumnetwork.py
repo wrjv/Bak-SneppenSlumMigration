@@ -8,6 +8,7 @@ all master students Computational Science at the University of Amsterdam.
 from math import ceil
 from copy import deepcopy
 from bs2d import BaxSneppen2D
+from scipy.optimize import curve_fit
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -73,7 +74,7 @@ class Slums(object):
         while self.update_state(moore):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
-                (counts, bins, _) = plt.hist(self.avalanche_size, bins=30)
+                (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
                 self.avalanche_sizes.append((counts, bins))
                 self.barrier_dists.append(self.get_barrier_distribution())
 
@@ -412,8 +413,25 @@ class Slums(object):
 
         # TODO store parameters in such a way that we have the history of them
         coolax = plt.subplot2grid((1+rows,cols+1), (rows,0))
-        line, = coolax.loglog(self.avalanche_sizes[-1][1][:-1], self.avalanche_sizes[-1][0] / sum(self.avalanche_sizes[-1][0]))
+
+        xs = self.avalanche_sizes[-1][1][:-1]
+        xs_original = self.avalanche_sizes[-1][1][:-1]
+        ys = self.avalanche_sizes[-1][0] / sum(self.avalanche_sizes[-1][0])
+
+        bin_size = xs[1] / 2.0
+
+        pairs = [pair for pair in zip(xs, ys) if pair[1] != 0]
+        xs = [pair[0] + bin_size for pair in pairs]
+        ys = [pair[1] for pair in pairs]
+
+        line, = coolax.loglog(xs, ys, ".")
+
+        popt, pcov = curve_fit(powerlaw, xs, ys)
+
+        line_fit, = plt.plot(xs_original, powerlaw(xs_original, *popt), 'r-', label=r'$K=' + str(np.round(popt[1], 3)) + "$")
+
         plt.title("avalanche sizes")
+        plt.legend()
         plt.xlabel(r"$log_{10}(S)$")
         plt.ylabel(r"$log_{10}(P(S))$")
 
@@ -433,9 +451,25 @@ class Slums(object):
 
             # some fake data
             #coolax.cla()
-            x = self.avalanche_sizes[i][1][:-1]
-            y = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
-            line.set_data(x, y)
+            xs = self.avalanche_sizes[i][1][:-1]
+            xs_original = self.avalanche_sizes[i][1][:-1]
+            ys = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
+
+            bin_size = xs[1] / 2.0
+
+            pairs = [pair for pair in zip(xs, ys) if pair[1] != 0]
+            xs = [pair[0] + bin_size for pair in pairs]
+            ys = [pair[1] for pair in pairs]
+
+            line.set_data(xs, ys)
+
+            if len(xs) > 4:
+                popt, pcov = curve_fit(powerlaw, xs, ys)
+
+                line_fit.set_data(xs_original, powerlaw(xs_original, *popt))
+                line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
+                coolax.legend()
+
             line_min.set_data(self.barrier_dists[i][0][1][:-1], self.barrier_dists[i][0][0] / sum(self.barrier_dists[i][0][0]))
             line_bd.set_data(self.barrier_dists[i][1][1][:-1], self.barrier_dists[i][1][0] / sum(self.barrier_dists[i][1][0]))
             #line.axes.draw()
@@ -463,15 +497,17 @@ class Slums(object):
         _ = animation.FuncAnimation(f, animate, range(0,len(self.states)), interval=2, blit=False)
         plt.show()
 
+def powerlaw(x, a, k):
+    return np.power(a * np.array(x), -k)
 
 def main():
     '''
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(5, (30, 30), empty_percent=0.06, time_limit=250)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=10000)
 
-    slums.execute(save_steps=25)
+    slums.execute(save_steps=50)
     plt.close()
     slums.make_dashboard()
     # slums.plot_barrier_distribution()
