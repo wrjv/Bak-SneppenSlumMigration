@@ -1,7 +1,10 @@
-#
-# Bax-Sneppen 2D implementation by
-# Nicky, Maarten, Wessel and Willem
-#
+'''
+A simple Bax-Sneppen 2D model with basic functions to populate and advance the model.
+
+This code was built by Nicky Kessels, Maarten van der Sande, Wessel Klijnsma and Willem Vermeulen,
+all master students Computational Science at the University of Amsterdam.
+'''
+
 import itertools
 
 from copy import deepcopy
@@ -11,6 +14,9 @@ import numpy as np
 
 
 class BaxSneppen2D(object):
+    '''
+    A simple Bax-Sneppen 2D model with basic functions to populate and advance the model.
+    '''
     def __init__(self, slum_size=(15, 15), empty_percent=0.3, cell_decrease_factor=0.8):
         # Set the cell decrease factor parameter.
         self.cell_decrease_factor = cell_decrease_factor
@@ -18,6 +24,8 @@ class BaxSneppen2D(object):
         # Set some variables to keep track of the slum.
         self.state = np.ones(slum_size) * 2
         self.ages = np.ones(slum_size) * -1
+
+        print(np.shape(self.state))
 
         # Populate the grid.
         self.populate(empty_percent, slum_size)
@@ -34,8 +42,8 @@ class BaxSneppen2D(object):
 
         for x_cell in range(slum_size[0]):
             for y_cell in range(slum_size[1]):
-                self.state[y_cell][x_cell] = np.random.uniform(0, 1, 1)
-                self.ages[y_cell][x_cell] = 0
+                self.state[x_cell][y_cell] = np.random.uniform(0, 1, 1)
+                self.ages[x_cell][y_cell] = 0
 
         empty = np.random.choice(range(slum_size[0] * slum_size[1]),
                                  empty_percent * slum_size[0] * slum_size[1], replace=False)
@@ -90,8 +98,9 @@ class BaxSneppen2D(object):
 
         # Find the current minimum value within the state.
         min_val = np.argmin(new_state)
-        y_min = min_val // len(new_state[0])
-        x_min = min_val % len(new_state[0])
+
+        x_min = min_val // len(new_state[0])
+        y_min = min_val % len(new_state[0])
 
         # Change the surrounding cells.
         if moore:
@@ -101,14 +110,14 @@ class BaxSneppen2D(object):
 
         for x_mod, y_mod in combinations:
             x_mod = (x_mod + x_min) % len(new_state)
-            y_mod = (y_mod + y_min) % len(new_state)
+            y_mod = (y_mod + y_min) % len(new_state[0])
 
             if new_state[x_mod][y_mod] != 2:
                 new_state[x_mod][y_mod] *= self.cell_decrease_factor
 
         # The cell with the minimum value moves to another grid, an empty cell is left.
-        new_state[y_min][x_min] = 2
-        self.ages[y_min][x_min] = -1
+        new_state[x_min][y_min] = 2
+        self.ages[x_min][y_min] = -1
 
         # Save the state.
         self.state = new_state

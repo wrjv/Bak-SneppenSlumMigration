@@ -31,7 +31,6 @@ class Slums(object):
 
         self.save_steps = 1
 
-        assert slum_size[0] == slum_size[1]
         self.slum_size = slum_size[0]
 
         self.random_select = random_select
@@ -435,7 +434,7 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=5000)
+    slums = Slums(4, (10, 30), empty_percent=0.06, time_limit=2500)
     slums.execute(save_steps=25)
     slums.make_dashboard()
     # slums.plot_barrier_distribution()
