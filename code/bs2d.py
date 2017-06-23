@@ -132,7 +132,7 @@ class BaxSneppen2D(object):
 
         empty = np.where(self.state == 2)
 
-        if not empty[0]:
+        if not empty[0].any():
             return False
 
         return True
@@ -157,7 +157,7 @@ class BaxSneppen2D(object):
         empty_list = np.where(self.state == 2)
 
         # Check if there are any cells to fill.
-        if not empty_list[0]:
+        if not empty_list[0].any():
             return False
 
         empty_cells = [(x, y) for x, y in zip(empty_list[0], empty_list[1])]
