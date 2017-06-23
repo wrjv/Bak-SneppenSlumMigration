@@ -25,8 +25,6 @@ class BaxSneppen2D(object):
         self.state = np.ones(slum_size) * 2
         self.ages = np.ones(slum_size) * -1
 
-        print(np.shape(self.state))
-
         # Populate the grid.
         self.populate(empty_percent, slum_size)
 
