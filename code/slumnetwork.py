@@ -35,7 +35,7 @@ class Slums(object):
 
         self.random_select = random_select
 
-        self.threshold = 0.44
+        self.threshold = 0
 
         self.avalanche_size = [0]
         self.avalanche_sizes = []
@@ -47,6 +47,7 @@ class Slums(object):
 
         self.previous_location = [(0, 0) for _ in range(n_slums)]
         self.distances = [[] for _ in range(n_slums)]
+        self.barrier_dists = []
 
     def execute(self, moore=False, save_steps=25):
         '''
@@ -74,6 +75,7 @@ class Slums(object):
                 self.states.append(deepcopy(self.slum_list))
                 (counts, bins, _) = plt.hist(self.avalanche_size, bins=30)
                 self.avalanche_sizes.append((counts, bins))
+                self.barrier_dists.append(self.get_barrier_distribution())
 
             iterator += 1
 
@@ -320,6 +322,18 @@ class Slums(object):
         plt.ylabel("P(B)")
         plt.show()
 
+    def get_barrier_distribution(self):
+        barriers = []
+        minima = []
+        for slum in self.slum_list:
+            barriers = barriers + list(slum.state[np.where(slum.state <= 1)].flatten())
+        for timestep in self.states:
+            minima.append(min([state.get_min_val() for state in timestep]))
+
+        (counts_min, bins_min, _) = plt.hist(minima, bins=30)
+        (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
+        return (counts_min, bins_min), (counts_bar, bins_bar)
+
     def plot_avalanche_distance(self):
         avalanches = []
         for each in self.distances:
@@ -395,11 +409,22 @@ class Slums(object):
         f, ims, rows, cols, ns, slumaxarr = self.setup_slum_anim()
 
         # TODO store parameters in such a way that we have the history of them
-        coolax = plt.subplot2grid((1+rows,1+cols), (rows,0))
-        line, = coolax.loglog(self.avalanche_sizes[-11][1][:-1], self.avalanche_sizes[-1][0] / sum(self.avalanche_sizes[-1][0]))
+        coolax = plt.subplot2grid((1+rows,cols+1), (rows,0))
+        line, = coolax.loglog(self.avalanche_sizes[-1][1][:-1], self.avalanche_sizes[-1][0] / sum(self.avalanche_sizes[-1][0]))
         plt.title("avalanche sizes")
         plt.xlabel(r"$log_{10}(S)$")
         plt.ylabel(r"$log_{10}(P(S))$")
+
+        min_x = self.barrier_dists[-1][1][1]
+        min_y = self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0])
+        bdax = plt.subplot2grid((1+rows,cols+1), (rows,1))
+        line_min, = bdax.plot(self.barrier_dists[-1][0][1][:-1], self.barrier_dists[-1][0][0] / sum(self.barrier_dists[-1][0][0]), label='minima')
+        line_bd, = bdax.plot(self.barrier_dists[-1][1][1][:-1],
+                           self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0]), label='barriers')
+        plt.title("barrier and minumum barriers distribution")
+        plt.legend()
+        plt.xlabel("B")
+        plt.ylabel("P(B)")
 
         def animate(i):
             global ns
@@ -409,6 +434,8 @@ class Slums(object):
             x = self.avalanche_sizes[i][1][:-1]
             y = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
             line.set_data(x, y)
+            line_min.set_data(self.barrier_dists[i][0][1][:-1], self.barrier_dists[i][0][0] / sum(self.barrier_dists[i][0][0]))
+            line_bd.set_data(self.barrier_dists[i][1][1][:-1], self.barrier_dists[i][1][0] / sum(self.barrier_dists[i][1][0]))
             #line.axes.draw()
             # show variable 1
 
@@ -440,9 +467,10 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=3000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=8000)
+
     slums.execute(save_steps=25)
-    plt.cla()
+    plt.close()
     slums.make_dashboard()
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
