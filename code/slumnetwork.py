@@ -73,7 +73,8 @@ class Slums(object):
         while self.update_state(moore):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
-                self.avalanche_sizes.append(deepcopy(self.avalanche_size))
+                (counts, bins, _) = plt.hist(self.avalanche_size, bins=30)
+                self.avalanche_sizes.append((counts, bins))
 
             iterator += 1
 
@@ -395,16 +396,20 @@ class Slums(object):
 
         # TODO store parameters in such a way that we have the history of them
         coolax = plt.subplot2grid((1+rows,1+cols), (rows,0))
-        coolax.hist(np.random.uniform(-10,10,50))
+        line, = coolax.loglog(self.avalanche_sizes[-11][1][:-1], self.avalanche_sizes[-1][0] / sum(self.avalanche_sizes[-1][0]))
+        plt.title("avalanche sizes")
+        plt.xlabel(r"$log_{10}(S)$")
+        plt.ylabel(r"$log_{10}(P(S))$")
 
         def animate(i):
             global ns
 
             # some fake data
-            (counts, bins, _) = coolax.hist(self.avalanche_sizes[i], bins=30)
-            coolax.cla()
-            coolax.loglog(bins[:-1], counts / sum(counts))
-
+            #coolax.cla()
+            x = self.avalanche_sizes[i][1][:-1]
+            y = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
+            line.set_data(x, y)
+            #line.axes.draw()
             # show variable 1
 
             # show variable 2
@@ -435,8 +440,9 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=5000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=1000)
     slums.execute(save_steps=25)
+    plt.cla()
     slums.make_dashboard()
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
