@@ -81,8 +81,8 @@ class BaxSneppen2D(object):
 
         # Find the current minimum value within the state.
         min_val = np.argmin(new_state)
-        y = min_val // len(new_state[0])
-        x = min_val % len(new_state[0])
+        y_min = min_val // len(new_state[0])
+        x_min = min_val % len(new_state[0])
 
         # Change the surrounding cells.
         if moore:
@@ -91,15 +91,15 @@ class BaxSneppen2D(object):
             combinations = [[-1, 0], [1, 0], [0, -1], [0, 1]]
 
         for xx, yy in combinations:
-            xx = (xx + x) % len(new_state)
-            yy = (yy + x) % len(new_state)
+            xx = (xx + x_min) % len(new_state)
+            yy = (yy + y_min) % len(new_state)
 
             if new_state[xx][yy] != 2:
                 new_state[xx][yy] *= self.cell_decrease_factor
 
         # The cell with the minimum value moves to another grid, an empty cell is left.
-        new_state[y][x] = 2
-        self.ages[y][x] = -1
+        new_state[y_min][x_min] = 2
+        self.ages[y_min][x_min] = -1
 
         # Save the state.
         self.state = new_state
