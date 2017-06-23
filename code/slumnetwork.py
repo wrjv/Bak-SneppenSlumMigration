@@ -136,7 +136,7 @@ class Slums(object):
             to_slum = -1
 
         # Add new people to the grid.
-        self.slum_list[to_slum].add_to_grid()
+        self.slum_list[to_slum].add_to_grid(min(min_vals))
         # to_slum = self.get_to_slum(min_vals)
         # self.slum_list[to_slum].add_to_grid()
 
@@ -440,8 +440,8 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (100, 100), empty_percent=0.06, time_limit=15000)
-    slums.execute(save_steps=100)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=3000)
+    slums.execute(save_steps=25)
     plt.cla()
     slums.make_dashboard()
     # slums.plot_barrier_distribution()

@@ -116,10 +116,9 @@ class BaxSneppen2D(object):
 
         return np.average([i for i in self.state.flatten() if i != 2])
 
-    def add_to_grid(self):
+    def has_empty(self):
         '''
-        Fills a cell with a higher fitting value than 
-        given to the function.
+        Returns if there is an empty cell in the state.
 
         PARAMETERS
         ===================================================
@@ -128,11 +127,32 @@ class BaxSneppen2D(object):
         RETURNS
         ===================================================
         boolean
+        Whether the state has an empty cell.
+        '''
+
+        empty = np.where(self.state == 2)
+
+        if len(empty[0]) == 0:
+            return False
+
+        return True
+
+    def add_to_grid(self, previous_value=0):
+        '''
+        Fills a cell with a higher fitting value than 
+        given to the function.
+
+        PARAMETERS
+        ===================================================
+        previous_value: integer
+        The previous value of a cell.
+
+        RETURNS
+        ===================================================
+        boolean
         Whether the function has succeeded in adding a cell
         to the grid.
         '''
-
-        #TODO: Use some smart function to make cells happier than before.
 
         empty_list = np.where(self.state == 2)
 
@@ -149,7 +169,9 @@ class BaxSneppen2D(object):
         # Choose an empty cell and populate it.
         empty_choice = empty_cells[np.random.choice(range(len(empty_cells)), p=pvalues)]
 
-        self.state[empty_choice[0], empty_choice[1]] = np.random.uniform(0, 1, 1)
+        new_value = abs(np.random.normal(0, (1 - previous_value) / 3.0, 1)) + previous_value
+
+        self.state[empty_choice[0], empty_choice[1]] = new_value
         self.ages[empty_choice[0], empty_choice[1]] = 0
 
         return True
