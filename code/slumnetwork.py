@@ -424,8 +424,9 @@ class Slums(object):
         # TODO store parameters in such a way that we have the history of them
         coolax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
 
-        xs = self.avalanche_sizes[-1][1][:-1]
-        xs_original = self.avalanche_sizes[-1][1][:-1]
+        if len(self.avalanche_sizes[-1][1]) > len(self.avalanche_sizes[-1][0]):
+            xs = self.avalanche_sizes[-1][1][:-1]
+            xs_original = self.avalanche_sizes[-1][1][:-1]
         ys = self.avalanche_sizes[-1][0] / sum(self.avalanche_sizes[-1][0])
 
         bin_size = xs[1] / 2.0
@@ -462,8 +463,9 @@ class Slums(object):
         def animate(i):
             global ns
 
-            xs = self.avalanche_sizes[i][1][:-1]
-            xs_original = self.avalanche_sizes[i][1][:-1]
+            if len(self.avalanche_sizes[i][1]) > len(self.avalanche_sizes[i][0]):
+                xs = self.avalanche_sizes[i][1][:-1]
+                xs_original = self.avalanche_sizes[i][1][:-1]
             ys = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
 
             bin_size = xs[1] / 2.0
@@ -515,7 +517,7 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=10000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=5000)
 
     slums.execute(save_steps=50)
     plt.close()
