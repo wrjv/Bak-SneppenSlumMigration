@@ -506,8 +506,8 @@ class Slums(object):
 
             x_space = np.linspace(0, 1, 300)
 
-            line_min.set_data(x_space, self.barrier_dists[i][0](xs_space))
-            line_bd.set_data(x_space, self.barrier_dists[i][1](xs_space))
+            line_min.set_data(x_space, self.barrier_dists[i][0](x_space))
+            line_bd.set_data(x_space, self.barrier_dists[i][1](x_space))
 
             # show the slums
             if len(self.states[i]) > n_slums:
