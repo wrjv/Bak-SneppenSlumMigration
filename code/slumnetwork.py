@@ -9,10 +9,10 @@ from math import ceil
 from copy import deepcopy
 from bs2d import BaxSneppen2D
 from scipy.optimize import curve_fit
+from scipy.stats import gaussian_kde
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from scipy.stats import gaussian_kde
 
 
 class Slums(object):
@@ -78,7 +78,7 @@ class Slums(object):
         while self.update_state(moore):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
-                (counts, bins, _) = plt.hist(self.avalanche_size, bins=200)
+                (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
                 self.avalanche_sizes.append((counts, bins))
                 self.barrier_dists.append(self.get_barrier_distribution())
             if self.time == self.new_slum_time:
@@ -143,7 +143,7 @@ class Slums(object):
         to_slum = self.get_to_slum(min_slum)
 
         # Add another new slum with a small chance.
-        # print(np.mean(self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]))
+        #print(np.mean(self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]))
         if np.random.uniform(0, 1, 1) < self.threshold - np.mean(
                 self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]):
             print("New slum built.")
@@ -280,12 +280,11 @@ class Slums(object):
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
-    def plot_slums(self, start):
-        global ns
+    def plot_slums(self, start=0):
         cols = ceil(len(self.slum_list) ** 0.5)
         rows = ceil(len(self.slum_list) / cols)
 
-        f, axarr = plt.subplots(nrows=rows, ncols=cols, sharex=True, sharey=True)
+        figure, axarr = plt.subplots(nrows=rows, ncols=cols, sharex=True, sharey=True)
 
         # remove the axes labels and set spacing
         plt.subplots_adjust(wspace=0.05, hspace=0.05)
@@ -299,38 +298,40 @@ class Slums(object):
         max_age = max([np.max(slum.ages) for slum in self.slum_list])
 
         # initialize the plot
-        ims = list()
+        imgs = list()
 
         if len(self.slum_list) == 1:
             axarr = np.array([axarr])
 
-        ns = len(self.states[0])
+        n_slums = len(self.states[0])
         for slum, ax in zip(self.states[0], axarr.flatten()):
-            ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
-                                 vmin=0, vmax=max_age))
+            imgs.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
+                                  vmin=0, vmax=max_age))
 
         # animate
         def animate(i):
-            global ns
-            if len(self.states[i]) > ns:
-                for slum, ax in zip(self.states[i][ns:len(self.states[i])],
-                                    axarr.flatten()[ns:len(self.states[i])]):
-                    ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap,
-                                         interpolation='nearest', vmin=0, vmax=max_age))
-                ns = len(self.states[i])
+            nonlocal n_slums
+
+            if len(self.states[i]) > n_slums:
+                for slum, ax in zip(self.states[i][n_slums:len(self.states[i])],
+                                    axarr.flatten()[n_slums:len(self.states[i])]):
+                    imgs.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap,
+                                          interpolation='nearest', vmin=0, vmax=max_age))
+                n_slums = len(self.states[i])
 
             plt.suptitle('iteration: ' + str(i * self.save_steps))
-            for slum, im, in zip(self.states[i], ims):
-                im.set_array(slum.ages)
-            f.canvas.draw()
+            for slum, img, in zip(self.states[i], imgs):
+                img.set_array(slum.ages)
+            figure.canvas.draw()
             if i == len(self.states) - 1:
-                for im in ims:
-                    im.set_array(np.ones((self.slum_size, self.slum_size)) * -1)
+                for img in imgs:
+                    img.set_array(np.ones((self.slum_size, self.slum_size)) * -1)
 
-            return ims
+            return imgs
 
-        _ = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
-                                                      len(self.states), 1), interval=2, blit=False)
+        _ = animation.FuncAnimation(figure, animate, range(int(len(self.states) * start),
+                                                           len(self.states), 1), interval=2,
+                                    blit=False)
         plt.show()
 
     def plot_barrier_distribution(self):
@@ -360,8 +361,11 @@ class Slums(object):
         for timestep in self.states:
             minima.append(min([state.get_min_val() for state in timestep]))
 
-        # (counts_min, bins_min, _) = plt.hist(minima, bins=30)
-        # (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
+        (counts_min, bins_min, _) = plt.hist(minima, bins=30)
+        (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
+
+        # TODO WESSEL DIT GAAT KAPOT
+
         if len(minima) == 1:
             minima.append(0)
 
@@ -369,7 +373,8 @@ class Slums(object):
         barriers = np.array(barriers)
         min_density = gaussian_kde(minima)
         bar_density = gaussian_kde(barriers)
-        return bar_density, min_density
+
+        return (min_density, bar_density)
 
     def plot_avalanche_distance(self):
         avalanches = []
@@ -398,6 +403,7 @@ class Slums(object):
         growths = [[] for _ in range(len(self.states[-1]))]
         scaler = self.save_steps
         for state in self.states:
+            # pylint: disable=consider-using-enumerate
             for index in range(len(state)):
                 growths[index].append(state[index].full_cells())
         for slum in growths:
@@ -414,7 +420,7 @@ class Slums(object):
         cmap.set_under((1, 1, 1, 1))
         return cmap
 
-    def setup_slum_anim(self):
+    def setup_slum_anim(self, cmap, max_age):
         # TODO Maarten: 2, 5 & 6 plots dont seem to work?
 
         slumaxarr = []
@@ -422,7 +428,7 @@ class Slums(object):
         cols = ceil(size ** 0.5)
         rows = ceil(size / cols)
 
-        f = plt.figure()
+        figure = plt.figure()
         for i in range(size):
             slumaxarr.append(plt.subplot2grid((1 + rows, 1 + cols), (i // rows, (i % rows) % cols)))
 
@@ -432,20 +438,21 @@ class Slums(object):
             slumax.set_xticklabels([])
             slumax.set_yticklabels([])
 
-        ims = list()
-        ns = len(self.states[0])
+        imgs = list()
+        n_slums = len(self.states[0])
+
         for slum, ax in zip(self.states[0], slumaxarr):
-            ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
-                                 vmin=0, vmax=max_age))
-        return f, ims, rows, cols, ns, slumaxarr
+            imgs.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
+                                  vmin=0, vmax=max_age))
+        return figure, imgs, rows, cols, n_slums, slumaxarr
 
     def make_dashboard(self):
-        global coolax, ns, cmap, max_age
-
         cmap = self.get_colormap()
         max_age = max([np.max(slum.ages) for slum in self.slum_list])
 
-        f, ims, rows, cols, ns, slumaxarr = self.setup_slum_anim()
+        # n_slums is used in the nested animate function.
+        # pylint: disable=unused-variable
+        figure, imgs, rows, cols, n_slums, slumaxarr = self.setup_slum_anim(cmap, max_age)
 
         # TODO store parameters in such a way that we have the history of them
         coolax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
@@ -465,29 +472,25 @@ class Slums(object):
 
         popt, pcov = curve_fit(powerlaw, xs, ys)
 
-        line_fit, = plt.plot(xs_original, powerlaw(xs_original, *popt), 'r-', label=r'$K=' + str(np.round(popt[1], 3)) + "$")
+        line_fit, = plt.plot(xs, powerlaw(xs, *popt), 'r-', label=r'$K=' + str(np.round(popt[1], 3)) + "$")
 
         plt.title("avalanche sizes")
         plt.legend()
         plt.xlabel(r"$log_{10}(S)$")
         plt.ylabel(r"$log_{10}(P(S))$")
 
-        # min_x = self.barrier_dists[-1][1][1]
-        # min_y = self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0])
         bdax = plt.subplot2grid((1 + rows, cols + 1), (rows, 1))
-        # line_min, = bdax.plot(self.barrier_dists[-1][0][1][:-1], self.barrier_dists[-1][0][0] / sum(self.barrier_dists[-1][0][0]), label='minima')
-        # line_bd, = bdax.plot(self.barrier_dists[-1][1][1][:-1],
-        #                    self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0]), label='barriers')
+
         xs_space = np.linspace(0, 1, 300)
-        line_min, = bdax.plot(xs, self.barrier_dists[-1][1](xs), label='minima')
-        line_bd, = bdax.plot(xs, self.barrier_dists[-1][0](xs), label='barriers')
+        line_min, = bdax.plot(xs_space, self.barrier_dists[-1][0](xs_space), label='minima')
+        line_bd, = bdax.plot(xs_space, self.barrier_dists[-1][1](xs_space), label='barriers')
         plt.title("barrier and minumum barriers distribution")
         plt.legend()
         plt.xlabel("B")
         plt.ylabel("P(B)")
 
         def animate(i):
-            global ns
+            nonlocal n_slums, coolax, cmap, max_age
 
             if len(self.avalanche_sizes[i][1]) > len(self.avalanche_sizes[i][0]):
                 xs = self.avalanche_sizes[i][1][:-1]
@@ -509,30 +512,29 @@ class Slums(object):
                 line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
                 coolax.legend()
 
-            line_min.set_data(xs_space, self.barrier_dists[i][1](xs))
-            line_bd.set_data(xs_space, self.barrier_dists[i][0](xs))
+            xs_space = np.linspace(0, 1, 300)
 
-            # show variable 1
-
-            # show variable 2
+            line_min.set_data(xs_space, self.barrier_dists[i][0](xs_space))
+            line_bd.set_data(xs_space, self.barrier_dists[i][1](xs_space))
 
             # show the slums
-            if len(self.states[i]) > ns:
-                for slum, ax in zip(self.states[i][ns:len(self.states[i])],
-                                    slumaxarr.flatten()[ns:len(self.states[i])]):
-                    ims.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap,
-                                         interpolation='nearest', vmin=0, vmax=max_age))
-                ns = len(self.states[i])
+            if len(self.states[i]) > n_slums:
+                for slum, ax in zip(self.states[i][n_slums:len(self.states[i])],
+                                    slumaxarr[n_slums:len(self.states[i])]):
+                    imgs.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap,
+                                          interpolation='nearest', vmin=0, vmax=max_age))
+                n_slums = len(self.states[i])
 
             plt.suptitle('iteration: ' + str(i * self.save_steps))
-            for slum, im, in zip(self.states[i], ims):
-                im.set_array(slum.ages)
-            f.canvas.draw()
+            for slum, img, in zip(self.states[i], imgs):
+                img.set_array(slum.ages)
+            figure.canvas.draw()
             if i == len(self.states) - 1:
-                for im in ims:
-                    im.set_array(np.ones((self.slum_size, self.slum_size)) * -1)
+                for img in imgs:
+                    img.set_array(-np.ones((self.slum_size, self.slum_size)))
 
-        _ = animation.FuncAnimation(f, animate, range(0, len(self.states)), interval=2, blit=False)
+        _ = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
+                                    blit=False)
         plt.show()
 
 def powerlaw(x, a, k):
@@ -543,17 +545,17 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=10000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=3000)
 
-    slums.execute(save_steps=50)
+
+    slums.execute(save_steps=100)
     plt.close()
-    # slums.make_dashboard()
+    slums.make_dashboard()
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     # slums.plot_avalanche_size()
     # slums.plot_growth_over_time()
     # slums.plot_slums(start=0)
-
 
 if __name__ == '__main__':
     main()
