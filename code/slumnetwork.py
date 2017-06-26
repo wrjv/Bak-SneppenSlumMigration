@@ -323,8 +323,8 @@ class Slums(object):
         plt.plot(bins_bar[:-1], counts_bar / sum(counts_bar), label="barrier distribution")
         plt.title("barrier and minumum barriers distribution")
         plt.legend()
-        plt.xlabel("B")
-        plt.ylabel("P(B)")
+        plt.xlabel(r"$B$")
+        plt.ylabel(r"$P(B)$")
         plt.show()
 
     def get_barrier_distribution(self):
@@ -349,7 +349,6 @@ class Slums(object):
         avalanches = []
         for each in self.distances:
             avalanches = avalanches + each
-            # print(avalanches)
 
         (counts, bins, _) = plt.hist(avalanches, bins=30)
         plt.clf()
@@ -402,7 +401,6 @@ class Slums(object):
             slumaxarr.append(plt.subplot2grid((1 + rows, 1 + cols), (i // rows, (i % rows) % cols)))
 
         for i, slumaxes in enumerate(slumaxarr):
-            # plt.subplots_adjust(wspace=0.05, hspace=0.05)
             slumaxes.imshow(self.states[-1][i].ages)
             slumaxes.set_xticklabels([])
             slumaxes.set_yticklabels([])
@@ -427,21 +425,21 @@ class Slums(object):
         poweraxes = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
 
         if len(self.avalanche_sizes[-1][1]) > len(self.avalanche_sizes[-1][0]):
-            xs = self.avalanche_sizes[-1][1][:-1]
-            xs_original = self.avalanche_sizes[-1][1][:-1]
-        ys = self.avalanche_sizes[-1][0] / sum(self.avalanche_sizes[-1][0])
+            x_list = self.avalanche_sizes[-1][1][:-1]
+        y_list = self.avalanche_sizes[-1][0] / sum(self.avalanche_sizes[-1][0])
 
-        bin_size = xs[1] / 2.0
+        bin_size = x_list[1] / 2.0
 
-        pairs = [pair for pair in zip(xs, ys) if pair[1] != 0]
-        xs = [pair[0] + bin_size for pair in pairs]
-        ys = [pair[1] for pair in pairs]
+        pairs = [pair for pair in zip(x_list, y_list) if pair[1] != 0]
+        x_list = [pair[0] + bin_size for pair in pairs]
+        y_list = [pair[1] for pair in pairs]
 
-        line, = poweraxes.loglog(xs, ys, ".")
+        line, = poweraxes.loglog(x_list, y_list, ".")
 
-        popt, pcov = curve_fit(powerlaw, xs, ys)
+        popt, _ = curve_fit(powerlaw, x_list, y_list)
 
-        line_fit, = plt.plot(xs, powerlaw(xs, *popt), 'r-', label=r'$K=' + str(np.round(popt[1], 3)) + "$")
+        line_fit, = plt.plot(x_list, powerlaw(x_list, *popt), 'r-',
+                             label=r'$K=' + str(np.round(popt[1], 3)) + "$")
 
         plt.title("avalanche sizes")
         plt.legend()
@@ -450,41 +448,40 @@ class Slums(object):
 
         bdax = plt.subplot2grid((1 + rows, cols + 1), (rows, 1))
 
-        xs_space = np.linspace(0, 1, 300)
-        line_min, = bdax.plot(xs_space, self.barrier_dists[-1][0](xs_space), label='minima')
-        line_bd, = bdax.plot(xs_space, self.barrier_dists[-1][1](xs_space), label='barriers')
+        x_space = np.linspace(0, 1, 300)
+        line_min, = bdax.plot(x_space, self.barrier_dists[-1][0](x_space), label='minima')
+        line_bd, = bdax.plot(x_space, self.barrier_dists[-1][1](x_space), label='barriers')
         plt.title("barrier and minumum barriers distribution")
         plt.legend()
-        plt.xlabel("B")
-        plt.ylabel("P(B)")
+        plt.xlabel(r"$B$")
+        plt.ylabel(r"$P(B)$")
 
         def animate(i):
             nonlocal n_slums, poweraxes, cmap, max_age
 
             if len(self.avalanche_sizes[i][1]) > len(self.avalanche_sizes[i][0]):
-                xs = self.avalanche_sizes[i][1][:-1]
-                xs_original = self.avalanche_sizes[i][1][:-1]
-            ys = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
+                x_list = self.avalanche_sizes[i][1][:-1]
+            y_list = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
 
-            bin_size = xs[1] / 2.0
+            bin_size = x_list[1] / 2.0
 
-            pairs = [pair for pair in zip(xs, ys) if pair[1] != 0]
-            xs = [pair[0] + bin_size for pair in pairs]
-            ys = [pair[1] for pair in pairs]
+            pairs = [pair for pair in zip(x_list, y_list) if pair[1] != 0]
+            x_list = [pair[0] + bin_size for pair in pairs]
+            y_list = [pair[1] for pair in pairs]
 
-            line.set_data(xs, ys)
+            line.set_data(x_list, y_list)
 
-            if len(xs) > 4:
-                popt, pcov = curve_fit(powerlaw, xs, ys)
+            if len(x_list) > 4:
+                popt, _ = curve_fit(powerlaw, x_list, y_list)
 
-                line_fit.set_data(xs_original, powerlaw(xs_original, *popt))
+                line_fit.set_data(x_list, powerlaw(x_list, *popt))
                 line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
                 poweraxes.legend()
 
-            xs_space = np.linspace(0, 1, 300)
+            x_space = np.linspace(0, 1, 300)
 
-            line_min.set_data(xs_space, self.barrier_dists[-1][0](xs_space))
-            line_bd.set_data(xs_space, self.barrier_dists[-1][1](xs_space))
+            line_min.set_data(x_space, self.barrier_dists[-1][0](x_space))
+            line_bd.set_data(x_space, self.barrier_dists[-1][1](x_space))
 
             # show the slums
             if len(self.states[i]) > n_slums:
@@ -506,10 +503,12 @@ class Slums(object):
                                     blit=False)
         plt.show()
 
+
 # x, a and k are commonly used variables in a powerlaw distribution.
 # pylint: disable=invalid-name
 def powerlaw(x, a, k):
     return np.power(a * np.array(x), -k)
+
 
 def main():
     '''
