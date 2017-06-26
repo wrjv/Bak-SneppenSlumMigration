@@ -106,7 +106,7 @@ class BaxSneppen2D(object):
                     count = self.count_neighbours(self.state, x, y)
                     self.neighbour_counts[(x, y)] = count
 
-    def update_neighbour_counts(self, state, x, y):
+    def update_neighbour_counts(self, state, x, y, update_value):
         combinations = [[-1, 0], [1, 0], [0, -1], [0, 1]]
 
         self.neighbour_counts[(x, y)] = self.count_neighbours(state, x, y)
@@ -116,7 +116,7 @@ class BaxSneppen2D(object):
             y_coor = (y + y_dif) % len(state[0])
 
             if state[x_coor][y_coor] == 2:
-                self.neighbour_counts[(x_coor, y_coor)] -= 1
+                self.neighbour_counts[(x_coor, y_coor)] += update_value
 
 
     def get_min_val_index(self):
@@ -218,6 +218,7 @@ class BaxSneppen2D(object):
         self.state[empty_choice[0], empty_choice[1]] = new_value
         self.ages[empty_choice[0], empty_choice[1]] = 0
         self.neighbour_counts.pop((empty_choice[0], empty_choice[1]), None)
+        self.update_neighbour_counts(self.state, empty_choice[0], empty_choice[1], 1)
 
         return True
 
@@ -269,7 +270,7 @@ class BaxSneppen2D(object):
         self.ages[x_min][y_min] = -1
 
         # Update the neighbour counts
-        self.update_neighbour_counts(new_state, x_min, y_min)
+        self.update_neighbour_counts(new_state, x_min, y_min, -1)
 
         # Save the state.
         self.state = new_state
