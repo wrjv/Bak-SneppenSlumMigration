@@ -399,7 +399,7 @@ class Slums(object):
 
         figure = plt.figure()
         for i in range(size):
-            slumaxarr.append(plt.subplot2grid((1 + rows, 1 + cols), (i // rows, (i % rows) % cols)))
+            slumaxarr.append(plt.subplot2grid((1 + rows, 1 + cols), (i // cols, (i % cols))))
 
         for i, slumaxes in enumerate(slumaxarr):
             # plt.subplots_adjust(wspace=0.05, hspace=0.05)
