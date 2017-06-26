@@ -119,7 +119,6 @@ class BaxSneppen2D(object):
             if state[x_coor][y_coor] == 2:
                 self.neighbour_counts[(x_coor, y_coor)] += update_value
 
-
     def get_min_val_index(self):
         '''
         Returns the index of the cell with the minimum cell
@@ -178,10 +177,11 @@ class BaxSneppen2D(object):
 
     def get_density(self):
         non_empty_size = np.sum(self.state != 2)
+
         if non_empty_size != 0:
-            return non_empty_size/(self.slum_size[0] * self.slum_size[1])
-        else:
-            return -1
+            return non_empty_size / (self.slum_size[0] * self.slum_size[1])
+
+        return -1
 
     def add_to_grid(self, previous_value=0):
         '''
@@ -207,12 +207,12 @@ class BaxSneppen2D(object):
         neighbour_count = np.array(list(neighbour_count))
         pvalues = neighbour_count / np.sum(neighbour_count)
 
-
         # Choose an empty cell and populate it.
         empty_choice = empty_cells[np.random.choice(range(len(empty_cells)), p=pvalues)]
+        print(empty_choice)
 
         new_value = 2
-
+        print(self.state[empty_choice[0], empty_choice[1]])
         while new_value > 1:
             new_value = abs(np.random.normal(0, (1 - previous_value) / 3.0, 1)) + previous_value
 
