@@ -258,7 +258,7 @@ class Slums(object):
         cols = ceil(len(self.slum_list) ** 0.5)
         rows = ceil(len(self.slum_list) / cols)
 
-        f, axarr = plt.subplots(nrows=rows, ncols=cols, sharex=True, sharey=True)
+        figure, axarr = plt.subplots(nrows=rows, ncols=cols, sharex=True, sharey=True)
 
         # remove the axes labels and set spacing
         plt.subplots_adjust(wspace=0.05, hspace=0.05)
@@ -277,34 +277,35 @@ class Slums(object):
         if len(self.slum_list) == 1:
             axarr = np.array([axarr])
 
-        ns = len(self.states[0])
+        n_slums = len(self.states[0])
         for slum, ax in zip(self.states[0], axarr.flatten()):
             imgs.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
                                   vmin=0, vmax=max_age))
 
         # animate
         def animate(i):
-            nonlocal ns
+            nonlocal n_slums
 
-            if len(self.states[i]) > ns:
-                for slum, ax in zip(self.states[i][ns:len(self.states[i])],
-                                    axarr.flatten()[ns:len(self.states[i])]):
+            if len(self.states[i]) > n_slums:
+                for slum, ax in zip(self.states[i][n_slums:len(self.states[i])],
+                                    axarr.flatten()[n_slums:len(self.states[i])]):
                     imgs.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap,
                                           interpolation='nearest', vmin=0, vmax=max_age))
-                ns = len(self.states[i])
+                n_slums = len(self.states[i])
 
             plt.suptitle('iteration: ' + str(i * self.save_steps))
             for slum, img, in zip(self.states[i], imgs):
                 img.set_array(slum.ages)
-            f.canvas.draw()
+            figure.canvas.draw()
             if i == len(self.states) - 1:
                 for img in imgs:
                     img.set_array(np.ones((self.slum_size, self.slum_size)) * -1)
 
             return imgs
 
-        _ = animation.FuncAnimation(f, animate, range(int(len(self.states) * start),
-                                                      len(self.states), 1), interval=2, blit=False)
+        _ = animation.FuncAnimation(figure, animate, range(int(len(self.states) * start),
+                                                           len(self.states), 1), interval=2,
+                                    blit=False)
         plt.show()
 
     def plot_barrier_distribution(self):
@@ -372,6 +373,7 @@ class Slums(object):
         growths = [[] for _ in range(len(self.states[-1]))]
         scaler = self.save_steps
         for state in self.states:
+            # pylint: disable=consider-using-enumerate
             for index in range(len(state)):
                 growths[index].append(state[index].full_cells())
         for slum in growths:
@@ -396,7 +398,7 @@ class Slums(object):
         cols = ceil(size ** 0.5)
         rows = ceil(size / cols)
 
-        f = plt.figure()
+        figure = plt.figure()
         for i in range(size):
             slumaxarr.append(plt.subplot2grid((1 + rows, 1 + cols), (i // rows, (i % rows) % cols)))
 
@@ -407,18 +409,20 @@ class Slums(object):
             slumax.set_yticklabels([])
 
         imgs = list()
-        ns = len(self.states[0])
+        n_slums = len(self.states[0])
 
         for slum, ax in zip(self.states[0], slumaxarr):
             imgs.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
                                   vmin=0, vmax=max_age))
-        return f, imgs, rows, cols, ns, slumaxarr
+        return figure, imgs, rows, cols, n_slums, slumaxarr
 
     def make_dashboard(self):
         cmap = self.get_colormap()
         max_age = max([np.max(slum.ages) for slum in self.slum_list])
 
-        f, imgs, rows, cols, ns, slumaxarr = self.setup_slum_anim(cmap, max_age)
+        # n_slums is used in the nested animate function.
+        # pylint: disable=unused-variable
+        figure, imgs, rows, cols, n_slums, slumaxarr = self.setup_slum_anim(cmap, max_age)
 
         # TODO store parameters in such a way that we have the history of them
         coolax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
@@ -460,7 +464,7 @@ class Slums(object):
         plt.ylabel("P(B)")
 
         def animate(i):
-            nonlocal ns, coolax, cmap, max_age
+            nonlocal n_slums, coolax, cmap, max_age
 
             if len(self.avalanche_sizes[i][1]) > len(self.avalanche_sizes[i][0]):
                 xs = self.avalanche_sizes[i][1][:-1]
@@ -490,22 +494,23 @@ class Slums(object):
             # show variable 2
 
             # show the slums
-            if len(self.states[i]) > ns:
-                for slum, ax in zip(self.states[i][ns:len(self.states[i])],
-                                    slumaxarr.flatten()[ns:len(self.states[i])]):
+            if len(self.states[i]) > n_slums:
+                for slum, ax in zip(self.states[i][n_slums:len(self.states[i])],
+                                    slumaxarr.flatten()[n_slums:len(self.states[i])]):
                     imgs.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap,
                                           interpolation='nearest', vmin=0, vmax=max_age))
-                ns = len(self.states[i])
+                n_slums = len(self.states[i])
 
             plt.suptitle('iteration: ' + str(i * self.save_steps))
             for slum, img, in zip(self.states[i], imgs):
                 img.set_array(slum.ages)
-            f.canvas.draw()
+            figure.canvas.draw()
             if i == len(self.states) - 1:
                 for img in imgs:
                     img.set_array(np.ones((self.slum_size, self.slum_size)) * -1)
 
-        _ = animation.FuncAnimation(f, animate, range(0, len(self.states)), interval=2, blit=False)
+        _ = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
+                                    blit=False)
         plt.show()
 
 def powerlaw(x, a, k):
