@@ -24,9 +24,13 @@ class BaxSneppen2D(object):
         # Set some variables to keep track of the slum.
         self.state = np.ones(slum_size) * 2
         self.ages = np.ones(slum_size) * -1
+        self.neighbour_counts = {}
 
         # Populate the grid.
         self.populate(empty_percent, slum_size)
+
+        # Get the neighbour counts of the empty cells
+        self.init_neighbour_counts()
 
         # Normal distribution used to add values to the grid.
         x_mean = slum_size[0]*0.5
@@ -81,6 +85,39 @@ class BaxSneppen2D(object):
         '''
 
         return np.min(self.state)
+
+    def count_neighbours(self, state, x, y):
+        neighbours = 0
+        combinations = [[-1, 0], [1, 0], [0, -1], [0, 1]]
+
+        for x_dif, y_dif in combinations:
+            x_coor = (x + x_dif) % len(state)
+            y_coor = (y + y_dif) % len(state[0])
+
+            if state[x_coor][y_coor] != 2:
+                neighbours += 1
+
+        return neighbours
+
+    def init_neighbour_counts(self):
+        for x in range(len(self.state)):
+            for y in range(len(self.state[0])):
+                if self.state[x][y] == 2:
+                    count = self.count_neighbours(self.state, x, y)
+                    self.neighbour_counts[(x, y)] = count
+
+    def update_neighbour_counts(self, state, x, y, update_value):
+        combinations = [[-1, 0], [1, 0], [0, -1], [0, 1]]
+
+        self.neighbour_counts[(x, y)] = self.count_neighbours(state, x, y)
+
+        for x_dif, y_dif in combinations:
+            x_coor = (x + x_dif) % len(state)
+            y_coor = (y + y_dif) % len(state[0])
+
+            if state[x_coor][y_coor] == 2:
+                self.neighbour_counts[(x_coor, y_coor)] += update_value
+
 
     def get_min_val_index(self):
         '''
@@ -162,17 +199,13 @@ class BaxSneppen2D(object):
         to the grid.
         '''
 
-        empty_list = np.where(self.state == 2)
+        #empty_list = np.where(self.state == 2)
 
-        # Check if there are any cells to fill.
-        if not empty_list[0].any():
-            return False
+        empty_cells = list(self.neighbour_counts.keys())
+        neighbour_count = self.neighbour_counts.values()
+        neighbour_count = np.array(list(neighbour_count))
+        pvalues = neighbour_count / np.sum(neighbour_count)
 
-        empty_cells = [(x, y) for x, y in zip(empty_list[0], empty_list[1])]
-
-        # Determine the chances of picking a cell using a 2D normal distribution.
-        pvalues = np.array([self.mvn.pdf([empty[0], empty[1]]) for empty in empty_cells])
-        pvalues /= np.sum(pvalues)
 
         # Choose an empty cell and populate it.
         empty_choice = empty_cells[np.random.choice(range(len(empty_cells)), p=pvalues)]
@@ -184,6 +217,8 @@ class BaxSneppen2D(object):
 
         self.state[empty_choice[0], empty_choice[1]] = new_value
         self.ages[empty_choice[0], empty_choice[1]] = 0
+        self.neighbour_counts.pop((empty_choice[0], empty_choice[1]), None)
+        self.update_neighbour_counts(self.state, empty_choice[0], empty_choice[1], 1)
 
         return True
 
@@ -233,6 +268,9 @@ class BaxSneppen2D(object):
         # The cell with the minimum value moves to another grid, an empty cell is left.
         new_state[x_min][y_min] = 2
         self.ages[x_min][y_min] = -1
+
+        # Update the neighbour counts
+        self.update_neighbour_counts(new_state, x_min, y_min, -1)
 
         # Save the state.
         self.state = new_state
