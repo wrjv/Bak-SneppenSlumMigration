@@ -280,38 +280,64 @@ class Slums(object):
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
-    def plot_slums(self, start=0):
+    def plot_slums(self, start=0, reset=True):
+        '''
+        Plots all simulated slums.
+
+        PARAMETERS
+        ===================================================
+        start: integer
+        The number of the timestep at which the animation
+        has to be started.
+        '''
+
         cols = ceil(len(self.slum_list) ** 0.5)
         rows = ceil(len(self.slum_list) / cols)
 
         figure, axarr = plt.subplots(nrows=rows, ncols=cols, sharex=True, sharey=True)
 
-        # remove the axes labels and set spacing
+        # Remove the axes labels and set spacing.
         plt.subplots_adjust(wspace=0.05, hspace=0.05)
         plt.xticks([])
         plt.yticks([])
 
-        # set the colour map
-        cmap = self.get_colormap()
+        # Set the colour map.
+        cmap = get_colormap()
 
-        # calculate the max age for the plot
+        # Calculate the maximum age for the plot.
         max_age = max([np.max(slum.ages) for slum in self.slum_list])
 
-        # initialize the plot
+        # Initialise the plot.
         imgs = list()
 
         if len(self.slum_list) == 1:
             axarr = np.array([axarr])
 
+        # Display a map of the ages within each slum.
         n_slums = len(self.states[0])
         for slum, axes in zip(self.states[0], axarr.flatten()):
             imgs.append(axes.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
                                     vmin=0, vmax=max_age))
 
-        # animate
         def animate(i):
-            nonlocal n_slums
+            '''
+            Used to animate the maps of cells ages of each
+            slum.
 
+            PARAMETERS
+            ===================================================
+            i: integer
+            The frame to display.
+
+            RETURNS
+            ===================================================
+            imgs: list of plt.subplots
+            A list of all slum plots in use.
+            '''
+
+            nonlocal n_slums, reset
+
+            # If there is a new slum, add it to the output.
             if len(self.states[i]) > n_slums:
                 for slum, axes in zip(self.states[i][n_slums:len(self.states[i])],
                                       axarr.flatten()[n_slums:len(self.states[i])]):
@@ -320,15 +346,21 @@ class Slums(object):
                 n_slums = len(self.states[i])
 
             plt.suptitle('iteration: ' + str(i * self.save_steps))
+
+            # Add information on the current state to the images.
             for slum, img, in zip(self.states[i], imgs):
                 img.set_array(slum.ages)
+
             figure.canvas.draw()
-            if i == len(self.states) - 1:
+
+            # Reset the plot when done!
+            if i == len(self.states) - 1 and reset:
                 for img in imgs:
                     img.set_array(np.ones((self.slum_size, self.slum_size)) * -1)
 
             return imgs
 
+        # Start the animation.
         _ = animation.FuncAnimation(figure, animate, range(int(len(self.states) * start),
                                                            len(self.states), 1), interval=2,
                                     blit=False)
@@ -409,20 +441,14 @@ class Slums(object):
         plt.ylabel("population size of slum")
         plt.show()
 
-    def get_colormap(self):
-        cmap = plt.cm.jet_r
-        cmap.set_under((1, 1, 1, 1))
-        return cmap
-
     def setup_slum_anim(self, cmap, max_age):
-        # TODO Maarten: 2, 5 & 6 plots dont seem to work?
-
         slumaxarr = []
         size = len(self.states[-1])
         cols = ceil(size ** 0.5)
         rows = ceil(size / cols)
 
         figure = plt.figure()
+
         for i in range(size):
             slumaxarr.append(plt.subplot2grid((1 + rows, 1 + cols), (i // cols, (i % cols))))
 
@@ -437,27 +463,26 @@ class Slums(object):
         for slum, axes in zip(self.states[0], slumaxarr):
             imgs.append(axes.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
                                     vmin=0, vmax=max_age))
+
         return figure, imgs, rows, cols, n_slums, slumaxarr
 
     def make_dashboard(self):
-        cmap = self.get_colormap()
+        cmap = get_colormap()
         max_age = max([np.max(slum.ages) for slum in self.slum_list])
 
         # n_slums is used in the nested animate function.
         # pylint: disable=unused-variable
         figure, imgs, rows, cols, n_slums, slumaxarr = self.setup_slum_anim(cmap, max_age)
 
-        # TODO store parameters in such a way that we have the history of them
         poweraxes = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
 
         if len(self.avalanche_sizes[-1][1]) > len(self.avalanche_sizes[-1][0]):
             x_list = self.avalanche_sizes[-1][1][:-1]
+
         y_list = self.avalanche_sizes[-1][0] / sum(self.avalanche_sizes[-1][0])
 
-        bin_size = x_list[1] / 2.0
-
         pairs = [pair for pair in zip(x_list, y_list) if pair[1] != 0]
-        x_list = [pair[0] + bin_size for pair in pairs]
+        x_list = [pair[0] + x_list[1] / 2.0 for pair in pairs]
         y_list = [pair[1] for pair in pairs]
 
         line, = poweraxes.loglog(x_list, y_list, ".")
@@ -483,26 +508,38 @@ class Slums(object):
         plt.ylabel(r"$P(B)$")
 
         def animate(i):
+            '''
+            Used to animate the maps of cells ages of each
+            slum, as well as both graphs.
+
+            PARAMETERS
+            ===================================================
+            i: integer
+            The frame to display.
+            '''
+
             nonlocal n_slums, poweraxes, cmap, max_age
 
             if len(self.avalanche_sizes[i][1]) > len(self.avalanche_sizes[i][0]):
                 x_list = self.avalanche_sizes[i][1][:-1]
             y_list = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
 
-            bin_size = x_list[1] / 2.0
-
             pairs = [pair for pair in zip(x_list, y_list) if pair[1] != 0]
-            x_list = [pair[0] + bin_size for pair in pairs]
+            x_list = [pair[0] + x_list[1] / 2.0 for pair in pairs]
             y_list = [pair[1] for pair in pairs]
 
             line.set_data(x_list, y_list)
 
+            # Try to fit a power law.
             if len(x_list) > 4:
-                popt, _ = curve_fit(powerlaw, x_list, y_list)
+                try:
+                    popt, _ = curve_fit(powerlaw, x_list, y_list)
 
-                line_fit.set_data(x_list, powerlaw(x_list, *popt))
-                line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
-                poweraxes.legend()
+                    line_fit.set_data(x_list, powerlaw(x_list, *popt))
+                    line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
+                    poweraxes.legend()
+                except RuntimeError:
+                    pass
 
             x_space = np.linspace(0, 1, 300)
 
@@ -519,9 +556,12 @@ class Slums(object):
                 n_slums = len(self.states[i])
 
             plt.suptitle('iteration: ' + str(i * self.save_steps))
+
             for slum, img, in zip(self.states[i], imgs):
                 img.set_array(slum.ages)
+
             figure.canvas.draw()
+
             if i == len(self.states) - 1:
                 for img in imgs:
                     img.set_array(-np.ones((self.slum_size, self.slum_size)))
@@ -534,15 +574,58 @@ class Slums(object):
 # x, a and k are commonly used variables in a powerlaw distribution.
 # pylint: disable=invalid-name
 def powerlaw(x, a, k):
+    '''
+    Returns a powerlaw of input x for parameters a and
+    k.
+
+    PARAMETERS
+    ===================================================
+    x: numpy.ndarray
+    An array of input x.
+
+    a: integer
+    Constant in multiplication.
+
+    k: integer
+    Power within the powerlaw.
+
+    RETURNS
+    ===================================================
+    numpy.ndarray
+    An array of powerlaw values of the input x for the
+    corresponding parameters.
+    '''
+
+    print(type(np.power(a * np.array(x), -k)))
+
     return np.power(a * np.array(x), -k)
 
+def get_colormap():
+    '''
+    Returns the colour map used in the slum network
+    simulation display.
+
+    PARAMETERS
+    ===================================================
+    None
+
+    RETURNS
+    ===================================================
+    matplotlib.colors.LinearSegmentedColormap
+    The colour map used.
+    '''
+
+    cmap = plt.cm.jet_r
+    cmap.set_under((1, 1, 1, 1))
+
+    return cmap
 
 def main():
     '''
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=3000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=2000)
 
 
     slums.execute(save_steps=100)
