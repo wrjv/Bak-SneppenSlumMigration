@@ -278,19 +278,19 @@ class Slums(object):
             axarr = np.array([axarr])
 
         n_slums = len(self.states[0])
-        for slum, ax in zip(self.states[0], axarr.flatten()):
-            imgs.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
-                                  vmin=0, vmax=max_age))
+        for slum, axes in zip(self.states[0], axarr.flatten()):
+            imgs.append(axes.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
+                                    vmin=0, vmax=max_age))
 
         # animate
         def animate(i):
             nonlocal n_slums
 
             if len(self.states[i]) > n_slums:
-                for slum, ax in zip(self.states[i][n_slums:len(self.states[i])],
-                                    axarr.flatten()[n_slums:len(self.states[i])]):
-                    imgs.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap,
-                                          interpolation='nearest', vmin=0, vmax=max_age))
+                for slum, axes in zip(self.states[i][n_slums:len(self.states[i])],
+                                      axarr.flatten()[n_slums:len(self.states[i])]):
+                    imgs.append(axes.imshow(slum.ages, aspect='auto', cmap=cmap,
+                                            interpolation='nearest', vmin=0, vmax=max_age))
                 n_slums = len(self.states[i])
 
             plt.suptitle('iteration: ' + str(i * self.save_steps))
@@ -334,11 +334,6 @@ class Slums(object):
             barriers = barriers + list(slum.state[np.where(slum.state <= 1)].flatten())
         for timestep in self.states:
             minima.append(min([state.get_min_val() for state in timestep]))
-
-        (counts_min, bins_min, _) = plt.hist(minima, bins=30)
-        (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
-
-        # TODO WESSEL DIT GAAT KAPOT
 
         if len(minima) == 1:
             minima.append(0)
@@ -406,18 +401,18 @@ class Slums(object):
         for i in range(size):
             slumaxarr.append(plt.subplot2grid((1 + rows, 1 + cols), (i // rows, (i % rows) % cols)))
 
-        for i, slumax in enumerate(slumaxarr):
+        for i, slumaxes in enumerate(slumaxarr):
             # plt.subplots_adjust(wspace=0.05, hspace=0.05)
-            slumax.imshow(self.states[-1][i].ages)
-            slumax.set_xticklabels([])
-            slumax.set_yticklabels([])
+            slumaxes.imshow(self.states[-1][i].ages)
+            slumaxes.set_xticklabels([])
+            slumaxes.set_yticklabels([])
 
         imgs = list()
         n_slums = len(self.states[0])
 
-        for slum, ax in zip(self.states[0], slumaxarr):
-            imgs.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
-                                  vmin=0, vmax=max_age))
+        for slum, axes in zip(self.states[0], slumaxarr):
+            imgs.append(axes.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
+                                    vmin=0, vmax=max_age))
         return figure, imgs, rows, cols, n_slums, slumaxarr
 
     def make_dashboard(self):
@@ -429,7 +424,7 @@ class Slums(object):
         figure, imgs, rows, cols, n_slums, slumaxarr = self.setup_slum_anim(cmap, max_age)
 
         # TODO store parameters in such a way that we have the history of them
-        coolax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
+        poweraxes = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
 
         if len(self.avalanche_sizes[-1][1]) > len(self.avalanche_sizes[-1][0]):
             xs = self.avalanche_sizes[-1][1][:-1]
@@ -442,7 +437,7 @@ class Slums(object):
         xs = [pair[0] + bin_size for pair in pairs]
         ys = [pair[1] for pair in pairs]
 
-        line, = coolax.loglog(xs, ys, ".")
+        line, = poweraxes.loglog(xs, ys, ".")
 
         popt, pcov = curve_fit(powerlaw, xs, ys)
 
@@ -464,7 +459,7 @@ class Slums(object):
         plt.ylabel("P(B)")
 
         def animate(i):
-            nonlocal n_slums, coolax, cmap, max_age
+            nonlocal n_slums, poweraxes, cmap, max_age
 
             if len(self.avalanche_sizes[i][1]) > len(self.avalanche_sizes[i][0]):
                 xs = self.avalanche_sizes[i][1][:-1]
@@ -484,7 +479,7 @@ class Slums(object):
 
                 line_fit.set_data(xs_original, powerlaw(xs_original, *popt))
                 line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
-                coolax.legend()
+                poweraxes.legend()
 
             xs_space = np.linspace(0, 1, 300)
 
@@ -493,10 +488,10 @@ class Slums(object):
 
             # show the slums
             if len(self.states[i]) > n_slums:
-                for slum, ax in zip(self.states[i][n_slums:len(self.states[i])],
-                                    slumaxarr.flatten()[n_slums:len(self.states[i])]):
-                    imgs.append(ax.imshow(slum.ages, aspect='auto', cmap=cmap,
-                                          interpolation='nearest', vmin=0, vmax=max_age))
+                for slum, axes in zip(self.states[i][n_slums:len(self.states[i])],
+                                      slumaxarr[n_slums:len(self.states[i])]):
+                    imgs.append(axes.imshow(slum.ages, aspect='auto', cmap=cmap,
+                                            interpolation='nearest', vmin=0, vmax=max_age))
                 n_slums = len(self.states[i])
 
             plt.suptitle('iteration: ' + str(i * self.save_steps))
@@ -511,6 +506,8 @@ class Slums(object):
                                     blit=False)
         plt.show()
 
+# x, a and k are commonly used variables in a powerlaw distribution.
+# pylint: disable=invalid-name
 def powerlaw(x, a, k):
     return np.power(a * np.array(x), -k)
 
