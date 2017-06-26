@@ -209,9 +209,10 @@ class BaxSneppen2D(object):
 
         # Choose an empty cell and populate it.
         empty_choice = empty_cells[np.random.choice(range(len(empty_cells)), p=pvalues)]
+        print(empty_choice)
 
         new_value = 2
-
+        print(self.state[empty_choice[0], empty_choice[1]])
         while new_value > 1:
             new_value = abs(np.random.normal(0, (1 - previous_value) / 3.0, 1)) + previous_value
 

@@ -192,7 +192,6 @@ class Slums(object):
 
     def get_new_person_time(self, l):
         wait = np.random.exponential(1/l)
-        print(wait)
         return int(self.time + wait)
 
     def find_optimal_location(self, origin_slum):
@@ -240,7 +239,6 @@ class Slums(object):
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
     def get_lambda(self):
-        print(max([slum.get_density() for slum in self.slum_list]))
         return (1/250)*max([slum.get_density() for slum in self.slum_list])**2
 
     def alt_find_optimal_location(self):
@@ -626,9 +624,9 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=10000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=300)
 
-    slums.execute(save_steps=100)
+    slums.execute(save_steps=1)
     plt.close()
     slums.make_dashboard()
     # slums.plot_barrier_distribution()
