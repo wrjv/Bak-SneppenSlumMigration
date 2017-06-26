@@ -177,10 +177,11 @@ class BaxSneppen2D(object):
 
     def get_density(self):
         non_empty_size = np.sum(self.state != 2)
+
         if non_empty_size != 0:
-            return non_empty_size/(self.slum_size[0] * self.slum_size[1])
-        else:
-            return -1
+            return non_empty_size / (self.slum_size[0] * self.slum_size[1])
+
+        return -1
 
     def add_to_grid(self, previous_value=0):
         '''
