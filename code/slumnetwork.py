@@ -51,6 +51,9 @@ class Slums(object):
         self.distances = [[] for _ in range(n_slums)]
         self.barrier_dists = []
 
+        self.new_slum_time = self.get_new_slum_time(0.2)
+
+
     def execute(self, moore=False, save_steps=25):
         '''
         Executes the slum simulation.
@@ -78,6 +81,15 @@ class Slums(object):
                 (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
                 self.avalanche_sizes.append((counts, bins))
                 self.barrier_dists.append(self.get_barrier_distribution())
+            if self.time == self.new_slum_time:
+                print("New slum built.")
+                self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
+                self.previous_location.append((0, 0))
+                self.distances.append([])
+                l = self.get_lambda()
+                print(l)
+                self.new_slum_time = self.get_new_slum_time(l)
+                print(self.new_slum_time)
 
             iterator += 1
 
@@ -140,6 +152,13 @@ class Slums(object):
             self.distances.append([])
             to_slum = -1
 
+        # print(max([slum.get_density() for slum in self.slum_list]))
+        # if max([slum.get_density() for slum in self.slum_list]) > 0.98:
+        #     print("New slum built.")
+        #     self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
+        #     self.previous_location.append((0, 0))
+        #     self.distances.append([])
+
         # Add new people to the grid.
         self.slum_list[to_slum].add_to_grid(min(min_vals))
         # to_slum = self.get_to_slum(min_vals)
@@ -173,6 +192,9 @@ class Slums(object):
             return self.alt_find_optimal_location()
 
         return self.find_optimal_location(min_slum)
+
+    def get_new_slum_time(self, l):
+        return int(self.time + np.random.exponential(1/l))
 
     def find_optimal_location(self, origin_slum):
         '''
@@ -217,6 +239,10 @@ class Slums(object):
         pvalues = np.array(pvalues) / sum(pvalues)
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
+
+    def get_lambda(self):
+        print(max([slum.get_density() for slum in self.slum_list]))
+        return (1/5000)*max([slum.get_density() for slum in self.slum_list])**2
 
     def alt_find_optimal_location(self):
         '''
@@ -483,8 +509,8 @@ class Slums(object):
 
             xs_space = np.linspace(0, 1, 300)
 
-            line_min.set_data(xs_space, self.barrier_dists[-1][0](xs_space))
-            line_bd.set_data(xs_space, self.barrier_dists[-1][1](xs_space))
+            line_min.set_data(xs_space, self.barrier_dists[i][0](xs_space))
+            line_bd.set_data(xs_space, self.barrier_dists[i][1](xs_space))
 
             # show the slums
             if len(self.states[i]) > n_slums:
@@ -492,6 +518,7 @@ class Slums(object):
                                       slumaxarr[n_slums:len(self.states[i])]):
                     imgs.append(axes.imshow(slum.ages, aspect='auto', cmap=cmap,
                                             interpolation='nearest', vmin=0, vmax=max_age))
+
                 n_slums = len(self.states[i])
 
             plt.suptitle('iteration: ' + str(i * self.save_steps))
@@ -517,6 +544,7 @@ def main():
     '''
 
     slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=3000)
+
 
     slums.execute(save_steps=100)
     plt.close()

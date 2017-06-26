@@ -33,6 +33,7 @@ class BaxSneppen2D(object):
         y_mean = slum_size[1]*0.5
         cov = np.array([[x_mean*0.8, 0], [0, y_mean*0.8]])
         self.mvn = multivariate_normal([x_mean, y_mean], cov)
+        self.slum_size = slum_size
 
     def populate(self, empty_percent, slum_size):
         '''
@@ -136,6 +137,13 @@ class BaxSneppen2D(object):
             return False
 
         return True
+
+    def get_density(self):
+        non_empty_size = np.sum(self.state != 2)
+        if non_empty_size != 0:
+            return non_empty_size/(self.slum_size[0] * self.slum_size[1])
+        else:
+            return -1
 
     def add_to_grid(self, previous_value=0):
         '''
