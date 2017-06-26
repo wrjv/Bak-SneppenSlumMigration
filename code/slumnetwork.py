@@ -438,7 +438,7 @@ class Slums(object):
 
         popt, _ = curve_fit(powerlaw, xs, ys)
 
-        line_fit, = plt.plot(xs_original, powerlaw(xs_original, *popt), 'r-', label=r'$K=' + str(np.round(popt[1], 3)) + "$")
+        line_fit, = plt.plot(xs, powerlaw(xs, *popt), 'r-', label=r'$K=' + str(np.round(popt[1], 3)) + "$")
 
         plt.title("avalanche sizes")
         plt.legend()
@@ -478,7 +478,7 @@ class Slums(object):
             if len(xs) > 4:
                 popt, _ = curve_fit(powerlaw, xs, ys)
 
-                line_fit.set_data(xs_original, powerlaw(xs_original, *popt))
+                line_fit.set_data(xs, powerlaw(xs, *popt))
                 line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
                 coolax.legend()
 
