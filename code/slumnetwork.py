@@ -75,7 +75,7 @@ class Slums(object):
         while self.update_state(moore):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
-                (counts, bins, _) = plt.hist(self.avalanche_size, bins=200)
+                (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
                 self.avalanche_sizes.append((counts, bins))
                 self.barrier_dists.append(self.get_barrier_distribution())
 
@@ -131,7 +131,7 @@ class Slums(object):
         to_slum = self.get_to_slum(min_slum)
 
         # Add another new slum with a small chance.
-        # print(np.mean(self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]))
+        #print(np.mean(self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]))
         if np.random.uniform(0, 1, 1) < self.threshold - np.mean(
                 self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]):
             print("New slum built.")
@@ -335,8 +335,11 @@ class Slums(object):
         for timestep in self.states:
             minima.append(min([state.get_min_val() for state in timestep]))
 
-        # (counts_min, bins_min, _) = plt.hist(minima, bins=30)
-        # (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
+        (counts_min, bins_min, _) = plt.hist(minima, bins=30)
+        (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
+
+        # TODO WESSEL DIT GAAT KAPOT
+
         if len(minima) == 1:
             minima.append(0)
 
@@ -344,7 +347,8 @@ class Slums(object):
         barriers = np.array(barriers)
         min_density = gaussian_kde(minima)
         bar_density = gaussian_kde(barriers)
-        return bar_density, min_density
+
+        return (min_density, bar_density)
 
     def plot_avalanche_distance(self):
         avalanches = []
@@ -440,7 +444,7 @@ class Slums(object):
 
         line, = coolax.loglog(xs, ys, ".")
 
-        popt, _ = curve_fit(powerlaw, xs, ys)
+        popt, pcov = curve_fit(powerlaw, xs, ys)
 
         line_fit, = plt.plot(xs, powerlaw(xs, *popt), 'r-', label=r'$K=' + str(np.round(popt[1], 3)) + "$")
 
@@ -449,15 +453,11 @@ class Slums(object):
         plt.xlabel(r"$log_{10}(S)$")
         plt.ylabel(r"$log_{10}(P(S))$")
 
-        # min_x = self.barrier_dists[-1][1][1]
-        # min_y = self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0])
         bdax = plt.subplot2grid((1 + rows, cols + 1), (rows, 1))
-        # line_min, = bdax.plot(self.barrier_dists[-1][0][1][:-1], self.barrier_dists[-1][0][0] / sum(self.barrier_dists[-1][0][0]), label='minima')
-        # line_bd, = bdax.plot(self.barrier_dists[-1][1][1][:-1],
-        #                    self.barrier_dists[-1][1][0] / sum(self.barrier_dists[-1][1][0]), label='barriers')
+
         xs_space = np.linspace(0, 1, 300)
-        line_min, = bdax.plot(xs, self.barrier_dists[-1][1](xs), label='minima')
-        line_bd, = bdax.plot(xs, self.barrier_dists[-1][0](xs), label='barriers')
+        line_min, = bdax.plot(xs_space, self.barrier_dists[-1][0](xs_space), label='minima')
+        line_bd, = bdax.plot(xs_space, self.barrier_dists[-1][1](xs_space), label='barriers')
         plt.title("barrier and minumum barriers distribution")
         plt.legend()
         plt.xlabel("B")
@@ -480,18 +480,16 @@ class Slums(object):
             line.set_data(xs, ys)
 
             if len(xs) > 4:
-                popt, _ = curve_fit(powerlaw, xs, ys)
+                popt, pcov = curve_fit(powerlaw, xs, ys)
 
-                line_fit.set_data(xs, powerlaw(xs, *popt))
+                line_fit.set_data(xs_original, powerlaw(xs_original, *popt))
                 line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
                 coolax.legend()
 
-            line_min.set_data(xs_space, self.barrier_dists[i][1](xs))
-            line_bd.set_data(xs_space, self.barrier_dists[i][0](xs))
+            xs_space = np.linspace(0, 1, 300)
 
-            # show variable 1
-
-            # show variable 2
+            line_min.set_data(xs_space, self.barrier_dists[-1][0](xs_space))
+            line_bd.set_data(xs_space, self.barrier_dists[-1][1](xs_space))
 
             # show the slums
             if len(self.states[i]) > n_slums:
@@ -507,7 +505,7 @@ class Slums(object):
             figure.canvas.draw()
             if i == len(self.states) - 1:
                 for img in imgs:
-                    img.set_array(np.ones((self.slum_size, self.slum_size)) * -1)
+                    img.set_array(-np.ones((self.slum_size, self.slum_size)))
 
         _ = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
                                     blit=False)
@@ -521,18 +519,16 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=5000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=3000)
 
-    slums.execute(save_steps=50)
+    slums.execute(save_steps=100)
     plt.close()
-    #slums.plot_slums()
     slums.make_dashboard()
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     # slums.plot_avalanche_size()
     # slums.plot_growth_over_time()
     # slums.plot_slums(start=0)
-
 
 if __name__ == '__main__':
     main()
