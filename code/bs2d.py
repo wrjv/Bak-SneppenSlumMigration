@@ -118,7 +118,6 @@ class BaxSneppen2D(object):
             if state[x_coor][y_coor] == 2:
                 self.neighbour_counts[(x_coor, y_coor)] += update_value
 
-
     def get_min_val_index(self):
         '''
         Returns the index of the cell with the minimum cell
@@ -206,7 +205,6 @@ class BaxSneppen2D(object):
         neighbour_count = self.neighbour_counts.values()
         neighbour_count = np.array(list(neighbour_count))
         pvalues = neighbour_count / np.sum(neighbour_count)
-
 
         # Choose an empty cell and populate it.
         empty_choice = empty_cells[np.random.choice(range(len(empty_cells)), p=pvalues)]
