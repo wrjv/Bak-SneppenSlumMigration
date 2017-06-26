@@ -53,7 +53,6 @@ class Slums(object):
 
         self.new_person = self.get_new_person_time(0.2)
 
-
     def execute(self, moore=False, save_steps=25):
         '''
         Executes the slum simulation.
@@ -134,7 +133,6 @@ class Slums(object):
         to_slum = self.get_to_slum(min_slum)
 
         # Add another new slum with a small chance.
-        #print(np.mean(self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]))
         if np.random.uniform(0, 1, 1) < self.threshold - np.mean(
                 self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]):
             print("New slum built.")
@@ -143,8 +141,7 @@ class Slums(object):
             self.distances.append([])
             to_slum = -1
 
-        #print(max([slum.get_density() for slum in self.slum_list]))
-        slum_densities= [slum.get_density() for slum in self.slum_list]
+        slum_densities = [slum.get_density() for slum in self.slum_list]
         if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
             print("New slum built.")
             self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
@@ -190,10 +187,35 @@ class Slums(object):
 
         return self.find_optimal_location(min_slum)
 
-    def get_new_person_time(self, l):
-        wait = np.random.exponential(1/l)
-        print(wait)
-        return int(self.time + wait)
+    def get_lambda(self):
+        '''
+        The frequency used in determining the waiting time.
+
+        RETURNS
+        ===================================================
+        float
+        A value for lambda used in our simulation.
+        '''
+        return (1 / 250) * max([slum.get_density() for slum in self.slum_list])**2
+
+    def get_new_person_time(self, lamb):
+        '''
+        Find the next time new persons are introduced to
+        the simulation.
+
+        PARAMETERS
+        ===================================================
+        lamb: float
+        The lambda parameter used in the random
+        exponential function.
+
+        RETURNS
+        ===================================================
+        integer
+        A new timestamp based on a random exponential
+        distribution.
+        '''
+        return int(self.time + np.random.exponential(1 / lamb))
 
     def find_optimal_location(self, origin_slum):
         '''
@@ -238,10 +260,6 @@ class Slums(object):
         pvalues = np.array(pvalues) / sum(pvalues)
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
-
-    def get_lambda(self):
-        print(max([slum.get_density() for slum in self.slum_list]))
-        return (1/250)*max([slum.get_density() for slum in self.slum_list])**2
 
     def alt_find_optimal_location(self):
         '''
@@ -366,18 +384,26 @@ class Slums(object):
         plt.show()
 
     def plot_barrier_distribution(self):
+        '''
+        Plot the barrier distributions.
+        '''
+
         barriers = []
         minima = []
+
         for slum in self.slum_list:
             barriers = barriers + list(slum.state[np.where(slum.state <= 1)].flatten())
+
         for timestep in self.states:
             minima.append(min([state.get_min_val() for state in timestep]))
 
         (counts_min, bins_min, _) = plt.hist(minima, bins=30)
         (counts_bar, bins_bar, _) = plt.hist(barriers, bins=30)
+
         plt.clf()
         plt.plot(bins_min[:-1], counts_min / sum(counts_min), label="minimum barriers")
         plt.plot(bins_bar[:-1], counts_bar / sum(counts_bar), label="barrier distribution")
+
         plt.title("barrier and minumum barriers distribution")
         plt.legend()
         plt.xlabel(r"$B$")
@@ -385,10 +411,24 @@ class Slums(object):
         plt.show()
 
     def get_barrier_distribution(self):
+        '''
+        Retrieve the barrier distributions.
+
+        RETURNS
+        ===================================================
+        (min_density, bar_density) =
+        (scipy.stats.kde.gaussian_kde,
+         scipy.stats.kde.gaussian_kde)
+        The estimated gaussian densities of the minima
+        and barriers found.
+        '''
+
         barriers = []
         minima = []
+
         for slum in self.slum_list:
             barriers = barriers + list(slum.state[np.where(slum.state <= 1)].flatten())
+
         for timestep in self.states:
             minima.append(min([state.get_min_val() for state in timestep]))
 
@@ -400,47 +440,98 @@ class Slums(object):
         min_density = gaussian_kde(minima)
         bar_density = gaussian_kde(barriers)
 
+        print(type(min_density), type(bar_density))
+
         return (min_density, bar_density)
 
     def plot_avalanche_distance(self):
+        '''
+        Plot the distances between succesive mutations.
+        '''
+
         avalanches = []
         for each in self.distances:
             avalanches = avalanches + each
 
-        (counts, bins, _) = plt.hist(avalanches, bins=30)
+        (counts, bins, _) = plt.hist(avalanches, bins=100)
         plt.clf()
         plt.loglog(bins[:-1], counts / sum(counts))
+
         plt.title("distance between succesive mutations")
         plt.xlabel(r"$log_{10}(X)$")
         plt.ylabel(r"$log_{10}(C(X))$")
         plt.show()
 
     def plot_avalanche_size(self):
-        (counts, bins, _) = plt.hist(self.avalanche_size, bins=30)
+        '''
+        Plot the avalanche sizes.
+        '''
+
+        (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
         plt.clf()
         plt.loglog(bins[:-1], counts / sum(counts))
+
         plt.title("avalanche sizes")
         plt.xlabel(r"S$")
         plt.ylabel(r"P(S)$")
         plt.show()
 
     def plot_growth_over_time(self):
+        '''
+        Plot the growth of slums over time
+        '''
+
         growths = [[] for _ in range(len(self.states[-1]))]
         scaler = self.save_steps
+
         for state in self.states:
             # pylint: disable=consider-using-enumerate
             for index in range(len(state)):
                 growths[index].append(state[index].full_cells())
+
         for slum in growths:
             maxim = len(growths[0])
             minim = len(slum)
             plt.plot(range((maxim - minim) * scaler, maxim * scaler, scaler), slum)
+
         plt.title("growth of slums over time")
         plt.xlabel("number of iterations")
         plt.ylabel("population size of slum")
         plt.show()
 
     def setup_slum_anim(self, cmap, max_age):
+        '''
+        Initialises all grids used in the slum animation.
+
+        PARAMETERS
+        ===================================================
+        cmap: matplotlib.colors.LinearSegmentedColormap
+        The colour map used.
+
+        max_age: integer
+        The maximum age of any cell within the slums.
+
+        RETURNS
+        ===================================================
+        figure: matplotlib.figure.Figure
+        The figure used in the animation.
+
+        imgs: list
+        A list of all slum age images.
+
+        rows: integer
+        The number of rows.
+
+        cols: integer
+        The number of columns.
+
+        n_slums: integer
+        The number of slums.
+
+        slumaxarr: list
+        A lis of all axes of all slums.
+        '''
+
         slumaxarr = []
         size = len(self.states[-1])
         n_slums = len(self.states[0])
@@ -453,13 +544,10 @@ class Slums(object):
             slumaxarr.append(plt.subplot2grid((1 + rows, 1 + cols), (i // cols, (i % cols))))
 
         for i, slumaxes in enumerate(slumaxarr):
-            # if i < n_slums:
-            #     slumaxes.imshow(self.states[-1][i].ages)
             slumaxes.set_xticklabels([])
             slumaxes.set_yticklabels([])
 
         imgs = list()
-
 
         for slum, axes in zip(self.states[0], slumaxarr):
             imgs.append(axes.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
@@ -467,7 +555,13 @@ class Slums(object):
 
         return figure, imgs, rows, cols, n_slums, slumaxarr
 
+    # pylint: disable=too-many-locals
     def make_dashboard(self):
+        '''
+        Show a dashboard of all plots and two figures containing information on the avalanche
+        sizes and barrier distributions.
+        '''
+
         cmap = get_colormap()
         max_age = max([np.max(slum.ages) for slum in self.slum_list])
 
@@ -475,32 +569,36 @@ class Slums(object):
         # pylint: disable=unused-variable
         figure, imgs, rows, cols, n_slums, slumaxarr = self.setup_slum_anim(cmap, max_age)
 
-        poweraxes = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
-
+        # Put all information on the avalanche sizes in the right arrays.
         if len(self.avalanche_sizes[-1][1]) > len(self.avalanche_sizes[-1][0]):
             x_list = self.avalanche_sizes[-1][1][:-1]
 
         y_list = self.avalanche_sizes[-1][0] / sum(self.avalanche_sizes[-1][0])
 
         pairs = [pair for pair in zip(x_list, y_list) if pair[1] != 0]
+
+        # Set the x coordinate to the middle of the bin.
         x_list = [pair[0] + x_list[1] / 2.0 for pair in pairs]
         y_list = [pair[1] for pair in pairs]
 
-        line, = poweraxes.loglog(x_list, y_list, ".")
+        # Plot the avalanche sizes.
+        pwax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
+        line, = pwax.loglog(x_list, y_list, ".")
 
+        # Plot the powerlaw based on the avalanche sizes.
         popt, _ = curve_fit(powerlaw, x_list, y_list)
-
-        line_fit, = plt.plot(x_list, powerlaw(x_list, *popt), 'r-',
-                             label=r'$K=' + str(np.round(popt[1], 3)) + "$")
+        line_fit, = pwax.plot(x_list, powerlaw(x_list, *popt), 'r-',
+                              label=r'$K=' + str(np.round(popt[1], 3)) + "$")
 
         plt.title("avalanche sizes")
         plt.legend()
         plt.xlabel(r"$log_{10}(S)$")
         plt.ylabel(r"$log_{10}(P(S))$")
 
+        # Plot the barrier distributions
+        x_space = np.linspace(0, 1, 300)
         bdax = plt.subplot2grid((1 + rows, cols + 1), (rows, 1))
 
-        x_space = np.linspace(0, 1, 300)
         line_min, = bdax.plot(x_space, self.barrier_dists[-1][0](x_space), label='minima')
         line_bd, = bdax.plot(x_space, self.barrier_dists[-1][1](x_space), label='barriers')
         plt.title("barrier and minumum barriers distribution")
@@ -519,13 +617,15 @@ class Slums(object):
             The frame to display.
             '''
 
-            nonlocal n_slums, poweraxes, cmap, max_age
+            nonlocal n_slums, pwax, cmap, max_age
 
+            # Put all information on the avalanche sizes in the right arrays.
             if len(self.avalanche_sizes[i][1]) > len(self.avalanche_sizes[i][0]):
                 x_list = self.avalanche_sizes[i][1][:-1]
             y_list = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
 
             pairs = [pair for pair in zip(x_list, y_list) if pair[1] != 0]
+            # Set the x coordinate to the middle of the bin.
             x_list = [pair[0] + x_list[1] / 2.0 for pair in pairs]
             y_list = [pair[1] for pair in pairs]
 
@@ -538,16 +638,17 @@ class Slums(object):
 
                     line_fit.set_data(x_list, powerlaw(x_list, *popt))
                     line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
-                    poweraxes.legend()
+                    pwax.legend()
                 except RuntimeError:
                     pass
 
+            # Plot the barrier distributions
             x_space = np.linspace(0, 1, 300)
 
             line_min.set_data(x_space, self.barrier_dists[i][0](x_space))
             line_bd.set_data(x_space, self.barrier_dists[i][1](x_space))
 
-            # show the slums
+            # Show the slums.
             if len(self.states[i]) > n_slums:
                 for slum, axes in zip(self.states[i][n_slums:len(self.states[i])],
                                       slumaxarr[n_slums:len(self.states[i])]):
@@ -597,9 +698,8 @@ def powerlaw(x, a, k):
     corresponding parameters.
     '''
 
-    print(type(np.power(a * np.array(x), -k)))
-
     return np.power(a * np.array(x), -k)
+
 
 def get_colormap():
     '''
@@ -616,10 +716,12 @@ def get_colormap():
     The colour map used.
     '''
 
+    #pylint: disable=maybe-no-member
     cmap = plt.cm.jet_r
     cmap.set_under((1, 1, 1, 1))
 
     return cmap
+
 
 def main():
     '''
