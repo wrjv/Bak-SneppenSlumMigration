@@ -51,7 +51,7 @@ class Slums(object):
         self.distances = [[] for _ in range(n_slums)]
         self.barrier_dists = []
 
-        self.new_slum_time = self.get_new_slum_time(0.2)
+        self.new_person = self.get_new_person_time(0.2)
 
 
     def execute(self, moore=False, save_steps=25):
@@ -81,15 +81,6 @@ class Slums(object):
                 (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
                 self.avalanche_sizes.append((counts, bins))
                 self.barrier_dists.append(self.get_barrier_distribution())
-            if self.time == self.new_slum_time:
-                print("New slum built.")
-                self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
-                self.previous_location.append((0, 0))
-                self.distances.append([])
-                l = self.get_lambda()
-                print(l)
-                self.new_slum_time = self.get_new_slum_time(l)
-                print(self.new_slum_time)
 
             iterator += 1
 
@@ -152,17 +143,23 @@ class Slums(object):
             self.distances.append([])
             to_slum = -1
 
-        # print(max([slum.get_density() for slum in self.slum_list]))
-        # if max([slum.get_density() for slum in self.slum_list]) > 0.98:
-        #     print("New slum built.")
-        #     self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
-        #     self.previous_location.append((0, 0))
-        #     self.distances.append([])
+        #print(max([slum.get_density() for slum in self.slum_list]))
+        slum_densities= [slum.get_density() for slum in self.slum_list]
+        if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
+            print("New slum built.")
+            self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
+            self.previous_location.append((0, 0))
+            self.distances.append([])
 
         # Add new people to the grid.
         self.slum_list[to_slum].add_to_grid(min(min_vals))
-        # to_slum = self.get_to_slum(min_vals)
-        # self.slum_list[to_slum].add_to_grid()
+
+        if self.time == self.new_person:
+            print('new person')
+            for _ in range(5):
+                to_slum = self.get_to_slum(min_slum)
+                self.slum_list[to_slum].add_to_grid()
+            self.new_person = self.get_new_person_time(self.get_lambda())
 
         # Check if the time limit is reached, otherwise return False (and
         # the execution ends)
@@ -193,8 +190,10 @@ class Slums(object):
 
         return self.find_optimal_location(min_slum)
 
-    def get_new_slum_time(self, l):
-        return int(self.time + np.random.exponential(1/l))
+    def get_new_person_time(self, l):
+        wait = np.random.exponential(1/l)
+        print(wait)
+        return int(self.time + wait)
 
     def find_optimal_location(self, origin_slum):
         '''
@@ -242,7 +241,7 @@ class Slums(object):
 
     def get_lambda(self):
         print(max([slum.get_density() for slum in self.slum_list]))
-        return (1/5000)*max([slum.get_density() for slum in self.slum_list])**2
+        return (1/250)*max([slum.get_density() for slum in self.slum_list])**2
 
     def alt_find_optimal_location(self):
         '''
@@ -444,6 +443,7 @@ class Slums(object):
     def setup_slum_anim(self, cmap, max_age):
         slumaxarr = []
         size = len(self.states[-1])
+        n_slums = len(self.states[0])
         cols = ceil(size ** 0.5)
         rows = ceil(size / cols)
 
@@ -453,12 +453,13 @@ class Slums(object):
             slumaxarr.append(plt.subplot2grid((1 + rows, 1 + cols), (i // cols, (i % cols))))
 
         for i, slumaxes in enumerate(slumaxarr):
-            slumaxes.imshow(self.states[-1][i].ages)
+            # if i < n_slums:
+            #     slumaxes.imshow(self.states[-1][i].ages)
             slumaxes.set_xticklabels([])
             slumaxes.set_yticklabels([])
 
         imgs = list()
-        n_slums = len(self.states[0])
+
 
         for slum, axes in zip(self.states[0], slumaxarr):
             imgs.append(axes.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
@@ -626,7 +627,6 @@ def main():
     '''
 
     slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=2000)
-
 
     slums.execute(save_steps=100)
     plt.close()
