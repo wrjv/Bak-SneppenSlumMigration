@@ -118,6 +118,7 @@ class BaxSneppen2D(object):
             if state[x_coor][y_coor] == 2:
                 self.neighbour_counts[(x_coor, y_coor)] -= 1
 
+
     def get_min_val_index(self):
         '''
         Returns the index of the cell with the minimum cell
@@ -198,17 +199,13 @@ class BaxSneppen2D(object):
         to the grid.
         '''
 
-        empty_list = np.where(self.state == 2)
+        #empty_list = np.where(self.state == 2)
 
-        # Check if there are any cells to fill.
-        if not empty_list[0].any():
-            return False
+        empty_cells = list(self.neighbour_counts.keys())
+        neighbour_count = self.neighbour_counts.values()
+        neighbour_count = np.array(list(neighbour_count))
+        pvalues = neighbour_count / np.sum(neighbour_count)
 
-        empty_cells = [(x, y) for x, y in zip(empty_list[0], empty_list[1])]
-
-        # Determine the chances of picking a cell using a 2D normal distribution.
-        pvalues = np.array([self.mvn.pdf([empty[0], empty[1]]) for empty in empty_cells])
-        pvalues /= np.sum(pvalues)
 
         # Choose an empty cell and populate it.
         empty_choice = empty_cells[np.random.choice(range(len(empty_cells)), p=pvalues)]

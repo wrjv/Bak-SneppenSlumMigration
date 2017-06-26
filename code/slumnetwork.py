@@ -626,7 +626,7 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=2000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=10000)
 
     slums.execute(save_steps=100)
     plt.close()
