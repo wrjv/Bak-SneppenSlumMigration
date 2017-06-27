@@ -43,6 +43,17 @@ class Slums(object):
         self.avalanche_sizes = []
         self.aval_start_val = 0
 
+        # Create migration dict
+        self.migrations = {}
+        self.migrations['new'] = {}
+        for i in range(n_slums):
+            self.migrations[i] = {}
+            self.migrations['new'][i] = 0
+            for j in range(n_slums):
+                self.migrations[i][j] = 0
+        # The variable where the execute function will place the migration matrix in
+        self.migration_matrix = None
+
         # Set some variables to keep track of all slums.
         self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
         self.states = []
@@ -68,15 +79,6 @@ class Slums(object):
         '''
 
         iterator = 0
-
-        # Create migration dict
-        self.migrations = {}
-        self.migrations['new'] = {}
-        for i in range(len(self.slum_list)):
-            self.migrations[i] = {}
-            self.migrations['new'][i] = 0
-            for j in range(len(self.slum_list)):
-                self.migrations[i][j] = 0
 
         # Make sure the animation function knows the distance between
         # each step.
