@@ -77,7 +77,7 @@ class Slums(object):
         while self.update_state(moore):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
-                self.avalanche_sizes.append(self.avalanche_size)
+                self.avalanche_sizes.append(deepcopy(self.avalanche_size))
                 self.barrier_dists.append(self.get_barrier_distribution())
 
             iterator += 1
@@ -575,8 +575,14 @@ class Slums(object):
         pwax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
         line, = pwax.loglog(x_list, y_list, ".")
 
+        for i in range(1, len(y_list)):
+            if y_list[-i] > 3:
+                x_list = x_list[:-i]
+                y_list = y_list[:-i]
+                break
+
         # Plot the powerlaw based on the avalanche sizes.
-        popt, _ = curve_fit(powerlaw, x_list, y_list)
+        popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
         line_fit, = pwax.plot(x_list, powerlaw(x_list, *popt), 'r-',
                               label=r'$K=' + str(np.round(popt[1], 3)) + "$")
 
@@ -615,10 +621,16 @@ class Slums(object):
 
             line.set_data(x_list, y_list)
 
+            for i in range(1, len(y_list)):
+                if y_list[-i] > 3:
+                    x_list = x_list[:-i]
+                    y_list = y_list[:-i]
+                    break
+
             # Try to fit a power law.
             if len(x_list) > 4:
                 try:
-                    popt, _ = curve_fit(powerlaw, x_list, y_list)
+                    popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
 
                     line_fit.set_data(x_list, powerlaw(x_list, *popt))
                     line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
@@ -712,9 +724,9 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=3000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=20000)
 
-    slums.execute(save_steps=100)
+    slums.execute(save_steps=500)
     plt.close()
     slums.make_dashboard()
     # slums.plot_barrier_distribution()
