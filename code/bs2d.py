@@ -17,7 +17,7 @@ class BaxSneppen2D(object):
     '''
     A simple Bax-Sneppen 2D model with basic functions to populate and advance the model.
     '''
-    def __init__(self, slum_size=(15, 15), empty_percent=0.3, cell_decrease_factor=0.8):
+    def __init__(self, slum_size=(15, 15), empty_percent=0.3, cell_decrease_factor=0.5):
         # Set the cell decrease factor parameter.
         self.cell_decrease_factor = cell_decrease_factor
 
