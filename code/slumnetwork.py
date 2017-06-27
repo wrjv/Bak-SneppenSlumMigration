@@ -77,8 +77,7 @@ class Slums(object):
         while self.update_state(moore):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
-                (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
-                self.avalanche_sizes.append((counts, bins))
+                self.avalanche_sizes.append(self.avalanche_size)
                 self.barrier_dists.append(self.get_barrier_distribution())
 
             iterator += 1
@@ -569,8 +568,8 @@ class Slums(object):
         # pylint: disable=unused-variable
         figure, imgs, rows, cols, n_slums, slumaxarr = self.setup_slum_anim(cmap, max_age)
 
-        x_list = [x for x in sorted(list(set(self.avalanche_size))) if x != 0]
-        y_list = [self.avalanche_size.count(x) for x in x_list]
+        x_list = [x for x in sorted(list(set(self.avalanche_sizes[-1]))) if x != 0]
+        y_list = [self.avalanche_sizes[-1].count(x) for x in x_list]
 
         # Plot the avalanche sizes.
         pwax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
@@ -610,28 +609,22 @@ class Slums(object):
 
             nonlocal n_slums, pwax, cmap, max_age
 
-            # Put all information on the avalanche sizes in the right arrays.
-            if len(self.avalanche_sizes[i][1]) > len(self.avalanche_sizes[i][0]):
-                x_list = self.avalanche_sizes[i][1][:-1]
-            y_list = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
+            # Set the x coordinate to the middle of the bin.
+            x_list = [x for x in sorted(list(set(self.avalanche_sizes[i]))) if x != 0]
+            y_list = [self.avalanche_sizes[i].count(x) for x in x_list]
 
-            # pairs = [pair for pair in zip(x_list, y_list) if pair[1] != 0]
-            # # Set the x coordinate to the middle of the bin.
-            # x_list = [pair[0] + x_list[1] / 2.0 for pair in pairs]
-            # y_list = [pair[1] for pair in pairs]
+            line.set_data(x_list, y_list)
 
-            # line.set_data(x_list, y_list)
+            # Try to fit a power law.
+            if len(x_list) > 4:
+                try:
+                    popt, _ = curve_fit(powerlaw, x_list, y_list)
 
-            # # Try to fit a power law.
-            # if len(x_list) > 4:
-            #     try:
-            #         popt, _ = curve_fit(powerlaw, x_list, y_list)
-
-            #         line_fit.set_data(x_list, powerlaw(x_list, *popt))
-            #         line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
-            #         pwax.legend()
-            #     except RuntimeError:
-            #         pass
+                    line_fit.set_data(x_list, powerlaw(x_list, *popt))
+                    line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
+                    pwax.legend()
+                except RuntimeError:
+                    pass
 
             # Plot the barrier distributions
             x_space = np.linspace(0, 1, 300)
