@@ -219,7 +219,9 @@ class BaxSneppen2D(object):
 
         self.state[empty_choice[0], empty_choice[1]] = new_value
         self.ages[empty_choice[0], empty_choice[1]] = 0
+
         self.neighbour_counts.pop((empty_choice[0], empty_choice[1]), None)
+
         self.update_neighbour_counts(self.state, empty_choice[0], empty_choice[1], 1)
 
         return True

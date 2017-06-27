@@ -77,8 +77,7 @@ class Slums(object):
         while self.update_state(moore):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
-                (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
-                self.avalanche_sizes.append((counts, bins))
+                self.avalanche_sizes.append(self.avalanche_size)
                 self.barrier_dists.append(self.get_barrier_distribution())
 
             iterator += 1
@@ -143,7 +142,7 @@ class Slums(object):
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
         if self.time == self.new_person:
-            print('new person')
+            print('New person added.')
             for _ in range(5):
                 to_slum = self.get_to_slum(min_slum)
                 self.slum_list[to_slum].add_to_grid()
@@ -559,17 +558,8 @@ class Slums(object):
         # pylint: disable=unused-variable
         figure, imgs, rows, cols, n_slums, slumaxarr = self.setup_slum_anim(cmap, max_age)
 
-        # Put all information on the avalanche sizes in the right arrays.
-        if len(self.avalanche_sizes[-1][1]) > len(self.avalanche_sizes[-1][0]):
-            x_list = self.avalanche_sizes[-1][1][:-1]
-
-        y_list = self.avalanche_sizes[-1][0] / sum(self.avalanche_sizes[-1][0])
-
-        pairs = [pair for pair in zip(x_list, y_list) if pair[1] != 0]
-
-        # Set the x coordinate to the middle of the bin.
-        x_list = [pair[0] + x_list[1] / 2.0 for pair in pairs]
-        y_list = [pair[1] for pair in pairs]
+        x_list = [x for x in sorted(list(set(self.avalanche_sizes[-1]))) if x != 0]
+        y_list = [self.avalanche_sizes[-1].count(x) for x in x_list]
 
         # Plot the avalanche sizes.
         pwax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
@@ -583,7 +573,7 @@ class Slums(object):
         plt.title("avalanche sizes")
         plt.legend()
         plt.xlabel(r"(S)$")
-        plt.ylabel(r"$(P(S)$")
+        plt.ylabel(r"$P(S)$")
 
         # Plot the barrier distributions
         x_space = np.linspace(0, 1, 300)
@@ -610,15 +600,9 @@ class Slums(object):
 
             nonlocal n_slums, pwax, cmap, max_age
 
-            # Put all information on the avalanche sizes in the right arrays.
-            if len(self.avalanche_sizes[i][1]) > len(self.avalanche_sizes[i][0]):
-                x_list = self.avalanche_sizes[i][1][:-1]
-            y_list = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
-
-            pairs = [pair for pair in zip(x_list, y_list) if pair[1] != 0]
             # Set the x coordinate to the middle of the bin.
-            x_list = [pair[0] + x_list[1] / 2.0 for pair in pairs]
-            y_list = [pair[1] for pair in pairs]
+            x_list = [x for x in sorted(list(set(self.avalanche_sizes[i]))) if x != 0]
+            y_list = [self.avalanche_sizes[i].count(x) for x in x_list]
 
             line.set_data(x_list, y_list)
 
@@ -720,6 +704,7 @@ def main():
     '''
 
     slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=40000)
+
 
     slums.execute(save_steps=100)
     plt.close()
