@@ -683,6 +683,44 @@ class Slums(object):
         plt.show()
 
 
+def empty_percent_parameter_plot(N, repeats, nr_iters):
+    '''
+    dont add people nor slums
+    Plots the effect of the empty percent on the K 
+
+    PARAMETERS
+    ===================================================
+    N:          the number of empty percent values
+    repeats:    the number of repeats for each empty_percent value
+    nr_iters:   how long the code runs each time until it calculates K
+
+    RETURNS
+    ===================================================
+    None
+    '''
+    empty_percents = np.linspace(0,0.95,N)
+    Ks = [[] for _ in range(N)]
+
+    for i, empty_percent in enumerate(empty_percents):
+        slums = Slums(4, (30, 30), empty_percent=empty_percent, time_limit=nr_iters)
+        slums.execute(save_steps=int(nr_iters/100))
+        
+        x_list = [x for x in sorted(slums.avalanche_sizes[-1]) if x != 0]
+        y_list = [slums.avalanche_sizes[-1].count(x) for x in x_list]
+
+        K, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+
+        Ks[i].append(K[1])
+
+    for i in range(len(Ks)):
+        Ks[i] = np.mean(Ks[i])
+    plt.plot(empty_percents, Ks)
+    plt.title("effect of initial empty percent on K")
+    plt.xlabel("initial empty percentage")
+    plt.ylabel("K")
+
+    plt.show()
+        
 # x, a and k are commonly used variables in a powerlaw distribution.
 # pylint: disable=invalid-name
 def powerlaw(x, a, k):
@@ -737,6 +775,7 @@ def main():
     '''
     Runs a sample slum and shows different related plots.
     '''
+    # empty_percent_parameter_plot(10, 10, 1000)
 
     slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=20000)
 
