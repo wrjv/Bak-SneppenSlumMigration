@@ -109,7 +109,8 @@ class BaxSneppen2D(object):
     def update_neighbour_counts(self, state, x, y, update_value):
         combinations = [[-1, 0], [1, 0], [0, -1], [0, 1]]
 
-        self.neighbour_counts[(x, y)] = self.count_neighbours(state, x, y)
+        if update_value < 0:
+            self.neighbour_counts[(x, y)] = self.count_neighbours(state, x, y)
 
         for x_dif, y_dif in combinations:
             x_coor = (x + x_dif) % len(state)
@@ -203,7 +204,7 @@ class BaxSneppen2D(object):
 
         empty_cells = list(self.neighbour_counts.keys())
         neighbour_count = self.neighbour_counts.values()
-        neighbour_count = np.array(list(neighbour_count))
+        neighbour_count = np.array(list(neighbour_count))**2 + 0.01
         pvalues = neighbour_count / np.sum(neighbour_count)
 
         # Choose an empty cell and populate it.
