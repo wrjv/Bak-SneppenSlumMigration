@@ -13,6 +13,7 @@ from scipy.stats import gaussian_kde
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import networkx as nx
 
 
 class Slums(object):
@@ -152,7 +153,7 @@ class Slums(object):
         to_slum = self.get_to_slum(min_slum)
 
         # Add the migration to the migration array
-        self.migrations[min_slum][to_slum[0]] += 1
+        self.migrations[min_slum][to_slum] += 1
 
         slum_densities = [slum.get_density() for slum in self.slum_list]
 
@@ -179,7 +180,7 @@ class Slums(object):
                 print('New person added.')
                 for _ in range(5):
                     to_slum = self.get_to_slum(min_slum)
-                    self.migrations['new'][to_slum[0]] += 1
+                    self.migrations['new'][to_slum] += 1
                     self.slum_list[to_slum].add_to_grid()
                 self.new_person = self.get_new_person_time(self.get_lambda())
 
@@ -284,8 +285,9 @@ class Slums(object):
         pvalues = np.array(pvalues) ** 10
         # Normalise the pvalues and make a choice of a location for a cell to go to.
         pvalues = pvalues / np.sum(pvalues)
+        return np.argmax(pvalues)
 
-        return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
+        #return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
     def alt_find_optimal_location(self):
         '''
@@ -580,7 +582,7 @@ class Slums(object):
         return figure, imgs, rows, cols, n_slums, slumaxarr
 
     # pylint: disable=too-many-locals
-    def make_dashboard(self):
+    def make_dashboard(self, show_powerlaw=False):
         '''
         Show a dashboard of all plots and two figures containing information on the avalanche
         sizes and barrier distributions.
@@ -596,19 +598,26 @@ class Slums(object):
         x_list = [x for x in sorted(list(set(self.avalanche_sizes[-1]))) if x != 0]
         y_list = [self.avalanche_sizes[-1].count(x) for x in x_list]
 
+        bound = -1
+
+        for i in range(len(x_list) - 1):
+            if x_list[i + 1] - x_list[i] > 5:
+                bound = i
+
+        if bound > 0:
+            x_list = x_list[:bound]
+            y_list = y_list[:bound]
+
         # Plot the avalanche sizes.
         pwax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
         line, = pwax.loglog(x_list, y_list, ".")
 
-        for i in range(1, len(y_list)):
-            if y_list[-i] > 3:
-                x_list = x_list[:-i]
-                y_list = y_list[:-i]
-                break
-
         # Plot the powerlaw based on the avalanche sizes.
         popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
-        line_fit, = pwax.plot(x_list, powerlaw(x_list, *popt), 'r-',
+
+        power_list = [y for y in powerlaw(x_list, *popt) if y > 1]
+
+        line_fit, = pwax.plot(x_list[:len(power_list)], power_list, 'r-',
                               label=r'$K=' + str(np.round(popt[1], 3)) + "$")
 
         plt.title("avalanche sizes")
@@ -643,6 +652,7 @@ class Slums(object):
         plt.title("Slum densities")
         plt.ylabel(r"$density$")
         lines = []
+
         for _ in range(len(self.states[-1])):
             lin, = denax.plot(np.linspace(0,1,len(self.states)))
             lines.append(lin)
@@ -658,7 +668,7 @@ class Slums(object):
             The frame to display.
             '''
 
-            nonlocal n_slums, pwax, cmap, max_age
+            nonlocal n_slums, pwax, cmap, max_age, show_powerlaw
 
             # Set the x coordinate to the middle of the bin.
             x_list = [x for x in sorted(list(set(self.avalanche_sizes[i]))) if x != 0]
@@ -666,18 +676,21 @@ class Slums(object):
 
             line.set_data(x_list, y_list)
 
-            for i in range(1, len(y_list)):
-                if y_list[-i] > 3:
-                    x_list = x_list[:-i]
-                    y_list = y_list[:-i]
-                    break
-
             # Try to fit a power law.
-            if len(x_list) > 4:
-                try:
-                    popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+            if len(x_list) > 4 and show_powerlaw:
+                bound = -1
 
-                    line_fit.set_data(x_list, powerlaw(x_list, *popt))
+                for i in range(len(x_list) - 1):
+                    if x_list[i + 1] - x_list[i] > 5:
+                        bound = i
+
+                try:
+                    if bound > 0:
+                        popt, _ = curve_fit(powerlaw, x_list[:bound], y_list[:bound], bounds=((0, 0), (np.inf, 6)))
+                    else:
+                        popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+
+                    line_fit.set_data(x_list[:bound], powerlaw(x_list[:bound], *popt))
                     line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
                     pwax.legend()
                 except RuntimeError:
@@ -715,7 +728,15 @@ class Slums(object):
 
         _ = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
                                     blit=False)
-        plt.show()
+        #plt.show()
+
+    def plot_network(self):
+        plt.figure()
+        g = nx.from_numpy_matrix(self.migration_matrix, create_using=nx.DiGraph())
+        nx.draw_circular(g)
+        #plt.show()
+
+
 
 
 def empty_percent_parameter_plot(N, repeats, nr_iters):
@@ -806,17 +827,21 @@ def get_colormap():
     return cmap
 
 
+
+
 def main():
     '''
     Runs a sample slum and shows different related plots.
     '''
     # empty_percent_parameter_plot(10, 10, 1000)
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=20000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=2500)
 
-    slums.execute(save_steps=500)
+    slums.execute(save_steps=100)
     plt.close()
-    slums.make_dashboard()
+    slums.plot_network()
+    #slums.make_dashboard()
+    plt.show()
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     # slums.plot_avalanche_size()
