@@ -606,6 +606,25 @@ class Slums(object):
         plt.xlabel(r"$B$")
         plt.ylabel(r"$P(B)$")
 
+        # plot the density over time
+        densities = [[] for _ in range(len(self.states[-1]))]
+        for i in range(len(self.states[-1])):
+            for j in range(len(self.states)):
+                if len(self.states[j]) >= (i+1):
+                    densities[i].append(self.states[j][i].get_density())
+                else:
+                    densities[i].append(0)
+
+        denax = plt.subplot2grid((1 + rows, cols + 1), (rows, 2))
+        denax.set_xlim([0, 1])
+        denax.set_ylim([0, 1])
+        plt.title("Slum densities")
+        plt.ylabel(r"$density$")
+        lines = []
+        for _ in range(len(self.states[-1])):
+            lin, = denax.plot(np.linspace(0,1,len(self.states)))
+            lines.append(lin)
+
         def animate(i):
             '''
             Used to animate the maps of cells ages of each
@@ -647,6 +666,10 @@ class Slums(object):
 
             line_min.set_data(x_space, self.barrier_dists[i][0](x_space))
             line_bd.set_data(x_space, self.barrier_dists[i][1](x_space))
+
+            # plot the density of the slums over time
+            for j, lin in enumerate(lines):
+                lin.set_data(np.linspace(0,1,len(densities[j]))[:i], densities[j][:i])
 
             # Show the slums.
             if len(self.states[i]) > n_slums:
