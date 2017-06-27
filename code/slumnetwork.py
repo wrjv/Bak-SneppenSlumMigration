@@ -442,8 +442,6 @@ class Slums(object):
         min_density = gaussian_kde(minima)
         bar_density = gaussian_kde(barriers)
 
-        print(type(min_density), type(bar_density))
-
         return (min_density, bar_density)
 
     def plot_avalanche_distance(self):
@@ -594,8 +592,8 @@ class Slums(object):
 
         plt.title("avalanche sizes")
         plt.legend()
-        plt.xlabel(r"$log_{10}(S)$")
-        plt.ylabel(r"$log_{10}(P(S))$")
+        plt.xlabel(r"(S)$")
+        plt.ylabel(r"$(P(S)$")
 
         # Plot the barrier distributions
         x_space = np.linspace(0, 1, 300)
@@ -730,9 +728,9 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=300)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=20000)
 
-    slums.execute(save_steps=1)
+    slums.execute(save_steps=100)
     plt.close()
     slums.make_dashboard()
     # slums.plot_barrier_distribution()
