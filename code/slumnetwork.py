@@ -44,6 +44,17 @@ class Slums(object):
         self.avalanche_sizes = []
         self.aval_start_val = 0
 
+        # Create migration dict
+        self.migrations = {}
+        self.migrations['new'] = {}
+        for i in range(n_slums):
+            self.migrations[i] = {}
+            self.migrations['new'][i] = 0
+            for j in range(n_slums):
+                self.migrations[i][j] = 0
+        # The variable where the execute function will place the migration matrix in
+        self.migration_matrix = None
+
         # Set some variables to keep track of all slums.
         self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
         self.states = []
@@ -69,15 +80,6 @@ class Slums(object):
         '''
 
         iterator = 0
-
-        # Create migration dict
-        self.migrations = {}
-        self.migrations['new'] = {}
-        for i in range(len(self.slum_list)):
-            self.migrations[i] = {}
-            self.migrations['new'][i] = 0
-            for j in range(len(self.slum_list)):
-                self.migrations[i][j] = 0
 
         # Make sure the animation function knows the distance between
         # each step.
@@ -573,7 +575,7 @@ class Slums(object):
         return figure, imgs, rows, cols, n_slums, slumaxarr
 
     # pylint: disable=too-many-locals
-    def make_dashboard(self):
+    def make_dashboard(self, show_powerlaw=False):
         '''
         Show a dashboard of all plots and two figures containing information on the avalanche
         sizes and barrier distributions.
@@ -589,19 +591,26 @@ class Slums(object):
         x_list = [x for x in sorted(list(set(self.avalanche_sizes[-1]))) if x != 0]
         y_list = [self.avalanche_sizes[-1].count(x) for x in x_list]
 
+        bound = -1
+
+        for i in range(len(x_list) - 1):
+            if x_list[i + 1] - x_list[i] > 5:
+                bound = i
+
+        if bound > 0:
+            x_list = x_list[:bound]
+            y_list = y_list[:bound]
+
         # Plot the avalanche sizes.
         pwax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
         line, = pwax.loglog(x_list, y_list, ".")
 
-        for i in range(1, len(y_list)):
-            if y_list[-i] > 3:
-                x_list = x_list[:-i]
-                y_list = y_list[:-i]
-                break
-
         # Plot the powerlaw based on the avalanche sizes.
         popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
-        line_fit, = pwax.plot(x_list, powerlaw(x_list, *popt), 'r-',
+
+        power_list = [y for y in powerlaw(x_list, *popt) if y > 1]
+
+        line_fit, = pwax.plot(x_list[:len(power_list)], power_list, 'r-',
                               label=r'$K=' + str(np.round(popt[1], 3)) + "$")
 
         plt.title("avalanche sizes")
@@ -636,6 +645,7 @@ class Slums(object):
         plt.title("Slum densities")
         plt.ylabel(r"$density$")
         lines = []
+
         for _ in range(len(self.states[-1])):
             lin, = denax.plot(np.linspace(0,1,len(self.states)))
             lines.append(lin)
@@ -651,7 +661,7 @@ class Slums(object):
             The frame to display.
             '''
 
-            nonlocal n_slums, pwax, cmap, max_age
+            nonlocal n_slums, pwax, cmap, max_age, show_powerlaw
 
             # Set the x coordinate to the middle of the bin.
             x_list = [x for x in sorted(list(set(self.avalanche_sizes[i]))) if x != 0]
@@ -659,18 +669,21 @@ class Slums(object):
 
             line.set_data(x_list, y_list)
 
-            for i in range(1, len(y_list)):
-                if y_list[-i] > 3:
-                    x_list = x_list[:-i]
-                    y_list = y_list[:-i]
-                    break
-
             # Try to fit a power law.
-            if len(x_list) > 4:
-                try:
-                    popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+            if len(x_list) > 4 and show_powerlaw:
+                bound = -1
 
-                    line_fit.set_data(x_list, powerlaw(x_list, *popt))
+                for i in range(len(x_list) - 1):
+                    if x_list[i + 1] - x_list[i] > 5:
+                        bound = i
+
+                try:
+                    if bound > 0:
+                        popt, _ = curve_fit(powerlaw, x_list[:bound], y_list[:bound], bounds=((0, 0), (np.inf, 6)))
+                    else:
+                        popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+
+                    line_fit.set_data(x_list[:bound], powerlaw(x_list[:bound], *popt))
                     line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
                     pwax.legend()
                 except RuntimeError:
@@ -719,6 +732,44 @@ class Slums(object):
 
 
 
+def empty_percent_parameter_plot(N, repeats, nr_iters):
+    '''
+    dont add people nor slums
+    Plots the effect of the empty percent on the K 
+
+    PARAMETERS
+    ===================================================
+    N:          the number of empty percent values
+    repeats:    the number of repeats for each empty_percent value
+    nr_iters:   how long the code runs each time until it calculates K
+
+    RETURNS
+    ===================================================
+    None
+    '''
+    empty_percents = np.linspace(0,0.95,N)
+    Ks = [[] for _ in range(N)]
+
+    for i, empty_percent in enumerate(empty_percents):
+        slums = Slums(4, (30, 30), empty_percent=empty_percent, time_limit=nr_iters)
+        slums.execute(save_steps=int(nr_iters/100))
+        
+        x_list = [x for x in sorted(slums.avalanche_sizes[-1]) if x != 0]
+        y_list = [slums.avalanche_sizes[-1].count(x) for x in x_list]
+
+        K, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+
+        Ks[i].append(K[1])
+
+    for i in range(len(Ks)):
+        Ks[i] = np.mean(Ks[i])
+    plt.plot(empty_percents, Ks)
+    plt.title("effect of initial empty percent on K")
+    plt.xlabel("initial empty percentage")
+    plt.ylabel("K")
+
+    plt.show()
+        
 # x, a and k are commonly used variables in a powerlaw distribution.
 # pylint: disable=invalid-name
 def powerlaw(x, a, k):
@@ -775,8 +826,9 @@ def main():
     '''
     Runs a sample slum and shows different related plots.
     '''
+    # empty_percent_parameter_plot(10, 10, 1000)
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=20000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=2500)
 
     slums.execute(save_steps=100)
     plt.close()
