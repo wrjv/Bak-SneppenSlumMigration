@@ -43,12 +43,6 @@ class Slums(object):
         self.avalanche_sizes = []
         self.aval_start_val = 0
 
-        self.migrations = {}
-        for i in range(n_slums):
-            self.migrations[i] = {}
-            for j in range(n_slums):
-                self.migrations[i][j] = 0
-
         # Set some variables to keep track of all slums.
         self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
         self.states = []
@@ -75,6 +69,15 @@ class Slums(object):
 
         iterator = 0
 
+        # Create migration dict
+        self.migrations = {}
+        self.migrations['new'] = {}
+        for i in range(len(self.slum_list)):
+            self.migrations[i] = {}
+            self.migrations['new'][i] = 0
+            for j in range(len(self.slum_list)):
+                self.migrations[i][j] = 0
+
         # Make sure the animation function knows the distance between
         # each step.
         self.save_steps = save_steps
@@ -87,6 +90,13 @@ class Slums(object):
                 self.barrier_dists.append(self.get_barrier_distribution())
 
             iterator += 1
+
+        self.migration_matrix = np.zeros((len(self.migrations), len(self.migrations)))
+        for key in self.migrations:
+            if key != 'new':
+                for inner_key in self.migrations[0]:
+                    self.migration_matrix[key][inner_key] = self.migrations[key][inner_key]
+                self.migration_matrix[-1][key] = self.migrations['new'][key]
 
     def update_state(self, moore=False):
         '''
@@ -138,7 +148,7 @@ class Slums(object):
         to_slum = self.get_to_slum(min_slum)
 
         # Add the migration to the migration array
-        self.migrations[min_slum - 1, to_slum - 1] += 1
+        self.migrations[min_slum][to_slum[0]] += 1
 
         slum_densities = [slum.get_density() for slum in self.slum_list]
         if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
@@ -147,6 +157,12 @@ class Slums(object):
             self.previous_location.append((0, 0))
             self.distances.append([])
 
+            self.migrations[len(self.slum_list) - 1] = {}
+            self.migrations['new'][len(self.slum_list) - 1] = 0
+            for i in range(len(self.slum_list)):
+                self.migrations[len(self.slum_list) - 1][i] = 0
+                self.migrations[i][len(self.slum_list) - 1] = 0
+
         # Add new people to the grid.
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
@@ -154,6 +170,7 @@ class Slums(object):
             print('New person added.')
             for _ in range(5):
                 to_slum = self.get_to_slum(min_slum)
+                self.migrations['new'][to_slum[0]] += 1
                 self.slum_list[to_slum].add_to_grid()
             self.new_person = self.get_new_person_time(self.get_lambda())
 
