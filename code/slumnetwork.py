@@ -152,7 +152,7 @@ class Slums(object):
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
         if self.time == self.new_person:
-            print('new person')
+            print('New person added.')
             for _ in range(5):
                 to_slum = self.get_to_slum(min_slum)
                 self.slum_list[to_slum].add_to_grid()
@@ -441,8 +441,6 @@ class Slums(object):
         barriers = np.array(barriers)
         min_density = gaussian_kde(minima)
         bar_density = gaussian_kde(barriers)
-
-        print(type(min_density), type(bar_density))
 
         return (min_density, bar_density)
 
