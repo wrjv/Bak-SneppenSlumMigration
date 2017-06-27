@@ -43,6 +43,12 @@ class Slums(object):
         self.avalanche_sizes = []
         self.aval_start_val = 0
 
+        self.migrations = {}
+        for i in range(n_slums):
+            self.migrations[i] = {}
+            for j in range(n_slums):
+                self.migrations[i][j] = 0
+
         # Set some variables to keep track of all slums.
         self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
         self.states = []
@@ -130,6 +136,9 @@ class Slums(object):
 
         # Determine to what other slum the cell goes.
         to_slum = self.get_to_slum(min_slum)
+
+        # Add the migration to the migration array
+        self.migrations[min_slum - 1, to_slum - 1] += 1
 
         # Add another new slum with a small chance.
         if np.random.uniform(0, 1, 1) < self.threshold - np.mean(
