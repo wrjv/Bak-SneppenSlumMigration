@@ -26,7 +26,7 @@ class Slums(object):
     # and all slums.
 
     def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25, random_select=False,
-                 time_limit=10000):
+                 time_limit=10000, static_slums=False, static_people=False):
         # Set some overall parameters.
         self.time = 0
         self.time_limit = time_limit
@@ -34,6 +34,8 @@ class Slums(object):
         self.save_steps = 1
 
         self.slum_size = slum_size[0]
+        self.static_slums  = static_slums
+        self.static_people = static_people
 
         self.random_select = random_select
 
@@ -153,28 +155,33 @@ class Slums(object):
         self.migrations[min_slum][to_slum[0]] += 1
 
         slum_densities = [slum.get_density() for slum in self.slum_list]
-        if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
-            print("New slum built.")
-            self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
-            self.previous_location.append((0, 0))
-            self.distances.append([])
 
-            self.migrations[len(self.slum_list) - 1] = {}
-            self.migrations['new'][len(self.slum_list) - 1] = 0
-            for i in range(len(self.slum_list)):
-                self.migrations[len(self.slum_list) - 1][i] = 0
-                self.migrations[i][len(self.slum_list) - 1] = 0
+        if not self.static_slums:
+            if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
+                print("New slum built.")
+                self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
+                self.previous_location.append((0, 0))
+                self.distances.append([])
 
-        # Add new people to the grid.
+                self.migrations[len(self.slum_list) - 1] = {}
+                self.migrations['new'][len(self.slum_list) - 1] = 0
+                for i in range(len(self.slum_list)):
+                    self.migrations[len(self.slum_list) - 1][i] = 0
+                    self.migrations[i][len(self.slum_list) - 1] = 0
+
+
+        # migrate the person
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
-        if self.time == self.new_person:
-            print('New person added.')
-            for _ in range(5):
-                to_slum = self.get_to_slum(min_slum)
-                self.migrations['new'][to_slum[0]] += 1
-                self.slum_list[to_slum].add_to_grid()
-            self.new_person = self.get_new_person_time(self.get_lambda())
+        if not self.static_people:
+            if self.time == self.new_person:
+                # Add new people to the grid.
+                print('New person added.')
+                for _ in range(5):
+                    to_slum = self.get_to_slum(min_slum)
+                    self.migrations['new'][to_slum[0]] += 1
+                    self.slum_list[to_slum].add_to_grid()
+                self.new_person = self.get_new_person_time(self.get_lambda())
 
         # Check if the time limit is reached, otherwise return False (and
         # the execution ends)
@@ -726,11 +733,11 @@ def empty_percent_parameter_plot(N, repeats, nr_iters):
     ===================================================
     None
     '''
-    empty_percents = np.linspace(0,0.95,N)
+    empty_percents = np.linspace(0.05,0.95,N)
     Ks = [[] for _ in range(N)]
 
     for i, empty_percent in enumerate(empty_percents):
-        slums = Slums(4, (30, 30), empty_percent=empty_percent, time_limit=nr_iters)
+        slums = Slums(4, (30, 30), empty_percent=empty_percent, time_limit=nr_iters, static_people=True, static_slums=True)
         slums.execute(save_steps=int(nr_iters/100))
         
         x_list = [x for x in sorted(slums.avalanche_sizes[-1]) if x != 0]
