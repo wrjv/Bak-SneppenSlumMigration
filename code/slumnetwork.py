@@ -77,8 +77,7 @@ class Slums(object):
         while self.update_state(moore):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
-                (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
-                self.avalanche_sizes.append((counts, bins))
+                self.avalanche_sizes.append(deepcopy(self.avalanche_size))
                 self.barrier_dists.append(self.get_barrier_distribution())
 
             iterator += 1
@@ -132,15 +131,6 @@ class Slums(object):
         # Determine to what other slum the cell goes.
         to_slum = self.get_to_slum(min_slum)
 
-        # Add another new slum with a small chance.
-        if np.random.uniform(0, 1, 1) < self.threshold - np.mean(
-                self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]):
-            print("New slum built.")
-            self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
-            self.previous_location.append((0, 0))
-            self.distances.append([])
-            to_slum = -1
-
         slum_densities = [slum.get_density() for slum in self.slum_list]
         if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
             print("New slum built.")
@@ -152,7 +142,7 @@ class Slums(object):
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
         if self.time == self.new_person:
-            print('new person')
+            print('New person added.')
             for _ in range(5):
                 to_slum = self.get_to_slum(min_slum)
                 self.slum_list[to_slum].add_to_grid()
@@ -196,7 +186,7 @@ class Slums(object):
         float
         A value for lambda used in our simulation.
         '''
-        return (1 / 250) * max([slum.get_density() for slum in self.slum_list])**2
+        return (1 / 250) * max([slum.get_density() for slum in self.slum_list]) ** 2
 
     def get_new_person_time(self, lamb):
         '''
@@ -216,7 +206,6 @@ class Slums(object):
         distribution.
         '''
         return int(self.time + np.random.exponential(1 / lamb))
-
 
     def find_optimal_location(self, origin_slum):
         '''
@@ -257,11 +246,11 @@ class Slums(object):
 
             pvalues.append(parameters[i][2])
 
+        pvalues = np.array(pvalues) ** 10
         # Normalise the pvalues and make a choice of a location for a cell to go to.
-        pvalues = np.array(pvalues) / sum(pvalues)
+        pvalues = pvalues / np.sum(pvalues)
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
-
 
     def alt_find_optimal_location(self):
         '''
@@ -569,35 +558,33 @@ class Slums(object):
         # pylint: disable=unused-variable
         figure, imgs, rows, cols, n_slums, slumaxarr = self.setup_slum_anim(cmap, max_age)
 
-        # Put all information on the avalanche sizes in the right arrays.
-        if len(self.avalanche_sizes[-1][1]) > len(self.avalanche_sizes[-1][0]):
-            x_list = self.avalanche_sizes[-1][1][:-1]
-
-        y_list = self.avalanche_sizes[-1][0] / sum(self.avalanche_sizes[-1][0])
-
-        pairs = [pair for pair in zip(x_list, y_list) if pair[1] != 0]
-
-        # Set the x coordinate to the middle of the bin.
-        x_list = [pair[0] + x_list[1] / 2.0 for pair in pairs]
-        y_list = [pair[1] for pair in pairs]
+        x_list = [x for x in sorted(list(set(self.avalanche_sizes[-1]))) if x != 0]
+        y_list = [self.avalanche_sizes[-1].count(x) for x in x_list]
 
         # Plot the avalanche sizes.
         pwax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
         line, = pwax.loglog(x_list, y_list, ".")
 
+        for i in range(1, len(y_list)):
+            if y_list[-i] > 3:
+                x_list = x_list[:-i]
+                y_list = y_list[:-i]
+                break
+
         # Plot the powerlaw based on the avalanche sizes.
-        popt, _ = curve_fit(powerlaw, x_list, y_list)
+        popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
         line_fit, = pwax.plot(x_list, powerlaw(x_list, *popt), 'r-',
                               label=r'$K=' + str(np.round(popt[1], 3)) + "$")
 
         plt.title("avalanche sizes")
         plt.legend()
         plt.xlabel(r"(S)$")
-        plt.ylabel(r"$(P(S)$")
+        plt.ylabel(r"$P(S)$")
 
         # Plot the barrier distributions
         x_space = np.linspace(0, 1, 300)
         bdax = plt.subplot2grid((1 + rows, cols + 1), (rows, 1))
+        bdax.set_yticklabels([])
 
         line_min, = bdax.plot(x_space, self.barrier_dists[-1][0](x_space), label='minima')
         line_bd, = bdax.plot(x_space, self.barrier_dists[-1][1](x_space), label='barriers')
@@ -638,22 +625,22 @@ class Slums(object):
 
             nonlocal n_slums, pwax, cmap, max_age
 
-            # Put all information on the avalanche sizes in the right arrays.
-            if len(self.avalanche_sizes[i][1]) > len(self.avalanche_sizes[i][0]):
-                x_list = self.avalanche_sizes[i][1][:-1]
-            y_list = self.avalanche_sizes[i][0] / sum(self.avalanche_sizes[i][0])
-
-            pairs = [pair for pair in zip(x_list, y_list) if pair[1] != 0]
             # Set the x coordinate to the middle of the bin.
-            x_list = [pair[0] + x_list[1] / 2.0 for pair in pairs]
-            y_list = [pair[1] for pair in pairs]
+            x_list = [x for x in sorted(list(set(self.avalanche_sizes[i]))) if x != 0]
+            y_list = [self.avalanche_sizes[i].count(x) for x in x_list]
 
             line.set_data(x_list, y_list)
+
+            for i in range(1, len(y_list)):
+                if y_list[-i] > 3:
+                    x_list = x_list[:-i]
+                    y_list = y_list[:-i]
+                    break
 
             # Try to fit a power law.
             if len(x_list) > 4:
                 try:
-                    popt, _ = curve_fit(powerlaw, x_list, y_list)
+                    popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
 
                     line_fit.set_data(x_list, powerlaw(x_list, *popt))
                     line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
@@ -739,7 +726,7 @@ def get_colormap():
     The colour map used.
     '''
 
-    #pylint: disable=maybe-no-member
+    # pylint: disable=maybe-no-member
     cmap = plt.cm.jet_r
     cmap.set_under((1, 1, 1, 1))
 
@@ -753,7 +740,7 @@ def main():
 
     slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=20000)
 
-    slums.execute(save_steps=100)
+    slums.execute(save_steps=500)
     plt.close()
     slums.make_dashboard()
     # slums.plot_barrier_distribution()
@@ -761,6 +748,7 @@ def main():
     # slums.plot_avalanche_size()
     # slums.plot_growth_over_time()
     # slums.plot_slums(start=0)
+
 
 if __name__ == '__main__':
     main()

@@ -151,8 +151,11 @@ class BaxSneppen2D(object):
         The average cell value in the state. Range between
         0 and 1.
         '''
-
-        return np.average([i for i in self.state.flatten() if i != 2])
+        non_empty = self.state[self.state != 2]
+        if len(non_empty) > 0:
+            return np.mean(non_empty)
+        else:
+            return 0
 
     def has_empty(self):
         '''
@@ -216,7 +219,9 @@ class BaxSneppen2D(object):
 
         self.state[empty_choice[0], empty_choice[1]] = new_value
         self.ages[empty_choice[0], empty_choice[1]] = 0
+
         self.neighbour_counts.pop((empty_choice[0], empty_choice[1]), None)
+
         self.update_neighbour_counts(self.state, empty_choice[0], empty_choice[1], 1)
 
         return True
