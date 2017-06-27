@@ -83,7 +83,7 @@ class Slums(object):
         while self.update_state(moore):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
-                self.avalanche_sizes.append(self.avalanche_size)
+                self.avalanche_sizes.append(deepcopy(self.avalanche_size))
                 self.barrier_dists.append(self.get_barrier_distribution())
 
             iterator += 1
@@ -140,15 +140,6 @@ class Slums(object):
         # Add the migration to the migration array
         self.migrations[min_slum - 1, to_slum - 1] += 1
 
-        # Add another new slum with a small chance.
-        if np.random.uniform(0, 1, 1) < self.threshold - np.mean(
-                self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]):
-            print("New slum built.")
-            self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
-            self.previous_location.append((0, 0))
-            self.distances.append([])
-            to_slum = -1
-
         slum_densities = [slum.get_density() for slum in self.slum_list]
         if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
             print("New slum built.")
@@ -204,7 +195,7 @@ class Slums(object):
         float
         A value for lambda used in our simulation.
         '''
-        return (1 / 250) * max([slum.get_density() for slum in self.slum_list])**2
+        return (1 / 250) * max([slum.get_density() for slum in self.slum_list]) ** 2
 
     def get_new_person_time(self, lamb):
         '''
@@ -224,7 +215,6 @@ class Slums(object):
         distribution.
         '''
         return int(self.time + np.random.exponential(1 / lamb))
-
 
     def find_optimal_location(self, origin_slum):
         '''
@@ -265,11 +255,11 @@ class Slums(object):
 
             pvalues.append(parameters[i][2])
 
+        pvalues = np.array(pvalues) ** 10
         # Normalise the pvalues and make a choice of a location for a cell to go to.
-        pvalues = np.array(pvalues) / sum(pvalues)
+        pvalues = pvalues / np.sum(pvalues)
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
-
 
     def alt_find_optimal_location(self):
         '''
@@ -584,8 +574,14 @@ class Slums(object):
         pwax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
         line, = pwax.loglog(x_list, y_list, ".")
 
+        for i in range(1, len(y_list)):
+            if y_list[-i] > 3:
+                x_list = x_list[:-i]
+                y_list = y_list[:-i]
+                break
+
         # Plot the powerlaw based on the avalanche sizes.
-        popt, _ = curve_fit(powerlaw, x_list, y_list)
+        popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
         line_fit, = pwax.plot(x_list, powerlaw(x_list, *popt), 'r-',
                               label=r'$K=' + str(np.round(popt[1], 3)) + "$")
 
@@ -597,6 +593,7 @@ class Slums(object):
         # Plot the barrier distributions
         x_space = np.linspace(0, 1, 300)
         bdax = plt.subplot2grid((1 + rows, cols + 1), (rows, 1))
+        bdax.set_yticklabels([])
 
         line_min, = bdax.plot(x_space, self.barrier_dists[-1][0](x_space), label='minima')
         line_bd, = bdax.plot(x_space, self.barrier_dists[-1][1](x_space), label='barriers')
@@ -604,6 +601,25 @@ class Slums(object):
         plt.legend()
         plt.xlabel(r"$B$")
         plt.ylabel(r"$P(B)$")
+
+        # plot the density over time
+        densities = [[] for _ in range(len(self.states[-1]))]
+        for i in range(len(self.states[-1])):
+            for j in range(len(self.states)):
+                if len(self.states[j]) >= (i+1):
+                    densities[i].append(self.states[j][i].get_density())
+                else:
+                    densities[i].append(0)
+
+        denax = plt.subplot2grid((1 + rows, cols + 1), (rows, 2))
+        denax.set_xlim([0, 1])
+        denax.set_ylim([0, 1])
+        plt.title("Slum densities")
+        plt.ylabel(r"$density$")
+        lines = []
+        for _ in range(len(self.states[-1])):
+            lin, = denax.plot(np.linspace(0,1,len(self.states)))
+            lines.append(lin)
 
         def animate(i):
             '''
@@ -624,10 +640,16 @@ class Slums(object):
 
             line.set_data(x_list, y_list)
 
+            for i in range(1, len(y_list)):
+                if y_list[-i] > 3:
+                    x_list = x_list[:-i]
+                    y_list = y_list[:-i]
+                    break
+
             # Try to fit a power law.
             if len(x_list) > 4:
                 try:
-                    popt, _ = curve_fit(powerlaw, x_list, y_list)
+                    popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
 
                     line_fit.set_data(x_list, powerlaw(x_list, *popt))
                     line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
@@ -640,6 +662,10 @@ class Slums(object):
 
             line_min.set_data(x_space, self.barrier_dists[i][0](x_space))
             line_bd.set_data(x_space, self.barrier_dists[i][1](x_space))
+
+            # plot the density of the slums over time
+            for j, lin in enumerate(lines):
+                lin.set_data(np.linspace(0,1,len(densities[j]))[:i], densities[j][:i])
 
             # Show the slums.
             if len(self.states[i]) > n_slums:
@@ -709,7 +735,7 @@ def get_colormap():
     The colour map used.
     '''
 
-    #pylint: disable=maybe-no-member
+    # pylint: disable=maybe-no-member
     cmap = plt.cm.jet_r
     cmap.set_under((1, 1, 1, 1))
 
@@ -721,9 +747,9 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=3000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=20000)
 
-    slums.execute(save_steps=100)
+    slums.execute(save_steps=500)
     plt.close()
     slums.make_dashboard()
     # slums.plot_barrier_distribution()
@@ -731,6 +757,7 @@ def main():
     # slums.plot_avalanche_size()
     # slums.plot_growth_over_time()
     # slums.plot_slums(start=0)
+
 
 if __name__ == '__main__':
     main()
