@@ -13,6 +13,7 @@ from scipy.stats import gaussian_kde
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import networkx as nx
 
 
 class Slums(object):
@@ -148,7 +149,7 @@ class Slums(object):
         to_slum = self.get_to_slum(min_slum)
 
         # Add the migration to the migration array
-        self.migrations[min_slum][to_slum[0]] += 1
+        self.migrations[min_slum][to_slum] += 1
 
         slum_densities = [slum.get_density() for slum in self.slum_list]
         if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
@@ -170,7 +171,7 @@ class Slums(object):
             print('New person added.')
             for _ in range(5):
                 to_slum = self.get_to_slum(min_slum)
-                self.migrations['new'][to_slum[0]] += 1
+                self.migrations['new'][to_slum] += 1
                 self.slum_list[to_slum].add_to_grid()
             self.new_person = self.get_new_person_time(self.get_lambda())
 
@@ -275,8 +276,9 @@ class Slums(object):
         pvalues = np.array(pvalues) ** 10
         # Normalise the pvalues and make a choice of a location for a cell to go to.
         pvalues = pvalues / np.sum(pvalues)
+        return np.argmax(pvalues)
 
-        return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
+        #return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
 
     def alt_find_optimal_location(self):
         '''
@@ -706,7 +708,15 @@ class Slums(object):
 
         _ = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
                                     blit=False)
-        plt.show()
+        #plt.show()
+
+    def plot_network(self):
+        plt.figure()
+        g = nx.from_numpy_matrix(self.migration_matrix, create_using=nx.DiGraph())
+        nx.draw_circular(g)
+        #plt.show()
+
+
 
 
 # x, a and k are commonly used variables in a powerlaw distribution.
@@ -759,6 +769,8 @@ def get_colormap():
     return cmap
 
 
+
+
 def main():
     '''
     Runs a sample slum and shows different related plots.
@@ -766,9 +778,11 @@ def main():
 
     slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=20000)
 
-    slums.execute(save_steps=500)
+    slums.execute(save_steps=100)
     plt.close()
-    slums.make_dashboard()
+    slums.plot_network()
+    #slums.make_dashboard()
+    plt.show()
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     # slums.plot_avalanche_size()
