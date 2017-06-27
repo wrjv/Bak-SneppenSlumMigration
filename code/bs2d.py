@@ -151,8 +151,11 @@ class BaxSneppen2D(object):
         The average cell value in the state. Range between
         0 and 1.
         '''
-
-        return np.average([i for i in self.state.flatten() if i != 2])
+        non_empty = self.state[self.state != 2]
+        if len(non_empty) > 0:
+            return np.mean(non_empty)
+        else:
+            return 0
 
     def has_empty(self):
         '''

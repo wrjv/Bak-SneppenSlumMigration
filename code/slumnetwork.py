@@ -132,15 +132,6 @@ class Slums(object):
         # Determine to what other slum the cell goes.
         to_slum = self.get_to_slum(min_slum)
 
-        # Add another new slum with a small chance.
-        if np.random.uniform(0, 1, 1) < self.threshold - np.mean(
-                self.slum_list[min_slum].state[self.slum_list[min_slum].state != 2]):
-            print("New slum built.")
-            self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
-            self.previous_location.append((0, 0))
-            self.distances.append([])
-            to_slum = -1
-
         slum_densities = [slum.get_density() for slum in self.slum_list]
         if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
             print("New slum built.")
@@ -196,7 +187,7 @@ class Slums(object):
         float
         A value for lambda used in our simulation.
         '''
-        return (1 / 250) * max([slum.get_density() for slum in self.slum_list])**2
+        return (1 / 250) * max([slum.get_density() for slum in self.slum_list]) ** 2
 
     def get_new_person_time(self, lamb):
         '''
@@ -216,7 +207,6 @@ class Slums(object):
         distribution.
         '''
         return int(self.time + np.random.exponential(1 / lamb))
-
 
     def find_optimal_location(self, origin_slum):
         '''
@@ -257,11 +247,11 @@ class Slums(object):
 
             pvalues.append(parameters[i][2])
 
+        pvalues = np.array(pvalues) ** 10
         # Normalise the pvalues and make a choice of a location for a cell to go to.
-        pvalues = np.array(pvalues) / sum(pvalues)
+        pvalues = pvalues / np.sum(pvalues)
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
-
 
     def alt_find_optimal_location(self):
         '''
@@ -598,6 +588,7 @@ class Slums(object):
         # Plot the barrier distributions
         x_space = np.linspace(0, 1, 300)
         bdax = plt.subplot2grid((1 + rows, cols + 1), (rows, 1))
+        bdax.set_yticklabels([])
 
         line_min, = bdax.plot(x_space, self.barrier_dists[-1][0](x_space), label='minima')
         line_bd, = bdax.plot(x_space, self.barrier_dists[-1][1](x_space), label='barriers')
@@ -716,7 +707,7 @@ def get_colormap():
     The colour map used.
     '''
 
-    #pylint: disable=maybe-no-member
+    # pylint: disable=maybe-no-member
     cmap = plt.cm.jet_r
     cmap.set_under((1, 1, 1, 1))
 
@@ -728,7 +719,7 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=20000)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=40000)
 
     slums.execute(save_steps=100)
     plt.close()
@@ -738,6 +729,7 @@ def main():
     # slums.plot_avalanche_size()
     # slums.plot_growth_over_time()
     # slums.plot_slums(start=0)
+
 
 if __name__ == '__main__':
     main()
