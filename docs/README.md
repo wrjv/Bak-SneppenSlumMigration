@@ -66,7 +66,7 @@ Each time step, the following steps are taken:
 
 ## New Slum Locations
 
-<img src="http://slum.life/videos/slum_barebones.gif" width="100%" alt="An indian slum."/>
+<img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%" alt="An indian slum."/>
 
 
 
