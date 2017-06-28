@@ -39,7 +39,7 @@ class Slums(object):
         self.random_select = random_select
 
         self.threshold = 0
-
+        self.n_slums = n_slums
         self.avalanche_size = [0]
         self.avalanche_sizes = []
         self.aval_start_val = 0
@@ -64,8 +64,9 @@ class Slums(object):
         self.barrier_dists = []
 
         self.new_person = self.get_new_person_time(0.2)
+        self.migration_matrices = []
 
-    def execute(self, moore=False, save_steps=25):
+    def execute(self, moore=False, save_steps=25, net_freq=25):
         '''
         Executes the slum simulation.
 
@@ -94,12 +95,25 @@ class Slums(object):
 
             iterator += 1
 
+            if self.time % net_freq == 0:
+                self.migration_matrix = np.zeros((len(self.migrations), len(self.migrations)))
+                for key in self.migrations:
+                    if key != 'new':
+                        for inner_key in self.migrations[0]:
+                            self.migration_matrix[key][inner_key] = self.migrations[key][inner_key]
+                        self.migration_matrix[-1][key] = self.migrations['new'][key]
+
+                self.migration_matrices.append(deepcopy(self.migration_matrix))
+                self.reset_migration()
+
         self.migration_matrix = np.zeros((len(self.migrations), len(self.migrations)))
         for key in self.migrations:
             if key != 'new':
                 for inner_key in self.migrations[0]:
                     self.migration_matrix[key][inner_key] = self.migrations[key][inner_key]
                 self.migration_matrix[-1][key] = self.migrations['new'][key]
+
+
 
     def update_state(self, moore=False):
         '''
@@ -166,6 +180,9 @@ class Slums(object):
                 self.migrations[len(self.slum_list) - 1][i] = 0
                 self.migrations[i][len(self.slum_list) - 1] = 0
 
+            self.n_slums += 1
+
+
         # Add new people to the grid.
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
@@ -184,6 +201,19 @@ class Slums(object):
 
         self.time += 1
         return True
+
+    def reset_migration(self):
+        # Create migration dict
+        self.migrations = {}
+        self.migrations['new'] = {}
+        for i in range(self.n_slums):
+            self.migrations[i] = {}
+            self.migrations['new'][i] = 0
+            for j in range(self.n_slums):
+                self.migrations[i][j] = 0
+        # The variable where the execute function will place the migration matrix in
+        self.migration_matrix = None
+
 
     def get_to_slum(self, min_slum):
         '''
@@ -278,9 +308,9 @@ class Slums(object):
         pvalues = np.array(pvalues) ** 10
         # Normalise the pvalues and make a choice of a location for a cell to go to.
         pvalues = pvalues / np.sum(pvalues)
-        return np.argmax(pvalues)
+        #return np.argmax(pvalues)
 
-        #return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
+        return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)[0]
 
     def alt_find_optimal_location(self):
         '''
@@ -724,11 +754,27 @@ class Slums(object):
         #plt.show()
 
     def plot_network(self):
-        plt.figure()
-        g = nx.from_numpy_matrix(self.migration_matrix, create_using=nx.DiGraph())
-        nx.draw_circular(g)
+        figure = plt.figure()
+        g = nx.from_numpy_matrix(self.migration_matrices[0], create_using=nx.MultiDiGraph())
+        pos = nx.circular_layout(g)
+        nodes = nx.draw_networkx_nodes(g, pos)
+        edges = nx.draw_networkx_edges(g, pos)
+        #nx.draw_circular(g)
         #plt.show()
+        #figure.canvas.draw()
 
+        def animate(i):
+            figure.clf()
+            g = nx.from_numpy_matrix(self.migration_matrices[i], create_using=nx.MultiDiGraph())
+            pos = nx.circular_layout(g)
+            nodes = nx.draw_networkx_nodes(g, pos)
+            edges = nx.draw_networkx_edges(g, pos)
+            figure.canvas.draw()
+
+        print(range(0, len(self.migration_matrices)))
+        _ = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=200,
+                                    blit=False)
+        plt.show()
 
 
 
@@ -753,7 +799,7 @@ def empty_percent_parameter_plot(N, repeats, nr_iters):
     for i, empty_percent in enumerate(empty_percents):
         slums = Slums(4, (30, 30), empty_percent=empty_percent, time_limit=nr_iters)
         slums.execute(save_steps=int(nr_iters/100))
-        
+
         x_list = [x for x in sorted(slums.avalanche_sizes[-1]) if x != 0]
         y_list = [slums.avalanche_sizes[-1].count(x) for x in x_list]
 
@@ -769,7 +815,7 @@ def empty_percent_parameter_plot(N, repeats, nr_iters):
     plt.ylabel("K")
 
     plt.show()
-        
+
 # x, a and k are commonly used variables in a powerlaw distribution.
 # pylint: disable=invalid-name
 def powerlaw(x, a, k):
@@ -828,13 +874,13 @@ def main():
     '''
     # empty_percent_parameter_plot(10, 10, 1000)
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=2500)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=5000)
 
-    slums.execute(save_steps=100)
+    slums.execute(save_steps=100, net_freq=100)
     plt.close()
     slums.plot_network()
     #slums.make_dashboard()
-    plt.show()
+
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     # slums.plot_avalanche_size()
