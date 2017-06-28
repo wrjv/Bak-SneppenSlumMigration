@@ -13,6 +13,7 @@ from scipy.stats import gaussian_kde
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from matplotlib.patches import FancyArrowPatch, Circle
 import networkx as nx
 
 
@@ -41,7 +42,7 @@ class Slums(object):
         self.random_select = random_select
 
         self.threshold = 0
-
+        self.n_slums = n_slums
         self.avalanche_size = [0]
         self.avalanche_sizes = []
         self.aval_start_val = 0
@@ -66,8 +67,9 @@ class Slums(object):
         self.barrier_dists = []
 
         self.new_person = self.get_new_person_time(0.2)
+        self.migration_matrices = []
 
-    def execute(self, moore=False, save_steps=25):
+    def execute(self, moore=False, save_steps=25, net_freq=25):
         '''
         Executes the slum simulation.
 
@@ -96,12 +98,25 @@ class Slums(object):
 
             iterator += 1
 
+            if self.time % net_freq == 0:
+                self.migration_matrix = np.zeros((len(self.migrations), len(self.migrations)))
+                for key in self.migrations:
+                    if key != 'new':
+                        for inner_key in self.migrations[0]:
+                            self.migration_matrix[key][inner_key] = self.migrations[key][inner_key]
+                        self.migration_matrix[-1][key] = self.migrations['new'][key]
+
+                self.migration_matrices.append(deepcopy(self.migration_matrix))
+                self.reset_migration()
+
         self.migration_matrix = np.zeros((len(self.migrations), len(self.migrations)))
         for key in self.migrations:
             if key != 'new':
                 for inner_key in self.migrations[0]:
                     self.migration_matrix[key][inner_key] = self.migrations[key][inner_key]
                 self.migration_matrix[-1][key] = self.migrations['new'][key]
+
+
 
     def update_state(self, moore=False):
         '''
@@ -157,6 +172,7 @@ class Slums(object):
 
         slum_densities = [slum.get_density() for slum in self.slum_list]
 
+
         if not self.static_slums:
             if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
                 print("New slum built.")
@@ -169,6 +185,7 @@ class Slums(object):
                 for i in range(len(self.slum_list)):
                     self.migrations[len(self.slum_list) - 1][i] = 0
                     self.migrations[i][len(self.slum_list) - 1] = 0
+                self.n_slums += 1
 
 
         # migrate the person
@@ -191,6 +208,19 @@ class Slums(object):
 
         self.time += 1
         return True
+
+    def reset_migration(self):
+        # Create migration dict
+        self.migrations = {}
+        self.migrations['new'] = {}
+        for i in range(self.n_slums):
+            self.migrations[i] = {}
+            self.migrations['new'][i] = 0
+            for j in range(self.n_slums):
+                self.migrations[i][j] = 0
+        # The variable where the execute function will place the migration matrix in
+        self.migration_matrix = None
+
 
     def get_to_slum(self, min_slum):
         '''
@@ -285,7 +315,8 @@ class Slums(object):
         pvalues = np.array(pvalues) ** 10
         # Normalise the pvalues and make a choice of a location for a cell to go to.
         pvalues = pvalues / np.sum(pvalues)
-        # return np.argmax(pvalues)
+        #return np.argmax(pvalues)
+
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)[0]
 
@@ -732,10 +763,72 @@ class Slums(object):
         #plt.show()
 
     def plot_network(self):
-        plt.figure()
-        g = nx.from_numpy_matrix(self.migration_matrix, create_using=nx.DiGraph())
-        nx.draw_circular(g)
-        #plt.show()
+        figure = plt.figure()
+
+
+
+        def animate(i):
+            G = nx.from_numpy_matrix(self.migration_matrices[i], create_using=nx.DiGraph())
+            layout = nx.circular_layout(G)
+            figure.clf()
+            ax = figure.gca()
+
+            ax.set_ylim(-1.25, 1.25)
+            ax.set_xlim(-1.25, 1.25)
+            ax.set_yticklabels([])
+            ax.set_xticklabels([])
+
+            edge_labels = {}
+
+            # Determine the maximum edge weight and labels
+            max_weight = 0
+            for (u, v, d) in G.edges(data=True):
+                if d['weight'] > max_weight and u != v:
+                    max_weight = d['weight']
+
+            bbox_opts = dict(alpha=0, lw=0)
+
+            # Draw all the nodes
+            nx.draw_networkx_labels(G, pos=layout, font_size=30, font_color='r', font_weight='bold')
+
+            # Draw some curved edges
+            seen = {}
+
+            for (u, v, d) in G.edges(data=True):
+                if u == v:
+                    ax.text(layout[u][0] - (len(str(d['weight'])) - 1) * 0.006, layout[u][1] - 0.08,
+                            int(d['weight']), fontsize=15)
+                    continue
+
+                n1 = layout[u]
+                n2 = layout[v]
+                rad = 0.1
+
+                if (u, v) in seen:
+                    rad = seen.get((u, v))
+                    rad = (rad + np.sign(rad) * 0.1) * -1
+
+                e = FancyArrowPatch(n1, n2, arrowstyle='fancy',
+                                    connectionstyle='arc3,rad=%s' % rad,
+                                    mutation_scale=d['weight'] / max_weight * 25,
+                                    lw=2,
+                                    alpha=0.2,
+                                    color='g')
+                seen[(u, v)] = rad
+                ax.add_patch(e)
+
+            for (u, v, d) in G.edges(data=True):
+                if u == v:
+                    G.remove_edge(u, v)
+                else:
+                    edge_labels[(u, v)] = int(d['weight'])
+
+            nx.draw_networkx_edge_labels(G, pos=layout, edge_labels=edge_labels, label_pos=0.9, font_size=16,
+                                         bbox=bbox_opts)
+
+        _ = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=200,
+                                    blit=False)
+        plt.show()
 
 
 
@@ -778,6 +871,7 @@ def empty_percent_parameter_plot(N, repeats, nr_iters):
     plt.ylabel("K")
 
     plt.show()
+
 
 def singleslumsize_parameter_plot(sizes, repeats, nr_iters):
     '''
@@ -913,15 +1007,13 @@ def main():
     # empty_percent_parameter_plot(10, 10, 1000)
     # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=2500)
+    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=5000)
 
-    slums.execute(save_steps=100)
+    slums.execute(save_steps=100, net_freq=20)
     plt.close()
     slums.plot_network()
     #slums.make_dashboard()
     plt.show()
-    # singleslumsize_parameter_plot(np.linspace(5,50,10), 5, 30000)
-    # nrofslums_parameter_plot(np.linspace(1,5,5), 5, 10000)
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     # slums.plot_avalanche_size()
