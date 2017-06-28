@@ -8,7 +8,7 @@
  
  $(document).ready(function()
  {
-     $(".gif").hover(
+     $(".gif").click(
          function()
          {
            var src = $(this).attr("src");
@@ -20,6 +20,8 @@
            $(this).attr("src", src.replace(/\.gif$/i, ".png"));
          });
  });
+
+ document.getElementById("project_title").innerHTML = "Complex Systems Simulation";
 </script>
 
 </head>
@@ -38,8 +40,16 @@
  	box-shadow: none;
  }
 
- #main_content {
- 	max-width: 960px !important;
+ #main_content, .inner {
+ 	max-width: 880px !important;
+ }
+
+ #project_title, #project_tagline {
+ 	text-align: center
+ }
+
+ .gif {
+ 	cursor: pointer;
  }
 </style>
 
@@ -47,7 +57,7 @@
 
 Slum migration is a phenomenon mostly studied by social sciences and a topic difficult to quantify and make tangible. By modifying a 2D [Bak-Sneppen model](https://en.wikipedia.org/wiki/Bak%E2%80%93Sneppen_model), often used to model evolution, we attempt to generate the migration patterns. We show that by using only a few rules in a simple cellular automaton complex migration patterns start to occur. 
 
-<img src="https://familyincluded.com/wp-content/uploads/2016/07/17252250461_11094da4cd_k.jpg" width="100%"/>
+<img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Slums_in_Caracas%2C_Venezuela.jpg" width="100%"/>
 
 ## The Basic Model
 
@@ -61,15 +71,16 @@ Each time step, the following steps are taken:
 <li>Empty the previously selected cell at A. and lower the cells within the <a href="https://en.wikipedia.org/wiki/Von_Neumann_neighborhood">von Neumann Neighbourhood</a> by a certain factor.</li>
 </ol>
 
-<img src="http://slum.life/images/bak-sneppen_expl.png" width="100%" alt="Basic Bax-Sneppen steps."/>
+<img src="http://slum.life/images/bak-sneppen_expl.png" width="100%"/>
 
-<img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%" alt="An indian slum."/>
+<img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
 
 ## Influence of Slum Parameters
 
 ## More Slums
-<img src="https://static01.nyt.com/images/2013/09/12/world/asia/12-slum-mumbai-indiaInk/12-slum-mumbai-indiaInk-superJumbo.jpg" width="100%"/>
+<img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Dharavi_India.jpg" width="100%"/>
 
+Avalanches .
 
 ## The Destination
 
