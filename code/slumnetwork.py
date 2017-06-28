@@ -755,7 +755,7 @@ class Slums(object):
 
         ani = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
                                     blit=False)
-        ani.save('slum_barebones.mp4', writer='ffmpeg', dpi=480, bitrate=1200)
+        ani.save('../docs/videos/slum_barebones.mp4', writer='ffmpeg', dpi=480)
         plt.show()
 
     def plot_network(self):
@@ -998,7 +998,7 @@ def main():
     '''
     # empty_percent_parameter_plot(10, 10, 1000)
 
-    slums = Slums(1, (30, 30), empty_percent=0.25, time_limit=2500, static_people=True, static_slums=True)
+    slums = Slums(1, (30, 30), empty_percent=0.25, time_limit=250, static_people=True, static_slums=True)
     # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
 
