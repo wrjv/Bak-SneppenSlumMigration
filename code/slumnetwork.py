@@ -36,7 +36,7 @@ class Slums(object):
         self.save_steps = 1
 
         self.slum_size = slum_size[0]
-        self.static_slums  = static_slums
+        self.static_slums = static_slums
         self.static_people = static_people
 
         self.random_select = random_select
@@ -116,8 +116,6 @@ class Slums(object):
                     self.migration_matrix[key][inner_key] = self.migrations[key][inner_key]
                 self.migration_matrix[-1][key] = self.migrations['new'][key]
 
-
-
     def update_state(self, moore=False):
         '''
         Updates the current state. Used by the execution
@@ -172,7 +170,6 @@ class Slums(object):
 
         slum_densities = [slum.get_density() for slum in self.slum_list]
 
-
         if not self.static_slums:
             if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
                 print("New slum built.")
@@ -186,7 +183,6 @@ class Slums(object):
                     self.migrations[len(self.slum_list) - 1][i] = 0
                     self.migrations[i][len(self.slum_list) - 1] = 0
                 self.n_slums += 1
-
 
         # migrate the person
         self.slum_list[to_slum].add_to_grid(min(min_vals))
@@ -220,7 +216,6 @@ class Slums(object):
                 self.migrations[i][j] = 0
         # The variable where the execute function will place the migration matrix in
         self.migration_matrix = None
-
 
     def get_to_slum(self, min_slum):
         '''
@@ -315,7 +310,7 @@ class Slums(object):
         pvalues = np.array(pvalues) ** 10
         # Normalise the pvalues and make a choice of a location for a cell to go to.
         pvalues = pvalues / np.sum(pvalues)
-        #return np.argmax(pvalues)
+        # return np.argmax(pvalues)
 
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)[0]
@@ -353,7 +348,7 @@ class Slums(object):
 
         # Normalise the pvalues and make a choice of a location for a cell to go to.
         total = sum(pvalues)
-        pvalues = [pvalue/total for pvalue in pvalues]
+        pvalues = [pvalue / total for pvalue in pvalues]
 
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)[0]
 
@@ -673,21 +668,21 @@ class Slums(object):
         densities = [[] for _ in range(len(self.states[-1]))]
         for i in range(len(self.states[-1])):
             for j in range(len(self.states)):
-                if len(self.states[j]) >= (i+1):
+                if len(self.states[j]) >= (i + 1):
                     densities[i].append(self.states[j][i].get_density())
                 else:
                     densities[i].append(0)
 
-        denax = plt.subplot2grid((1 + rows, cols + 1), (rows, 2))
-        denax.set_xlim([0, 1])
-        denax.set_ylim([0, 1])
-        plt.title("Slum densities")
-        plt.ylabel(r"$density$")
-        lines = []
-
-        for _ in range(len(self.states[-1])):
-            lin, = denax.plot(np.linspace(0,1,len(self.states)))
-            lines.append(lin)
+        # denax = plt.subplot2grid((1 + rows, cols + 1), (rows, 2))
+        # denax.set_xlim([0, 1])
+        # denax.set_ylim([0, 1])
+        # plt.title("Slum densities")
+        # plt.ylabel(r"$density$")
+        # lines = []
+        #
+        # for _ in range(len(self.states[-1])):
+        #     lin, = denax.plot(np.linspace(0, 1, len(self.states)))
+        #     lines.append(lin)
 
         def animate(i):
             '''
@@ -735,8 +730,8 @@ class Slums(object):
             line_bd.set_data(x_space, self.barrier_dists[i][1](x_space))
 
             # plot the density of the slums over time
-            for j, lin in enumerate(lines):
-                lin.set_data(np.linspace(0,1,len(densities[j]))[:i], densities[j][:i])
+            # for j, lin in enumerate(lines):
+            #     lin.set_data(np.linspace(0, 1, len(densities[j]))[:i], densities[j][:i])
 
             # Show the slums.
             if len(self.states[i]) > n_slums:
@@ -758,14 +753,13 @@ class Slums(object):
                 for img in imgs:
                     img.set_array(-np.ones((self.slum_size, self.slum_size)))
 
-        _ = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
+        ani = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
                                     blit=False)
-        #plt.show()
+        ani.save('../docs/videos/slum_barebones.mp4', writer='ffmpeg', dpi=480)
+        plt.show()
 
     def plot_network(self):
         figure = plt.figure()
-
-
 
         def animate(i):
             G = nx.from_numpy_matrix(self.migration_matrices[i], create_using=nx.DiGraph())
@@ -826,11 +820,11 @@ class Slums(object):
             nx.draw_networkx_edge_labels(G, pos=layout, edge_labels=edge_labels, label_pos=0.9, font_size=16,
                                          bbox=bbox_opts)
 
-        _ = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=200,
+        ani = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=600,
                                     blit=False)
+        ani.to_html5_video()
+        #ani.save('slum_barebones.mp4', writer='ffmpeg', dpi=480, bitrate=2000)
         plt.show()
-
-
 
 
 def empty_percent_parameter_plot(N, repeats, nr_iters):
@@ -847,7 +841,7 @@ def empty_percent_parameter_plot(N, repeats, nr_iters):
     ===================================================
     None
     '''
-    empty_percents = np.linspace(0.05,0.95,N)
+    empty_percents = np.linspace(0.05, 0.95, N)
     Ks = [[] for _ in range(N)]
 
     for i, empty_percent in enumerate(empty_percents):
@@ -857,7 +851,6 @@ def empty_percent_parameter_plot(N, repeats, nr_iters):
             
             x_list = [x for x in sorted(slums.avalanche_sizes[-1]) if x != 0]
             y_list = [slums.avalanche_sizes[-1].count(x) for x in x_list]
-
             K, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
 
             Ks[i].append(K[1])
@@ -948,6 +941,7 @@ def nrofslums_parameter_plot(nrs, repeats, nr_iters):
     plt.ylabel("K")
     plt.show()
 
+
 # x, a and k are commonly used variables in a powerlaw distribution.
 # pylint: disable=invalid-name
 def powerlaw(x, a, k):
@@ -992,12 +986,10 @@ def get_colormap():
     '''
 
     # pylint: disable=maybe-no-member
-    cmap = plt.cm.jet_r
+    cmap = plt.cm.jet
     cmap.set_under((1, 1, 1, 1))
 
     return cmap
-
-
 
 
 def main():
@@ -1005,15 +997,15 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
     # empty_percent_parameter_plot(10, 10, 1000)
+
+    slums = Slums(1, (30, 30), empty_percent=0.25, time_limit=250, static_people=True, static_slums=True)
     # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=5000)
 
-    slums.execute(save_steps=100, net_freq=20)
-    plt.close()
-    slums.plot_network()
-    #slums.make_dashboard()
-    plt.show()
+    slums.execute(save_steps=1, net_freq=25)
+    # slums.plot_network()
+    slums.make_dashboard()
+
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     # slums.plot_avalanche_size()
