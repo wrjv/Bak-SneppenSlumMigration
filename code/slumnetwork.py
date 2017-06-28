@@ -783,7 +783,7 @@ class Slums(object):
             # Determine the maximum edge weight and labels
             max_weight = 0
             for (u, v, d) in G.edges(data=True):
-                if d['weight'] > max_weight:
+                if d['weight'] > max_weight and u != v:
                     max_weight = d['weight']
 
             bbox_opts = dict(alpha=0, lw=0)
