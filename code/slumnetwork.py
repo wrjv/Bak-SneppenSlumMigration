@@ -591,7 +591,7 @@ class Slums(object):
         cols = ceil(size ** 0.5) + 1
         rows = ceil(size / cols)
 
-        figure = plt.figure(figsize=(12, 10))
+        figure = plt.figure(figsize=(13, 10))
 
         for i in range(size):
             slumaxarr.append(plt.subplot2grid((1 + rows, cols), (i // cols , (i % cols))))
@@ -621,7 +621,6 @@ class Slums(object):
         # n_slums is used in the nested animate function.
         # pylint: disable=unused-variable
         figure, imgs, rows, cols, n_slums, slumaxarr = self.setup_slum_anim(cmap, max_age)
-        plt.savefig('../docs/videos/slum_multiple.png')
         x_list = [x for x in sorted(list(set(self.avalanche_sizes[-1]))) if x != 0]
         y_list = [self.avalanche_sizes[-1].count(x) for x in x_list]
 
@@ -753,6 +752,7 @@ class Slums(object):
                 for img in imgs:
                     img.set_array(-np.ones((self.slum_size, self.slum_size)))
 
+        plt.savefig('../docs/videos/slum_multiple.png')
         ani = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
                                     blit=False)
         ani.save('../docs/videos/slum_multiple.gif', writer='imagemagick')
@@ -998,7 +998,7 @@ def main():
     '''
     # empty_percent_parameter_plot(10, 10, 1000)
 
-    slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=500, static_people=True, static_slums=True)
+    slums = Slums(3, (30, 30), empty_percent=0.1, time_limit=500, static_people=True, static_slums=True)
     # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
 
