@@ -27,7 +27,5 @@ How did we do the fitness?
 
 ## New Slum Locations
 
-<video width="320" height="240" controls>
-  <source src="http://slum.life/videos/slum_barebones.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+<img src="http://slum.life/docs/videos/slum_barebones.gif" width="100%" alt="An indian slum."/>
+
