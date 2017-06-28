@@ -19,14 +19,14 @@ Slum migration is a phenomenon mostly studied by social sciences and a topic dif
 
 ## The Basic Model
 
-Bak-Sneppen does not have empty cells, but this modified model does.
+The basic version of the Slum Migration Model has only some slight modifications with respect to the basic 2D Bak-Sneppen Model. First of all it has empty cells, whereas the original method did not have those. These cells are needed to migrate cells to a location where they might get a higher fitness. The interactions with the neighbours remain intact, but a neighbouring migrating cell results in a percentual decrease of the fitness instead of a randomised new fitness.
 
 Each time step, the following steps are taken:
 <ol type="A">
 <li>Select the cell with the lowest fitness within the model.</li>
 <li>Select a random empty cell and give this cell a new fitness using the formula mentioned below.</li>
 <img src="https://latex.codecogs.com/gif.latex?new\_fitness&space;=&space;old\_fitness&space;&plus;&space;|\mathcal{N}(0,&space;\frac{1&space;-&space;old\_fitness}{3})|" class="latex"/>
-<li>Empty the previously selected cell at A. and lower the cells within the [von Neumann Neighbourhood](https://en.wikipedia.org/wiki/Bak%E2%80%93Sneppen_model) by a certain factor.</li>
+<li>Empty the previously selected cell at A. and lower the cells within the <a href="https://en.wikipedia.org/wiki/Von_Neumann_neighborhood">von Neumann Neighbourhood</a> by a certain factor.</li>
 </ol>
 
 <img src="http://slum.life/images/bak-sneppen_expl.png" width="100%" alt="Basic Bax-Sneppen steps."/>
