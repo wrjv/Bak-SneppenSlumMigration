@@ -28,5 +28,5 @@ How did we do the fitness?
 
 ## New Slum Locations
 
-<img src="https:slum.life/videos/slum_barebones.gif" width="100%" alt="An indian slum."/>
+<img src="http://slum.life/videos/slum_barebones.gif" width="100%" alt="An indian slum."/>
 
