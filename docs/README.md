@@ -20,6 +20,8 @@
            $(this).attr("src", src.replace(/\.gif$/i, ".png"));
          });
  });
+
+ document.getElementById("project_title").innerHTML = "Complex Systems Simulation";
 </script>
 
 </head>
