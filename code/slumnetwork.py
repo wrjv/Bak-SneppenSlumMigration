@@ -13,6 +13,7 @@ from scipy.stats import gaussian_kde
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from matplotlib.patches import FancyArrowPatch, Circle
 import networkx as nx
 
 
@@ -27,7 +28,7 @@ class Slums(object):
     # and all slums.
 
     def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25, random_select=False,
-                 time_limit=10000):
+                 time_limit=10000, static_slums=False, static_people=False):
         # Set some overall parameters.
         self.time = 0
         self.time_limit = time_limit
@@ -35,6 +36,8 @@ class Slums(object):
         self.save_steps = 1
 
         self.slum_size = slum_size[0]
+        self.static_slums  = static_slums
+        self.static_people = static_people
 
         self.random_select = random_select
 
@@ -168,31 +171,35 @@ class Slums(object):
         self.migrations[min_slum][to_slum] += 1
 
         slum_densities = [slum.get_density() for slum in self.slum_list]
-        if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
-            print("New slum built.")
-            self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
-            self.previous_location.append((0, 0))
-            self.distances.append([])
-
-            self.migrations[len(self.slum_list) - 1] = {}
-            self.migrations['new'][len(self.slum_list) - 1] = 0
-            for i in range(len(self.slum_list)):
-                self.migrations[len(self.slum_list) - 1][i] = 0
-                self.migrations[i][len(self.slum_list) - 1] = 0
-
-            self.n_slums += 1
 
 
-        # Add new people to the grid.
+        if not self.static_slums:
+            if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
+                print("New slum built.")
+                self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
+                self.previous_location.append((0, 0))
+                self.distances.append([])
+
+                self.migrations[len(self.slum_list) - 1] = {}
+                self.migrations['new'][len(self.slum_list) - 1] = 0
+                for i in range(len(self.slum_list)):
+                    self.migrations[len(self.slum_list) - 1][i] = 0
+                    self.migrations[i][len(self.slum_list) - 1] = 0
+                self.n_slums += 1
+
+
+        # migrate the person
         self.slum_list[to_slum].add_to_grid(min(min_vals))
 
-        if self.time == self.new_person:
-            print('New person added.')
-            for _ in range(5):
-                to_slum = self.get_to_slum(min_slum)
-                self.migrations['new'][to_slum] += 1
-                self.slum_list[to_slum].add_to_grid()
-            self.new_person = self.get_new_person_time(self.get_lambda())
+        if not self.static_people:
+            if self.time == self.new_person:
+                # Add new people to the grid.
+                print('New person added.')
+                for _ in range(5):
+                    to_slum = self.get_to_slum(min_slum)
+                    self.migrations['new'][to_slum] += 1
+                    self.slum_list[to_slum].add_to_grid()
+                self.new_person = self.get_new_person_time(self.get_lambda())
 
         # Check if the time limit is reached, otherwise return False (and
         # the execution ends)
@@ -310,6 +317,7 @@ class Slums(object):
         pvalues = pvalues / np.sum(pvalues)
         #return np.argmax(pvalues)
 
+
         return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)[0]
 
     def alt_find_optimal_location(self):
@@ -344,9 +352,10 @@ class Slums(object):
                 pvalues.append(0)
 
         # Normalise the pvalues and make a choice of a location for a cell to go to.
-        pvalues = pvalues / sum(pvalues)
+        total = sum(pvalues)
+        pvalues = [pvalue/total for pvalue in pvalues]
 
-        return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
+        return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)[0]
 
     def plot_slums(self, start=0, reset=True):
         '''
@@ -754,27 +763,74 @@ class Slums(object):
         #plt.show()
 
     def plot_network(self):
+
         figure = plt.figure()
-        g = nx.from_numpy_matrix(self.migration_matrices[0], create_using=nx.MultiDiGraph())
-        pos = nx.circular_layout(g)
-        nodes = nx.draw_networkx_nodes(g, pos)
-        edges = nx.draw_networkx_edges(g, pos)
-        #nx.draw_circular(g)
-        #plt.show()
-        #figure.canvas.draw()
+
+
 
         def animate(i):
+            G = nx.from_numpy_matrix(self.migration_matrices[i], create_using=nx.DiGraph())
+            layout = nx.circular_layout(G)
             figure.clf()
-            g = nx.from_numpy_matrix(self.migration_matrices[i], create_using=nx.MultiDiGraph())
-            pos = nx.circular_layout(g)
-            nodes = nx.draw_networkx_nodes(g, pos)
-            edges = nx.draw_networkx_edges(g, pos)
-            figure.canvas.draw()
+            ax = figure.gca()
 
-        print(range(0, len(self.migration_matrices)))
+            ax.set_ylim(-1.25, 1.25)
+            ax.set_xlim(-1.25, 1.25)
+            ax.set_yticklabels([])
+            ax.set_xticklabels([])
+
+            edge_labels = {}
+
+            # Determine the maximum edge weight and labels
+            max_weight = 0
+            for (u, v, d) in G.edges(data=True):
+                if d['weight'] > max_weight:
+                    max_weight = d['weight']
+
+            bbox_opts = dict(alpha=0, lw=0)
+
+            # Draw all the nodes
+            nx.draw_networkx_labels(G, pos=layout, font_size=30, font_color='r', font_weight='bold')
+
+            # Draw some curved edges
+            seen = {}
+
+            for (u, v, d) in G.edges(data=True):
+                if u == v:
+                    ax.text(layout[u][0] - (len(str(d['weight'])) - 1) * 0.006, layout[u][1] - 0.08,
+                            int(d['weight']), fontsize=15)
+                    continue
+
+                n1 = layout[u]
+                n2 = layout[v]
+                rad = 0.1
+
+                if (u, v) in seen:
+                    rad = seen.get((u, v))
+                    rad = (rad + np.sign(rad) * 0.1) * -1
+
+                e = FancyArrowPatch(n1, n2, arrowstyle='fancy',
+                                    connectionstyle='arc3,rad=%s' % rad,
+                                    mutation_scale=d['weight'] / max_weight * 25,
+                                    lw=2,
+                                    alpha=0.2,
+                                    color='g')
+                seen[(u, v)] = rad
+                ax.add_patch(e)
+
+            for (u, v, d) in G.edges(data=True):
+                if u == v:
+                    G.remove_edge(u, v)
+                else:
+                    edge_labels[(u, v)] = int(d['weight'])
+
+            nx.draw_networkx_edge_labels(G, pos=layout, edge_labels=edge_labels, label_pos=0.9, font_size=16,
+                                         bbox=bbox_opts)
+
         _ = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=200,
                                     blit=False)
         plt.show()
+
 
 
 
@@ -793,11 +849,11 @@ def empty_percent_parameter_plot(N, repeats, nr_iters):
     ===================================================
     None
     '''
-    empty_percents = np.linspace(0,0.95,N)
+    empty_percents = np.linspace(0.05,0.95,N)
     Ks = [[] for _ in range(N)]
 
     for i, empty_percent in enumerate(empty_percents):
-        slums = Slums(4, (30, 30), empty_percent=empty_percent, time_limit=nr_iters)
+        slums = Slums(4, (30, 30), empty_percent=empty_percent, time_limit=nr_iters, static_people=True, static_slums=True)
         slums.execute(save_steps=int(nr_iters/100))
 
         x_list = [x for x in sorted(slums.avalanche_sizes[-1]) if x != 0]
@@ -876,7 +932,7 @@ def main():
 
     slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=5000)
 
-    slums.execute(save_steps=100, net_freq=100)
+    slums.execute(save_steps=100, net_freq=20)
     plt.close()
     slums.plot_network()
     #slums.make_dashboard()
