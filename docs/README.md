@@ -26,12 +26,10 @@ Each time step, the following steps are taken:
 <li>Select the cell with the lowest fitness within the model.</li>
 <li>Select a random empty cell and give this cell a new fitness using the formula mentioned below.</li>
 <img src="https://latex.codecogs.com/gif.latex?new\_fitness&space;=&space;old\_fitness&space;&plus;&space;|\mathcal{N}(0,&space;\frac{1&space;-&space;old\_fitness}{3})|" class="latex"/>
-<li>Empty the previously selected cell at A. and lower the cells within the [von Neumann Neighbourhood](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood) by a certain factor.</li>
+<li>Empty the previously selected cell at A. and lower the cells within the [von Neumann Neighbourhood](https://en.wikipedia.org/wiki/Bak%E2%80%93Sneppen_model) by a certain factor.</li>
 </ol>
 
 <img src="http://slum.life/images/bak-sneppen_expl.png" width="100%" alt="Basic Bax-Sneppen steps."/>
-
-How did we do the fitness?
 
 ## The Destination
 
