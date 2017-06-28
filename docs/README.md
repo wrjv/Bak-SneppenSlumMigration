@@ -15,4 +15,3 @@ Neumann Neighbourhood
 ### The Optimal Location within a Slum
 
 ## New Slum Locations
-

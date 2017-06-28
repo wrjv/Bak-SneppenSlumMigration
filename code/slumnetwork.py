@@ -835,7 +835,6 @@ class Slums(object):
 
 def empty_percent_parameter_plot(N, repeats, nr_iters):
     '''
-    dont add people nor slums
     Plots the effect of the empty percent on the K 
 
     PARAMETERS
@@ -852,23 +851,101 @@ def empty_percent_parameter_plot(N, repeats, nr_iters):
     Ks = [[] for _ in range(N)]
 
     for i, empty_percent in enumerate(empty_percents):
-        slums = Slums(4, (30, 30), empty_percent=empty_percent, time_limit=nr_iters, static_people=True, static_slums=True)
-        slums.execute(save_steps=int(nr_iters/100))
+        for _ in range(nr_iters):
+            slums = Slums(4, (30, 30), empty_percent=empty_percent, time_limit=nr_iters, static_people=True, static_slums=True)
+            slums.execute(save_steps=int(nr_iters/100))
+            
+            x_list = [x for x in sorted(slums.avalanche_sizes[-1]) if x != 0]
+            y_list = [slums.avalanche_sizes[-1].count(x) for x in x_list]
 
-        x_list = [x for x in sorted(slums.avalanche_sizes[-1]) if x != 0]
-        y_list = [slums.avalanche_sizes[-1].count(x) for x in x_list]
+            K, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
 
-        K, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
-
-        Ks[i].append(K[1])
+            Ks[i].append(K[1])
 
     for i in range(len(Ks)):
         Ks[i] = np.mean(Ks[i])
+
     plt.plot(empty_percents, Ks)
-    plt.title("effect of initial empty percent on K")
-    plt.xlabel("initial empty percentage")
+    plt.title("effect of empty percent on K")
+    plt.xlabel("empty percentage")
     plt.ylabel("K")
 
+    plt.show()
+
+
+def singleslumsize_parameter_plot(sizes, repeats, nr_iters):
+    '''
+    parameter plot of the size of a single slum and K
+
+    PARAMETERS
+    ===================================================
+    sizes:      sizes of the slums
+    repeats:    the number of repeats for each empty_percent value
+    nr_iters:   how long the code runs each time until it calculates K
+
+    RETURNS
+    ===================================================
+    None
+    '''
+    sizes = [int(size) for size in sizes]
+    Ks = [[] for _ in sizes]
+    for i, size in enumerate(sizes):
+        for _ in range(repeats):
+            slums = Slums(1, (size, size), empty_percent=0.1, time_limit=nr_iters, static_people=True, static_slums=True)
+            slums.execute(save_steps=int(nr_iters/100))
+
+            x_list = [x for x in sorted(slums.avalanche_sizes[-1]) if x != 0]
+            y_list = [slums.avalanche_sizes[-1].count(x) for x in x_list]
+
+            K, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+
+            Ks[i].append(K[1])
+
+    stds  = [np.std(K)  for K in Ks]
+    means = [np.mean(K) for K in Ks]
+
+    plt.errorbar(sizes, means, stds)
+    plt.title("effect of (single) slum size on K")
+    plt.xlabel("slum size NxN")
+    plt.ylabel("K")
+    plt.show()
+
+def nrofslums_parameter_plot(nrs, repeats, nr_iters):
+    '''
+    parameter plot of the number of slums and K
+
+    PARAMETERS
+    ===================================================
+    nrs:        numbers of slums
+    repeats:    the number of repeats for each empty_percent value
+    nr_iters:   how long the code runs each time until it calculates K
+
+    RETURNS
+    ===================================================
+    None
+    '''
+    nrs = [int(nr) for nr in nrs]
+    Ks = [[] for _ in nrs]
+    totalsize = 80
+    for i, nr in enumerate(nrs):
+        for _ in range(repeats):
+            slums = Slums(nr, (int(totalsize/nr), int(totalsize/nr)), empty_percent=0.1, time_limit=nr_iters, static_people=True, static_slums=True)
+            slums.execute(save_steps=int(nr_iters/100))
+
+            x_list = [x for x in sorted(slums.avalanche_sizes[-1]) if x != 0]
+            y_list = [slums.avalanche_sizes[-1].count(x) for x in x_list]
+
+            K, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+
+            Ks[i].append(K[1])
+
+    stds  = [np.std(K)  for K in Ks]
+    means = [np.mean(K) for K in Ks]
+
+    plt.errorbar(nrs, means, stds)
+    plt.title("effect of the number of slums on K")
+    plt.xlabel("number of slums")
+    plt.ylabel("K")
     plt.show()
 
 # x, a and k are commonly used variables in a powerlaw distribution.
@@ -928,14 +1005,15 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
     # empty_percent_parameter_plot(10, 10, 1000)
-
+    # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
+    # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
     slums = Slums(4, (30, 30), empty_percent=0.06, time_limit=5000)
 
     slums.execute(save_steps=100, net_freq=20)
     plt.close()
     slums.plot_network()
     #slums.make_dashboard()
-
+    plt.show()
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
     # slums.plot_avalanche_size()
