@@ -53,7 +53,7 @@
 
 Slum migration is a phenomenon mostly studied by social sciences and a topic difficult to quantify and make tangible. By modifying a 2D [Bak-Sneppen model](https://en.wikipedia.org/wiki/Bak%E2%80%93Sneppen_model), often used to model evolution, we attempt to generate the migration patterns. We show that by using only a few rules in a simple cellular automaton complex migration patterns start to occur. 
 
-<img src="https://familyincluded.com/wp-content/uploads/2016/07/17252250461_11094da4cd_k.jpg" width="100%"/>
+<img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Slums_in_Caracas%2C_Venezuela.jpg" width="100%"/>
 
 ## The Basic Model
 
@@ -74,7 +74,7 @@ Each time step, the following steps are taken:
 ## Influence of Slum Parameters
 
 ## More Slums
-<img src="https://static01.nyt.com/images/2013/09/12/world/asia/12-slum-mumbai-indiaInk/12-slum-mumbai-indiaInk-superJumbo.jpg" width="100%"/>
+<img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Dharavi_India.jpg" width="100%"/>
 
 
 ## The Destination
