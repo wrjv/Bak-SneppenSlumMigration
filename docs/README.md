@@ -40,8 +40,12 @@
  	box-shadow: none;
  }
 
- #main_content {
- 	max-width: 960px !important;
+ #main_content, .inner {
+ 	max-width: 880px !important;
+ }
+
+ #project_title, #project_tagline {
+ 	text-align: center
  }
 </style>
 
