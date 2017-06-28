@@ -286,9 +286,9 @@ class Slums(object):
         pvalues = np.array(pvalues) ** 10
         # Normalise the pvalues and make a choice of a location for a cell to go to.
         pvalues = pvalues / np.sum(pvalues)
-        return np.argmax(pvalues)
+        # return np.argmax(pvalues)
 
-        #return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
+        return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)[0]
 
     def alt_find_optimal_location(self):
         '''
@@ -322,9 +322,10 @@ class Slums(object):
                 pvalues.append(0)
 
         # Normalise the pvalues and make a choice of a location for a cell to go to.
-        pvalues = pvalues / sum(pvalues)
+        total = sum(pvalues)
+        pvalues = [pvalue/total for pvalue in pvalues]
 
-        return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)
+        return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)[0]
 
     def plot_slums(self, start=0, reset=True):
         '''
