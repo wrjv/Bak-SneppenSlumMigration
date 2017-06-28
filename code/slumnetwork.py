@@ -755,7 +755,7 @@ class Slums(object):
 
         ani = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
                                     blit=False)
-        ani.save('../docs/videos/slum_barebones.mp4', writer='ffmpeg', dpi=480)
+        ani.save('../docs/videos/slum_barebones.gif', writer='imagemagick')
         plt.show()
 
     def plot_network(self):
