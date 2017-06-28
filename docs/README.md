@@ -29,12 +29,17 @@
  img {
  	margin: 0 auto;
  	display: block;
+  	max-width: 2000px;
  }
 
  img.latex {
  	border: 0; 
  	outline: 0;
  	box-shadow: none;
+ }
+
+ #main_content {
+ 	width: 960px !important;
  }
 </style>
 
