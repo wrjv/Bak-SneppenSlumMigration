@@ -8,7 +8,7 @@
  
  $(document).ready(function()
  {
-     $(".gif").hover(
+     $(".gif").click(
          function()
          {
            var src = $(this).attr("src");
@@ -47,6 +47,10 @@
  #project_title, #project_tagline {
  	text-align: center
  }
+
+ .gif {
+ 	cursor: pointer;
+ }
 </style>
 
 ## A 2D Bak-Sneppen Slum Migration Model
@@ -67,15 +71,16 @@ Each time step, the following steps are taken:
 <li>Empty the previously selected cell at A. and lower the cells within the <a href="https://en.wikipedia.org/wiki/Von_Neumann_neighborhood">von Neumann Neighbourhood</a> by a certain factor.</li>
 </ol>
 
-<img src="http://slum.life/images/bak-sneppen_expl.png" width="100%" alt="Basic Bax-Sneppen steps."/>
+<img src="http://slum.life/images/bak-sneppen_expl.png" width="100%"/>
 
-<img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%" alt="An indian slum."/>
+<img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
 
 ## Influence of Slum Parameters
 
 ## More Slums
 <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Dharavi_India.jpg" width="100%"/>
 
+Avalanches .
 
 ## The Destination
 
