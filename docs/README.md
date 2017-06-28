@@ -1,3 +1,30 @@
+<head>
+
+ <script 
+ 
+ src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+ </script>
+ <script>
+ 
+ $(document).ready(function()
+ {
+     $(".gif").hover(
+         function()
+         {
+           var src = $(this).attr("src");
+           $(this).attr("src", src.replace(/\.png$/i, ".gif"));
+         },
+         function()
+         {
+           var src = $(this).attr("src");
+           $(this).attr("src", src.replace(/\.gif$/i, ".png"));
+         });
+ });
+</script>
+
+</head>
+
+
 <style>
  img {
  	margin: 0 auto;
@@ -39,5 +66,7 @@ Each time step, the following steps are taken:
 
 ## New Slum Locations
 
-<img src="http://slum.life/videos/slum_barebones.gif" width="100%" alt="An indian slum."/>
+<img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%" alt="An indian slum."/>
+
+
 
