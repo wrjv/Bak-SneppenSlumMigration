@@ -39,7 +39,7 @@
  }
 
  #main_content {
- 	width: 960px !important;
+ 	max-width: 960px !important;
  }
 </style>
 
