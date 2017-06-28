@@ -588,13 +588,13 @@ class Slums(object):
         slumaxarr = []
         size = len(self.states[-1])
         n_slums = len(self.states[0])
-        cols = ceil(size ** 0.5)
-        rows = ceil(size / cols)
+        cols = 1 # cols = ceil(size ** 0.5)
+        rows = 1 # rows = ceil(size / cols)
 
         figure = plt.figure()
 
         for i in range(size):
-            slumaxarr.append(plt.subplot2grid((1 + rows, 1 + cols), (i // cols, (i % cols))))
+            slumaxarr.append(plt.subplot2grid((0 + rows, 0 + cols), (i // cols, (i % cols))))
 
         for i, slumaxes in enumerate(slumaxarr):
             slumaxes.set_xticklabels([])
@@ -621,48 +621,48 @@ class Slums(object):
         # n_slums is used in the nested animate function.
         # pylint: disable=unused-variable
         figure, imgs, rows, cols, n_slums, slumaxarr = self.setup_slum_anim(cmap, max_age)
-
-        x_list = [x for x in sorted(list(set(self.avalanche_sizes[-1]))) if x != 0]
-        y_list = [self.avalanche_sizes[-1].count(x) for x in x_list]
-
-        bound = -1
-
-        for i in range(len(x_list) - 1):
-            if x_list[i + 1] - x_list[i] > 5:
-                bound = i
-
-        if bound > 0:
-            x_list = x_list[:bound]
-            y_list = y_list[:bound]
+        plt.savefig('../docs/videos/slum_barebones.png')
+        # x_list = [x for x in sorted(list(set(self.avalanche_sizes[-1]))) if x != 0]
+        # y_list = [self.avalanche_sizes[-1].count(x) for x in x_list]
+        #
+        # bound = -1
+        #
+        # for i in range(len(x_list) - 1):
+        #     if x_list[i + 1] - x_list[i] > 5:
+        #         bound = i
+        #
+        # if bound > 0:
+        #     x_list = x_list[:bound]
+        #     y_list = y_list[:bound]
 
         # Plot the avalanche sizes.
-        pwax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
-        line, = pwax.loglog(x_list, y_list, ".")
+        # pwax = plt.subplot2grid((1 + rows, cols + 1), (rows, 0))
+        # line, = pwax.loglog(x_list, y_list, ".")
 
         # Plot the powerlaw based on the avalanche sizes.
-        popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
-
-        power_list = [y for y in powerlaw(x_list, *popt) if y > 1]
-
-        line_fit, = pwax.plot(x_list[:len(power_list)], power_list, 'r-',
-                              label=r'$K=' + str(np.round(popt[1], 3)) + "$")
-
-        plt.title("avalanche sizes")
-        plt.legend()
-        plt.xlabel(r"(S)$")
-        plt.ylabel(r"$P(S)$")
+        # popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+        #
+        # power_list = [y for y in powerlaw(x_list, *popt) if y > 1]
+        #
+        # line_fit, = pwax.plot(x_list[:len(power_list)], power_list, 'r-',
+        #                       label=r'$K=' + str(np.round(popt[1], 3)) + "$")
+        #
+        # plt.title("avalanche sizes")
+        # plt.legend()
+        # plt.xlabel(r"(S)$")
+        # plt.ylabel(r"$P(S)$")
 
         # Plot the barrier distributions
-        x_space = np.linspace(0, 1, 300)
-        bdax = plt.subplot2grid((1 + rows, cols + 1), (rows, 1))
-        bdax.set_yticklabels([])
+        # x_space = np.linspace(0, 1, 300)
+        # bdax = plt.subplot2grid((1 + rows, cols + 1), (rows, 1))
+        # bdax.set_yticklabels([])
 
-        line_min, = bdax.plot(x_space, self.barrier_dists[-1][0](x_space), label='minima')
-        line_bd, = bdax.plot(x_space, self.barrier_dists[-1][1](x_space), label='barriers')
-        plt.title("barrier and minumum barriers distribution")
-        plt.legend()
-        plt.xlabel(r"$B$")
-        plt.ylabel(r"$P(B)$")
+        # line_min, = bdax.plot(x_space, self.barrier_dists[-1][0](x_space), label='minima')
+        # line_bd, = bdax.plot(x_space, self.barrier_dists[-1][1](x_space), label='barriers')
+        # plt.title("barrier and minumum barriers distribution")
+        # plt.legend()
+        # plt.xlabel(r"$B$")
+        # plt.ylabel(r"$P(B)$")
 
         # plot the density over time
         densities = [[] for _ in range(len(self.states[-1]))]
@@ -695,39 +695,39 @@ class Slums(object):
             The frame to display.
             '''
 
-            nonlocal n_slums, pwax, cmap, max_age, show_powerlaw
+            nonlocal n_slums, cmap, max_age, show_powerlaw #pwax
 
             # Set the x coordinate to the middle of the bin.
-            x_list = [x for x in sorted(list(set(self.avalanche_sizes[i]))) if x != 0]
-            y_list = [self.avalanche_sizes[i].count(x) for x in x_list]
-
-            line.set_data(x_list, y_list)
+            # x_list = [x for x in sorted(list(set(self.avalanche_sizes[i]))) if x != 0]
+            # y_list = [self.avalanche_sizes[i].count(x) for x in x_list]
+            #
+            # line.set_data(x_list, y_list)
 
             # Try to fit a power law.
-            if len(x_list) > 4 and show_powerlaw:
-                bound = -1
-
-                for i in range(len(x_list) - 1):
-                    if x_list[i + 1] - x_list[i] > 5:
-                        bound = i
-
-                try:
-                    if bound > 0:
-                        popt, _ = curve_fit(powerlaw, x_list[:bound], y_list[:bound], bounds=((0, 0), (np.inf, 6)))
-                    else:
-                        popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
-
-                    line_fit.set_data(x_list[:bound], powerlaw(x_list[:bound], *popt))
-                    line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
-                    pwax.legend()
-                except RuntimeError:
-                    pass
+            # if len(x_list) > 4 and show_powerlaw:
+            #     bound = -1
+            #
+            #     for i in range(len(x_list) - 1):
+            #         if x_list[i + 1] - x_list[i] > 5:
+            #             bound = i
+            #
+            #     try:
+            #         if bound > 0:
+            #             popt, _ = curve_fit(powerlaw, x_list[:bound], y_list[:bound], bounds=((0, 0), (np.inf, 6)))
+            #         else:
+            #             popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+            #
+            #         line_fit.set_data(x_list[:bound], powerlaw(x_list[:bound], *popt))
+            #         line_fit.set_label(r'$K=' + str(np.round(popt[1], 3)) + "$")
+            #         pwax.legend()
+            #     except RuntimeError:
+            #         pass
 
             # Plot the barrier distributions
-            x_space = np.linspace(0, 1, 300)
-
-            line_min.set_data(x_space, self.barrier_dists[i][0](x_space))
-            line_bd.set_data(x_space, self.barrier_dists[i][1](x_space))
+            # x_space = np.linspace(0, 1, 300)
+            #
+            # line_min.set_data(x_space, self.barrier_dists[i][0](x_space))
+            # line_bd.set_data(x_space, self.barrier_dists[i][1](x_space))
 
             # plot the density of the slums over time
             # for j, lin in enumerate(lines):
