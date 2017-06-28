@@ -3,6 +3,12 @@
  	margin: 0 auto;
  	display: block;
  }
+
+ img.latex {
+ 	border: 0; 
+ 	outline: 0;
+ 	box-shadow: none;
+ }
 </style>
 
 ## A 2D Bak-Sneppen Slum Migration Model
@@ -19,7 +25,7 @@ Each time step, the following steps are taken:
 <ol type="A">
 <li>Select the cell with the lowest fitness within the model.</li>
 <li>Select a random empty cell and give this cell a new fitness using the formula mentioned below.</li>
-<img src="https://latex.codecogs.com/gif.latex?new\_fitness&space;=&space;old\_fitness&space;&plus;&space;|\mathcal{N}(0,&space;\frac{1&space;-&space;old\_fitness}{3})|" style="border: 0; outline: 0; box-shadow: none;"/>
+<img src="https://latex.codecogs.com/gif.latex?new\_fitness&space;=&space;old\_fitness&space;&plus;&space;|\mathcal{N}(0,&space;\frac{1&space;-&space;old\_fitness}{3})|" class="latex"/>
 <li>Empty the previously selected cell at A. and lower the cells within the [von Neumann Neighbourhood](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood) by a certain factor.</li>
 </ol>
 
