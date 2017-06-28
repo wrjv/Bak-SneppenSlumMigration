@@ -22,3 +22,7 @@ How did we do the fitness?
 ### The Optimal Location within a Slum
 
 ## New Slum Locations
+
+<video width="320" height="240" controls>
+  <source src="http://slum.life/videos/slum_barebones.mp4" type="video/mp4">
+</video>
