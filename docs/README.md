@@ -13,7 +13,7 @@ Each time step, the following steps are taken:
 2. Select a random empty cell and give this cell a random new fitness.
 3. Empty the previously selected cell at 1) and lower the cells within[von Neumann Neighbourhood](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood) by a certain factor.
 
-<img src="http://slum.life/imgs/bak-sneppen_expl.png" width="100%" alt="An indian slum."/>
+<img src="http://slum.life/images/bak-sneppen_expl.png" width="100%" alt="An indian slum."/>
 
 How did we do the fitness?
 
