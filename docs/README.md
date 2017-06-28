@@ -12,12 +12,11 @@
          function()
          {
            var src = $(this).attr("src");
-           $(this).attr("src", src.replace(/\.png$/i, ".gif"));
-         },
-         function()
-         {
-           var src = $(this).attr("src");
-           $(this).attr("src", src.replace(/\.gif$/i, ".png"));
+           if(src.includes("png")) {
+           	$(this).attr("src", src.replace(/\.png$/i, ".gif"));
+           } else {
+           	$(this).attr("src", src.replace(/\.gif$/i, ".png"));
+           }
          });
  });
 
@@ -77,9 +76,16 @@ Each time step, the following steps are taken:
 
 ## Influence of Slum Parameters
 
+<img src="http://slum.life/images/emptypercent10x20000.png" width="50%"/>
+<img src="http://slum.life/images/singleslum10x20000.png" width="50%"/>
+
+
 ## More Slums
 <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Dharavi_India.jpg" width="100%"/>
 
+<img src="http://slum.life/images/nrslums10x20000.png" width="100%"/>
+
+<img class='gif' src="http://slum.life/videos/slum_multiple.png" width="100%"/>
 Avalanches .
 
 ## The Destination
