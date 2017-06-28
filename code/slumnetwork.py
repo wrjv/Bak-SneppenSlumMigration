@@ -13,6 +13,7 @@ from scipy.stats import gaussian_kde
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from matplotlib.patches import FancyArrowPatch, Circle
 import networkx as nx
 
 
@@ -732,12 +733,62 @@ class Slums(object):
 
     def plot_network(self):
         plt.figure()
-        g = nx.from_numpy_matrix(self.migration_matrix, create_using=nx.DiGraph())
-        nx.draw_circular(g)
-        #plt.show()
+        G = nx.from_numpy_matrix(self.migration_matrix, create_using=nx.DiGraph())
+        layout = nx.circular_layout(G)
+        ax=plt.gca()
 
+        ax.set_ylim(-1.25, 1.25)
+        ax.set_xlim(-1.25, 1.25)
+        ax.set_yticklabels([])
+        ax.set_xticklabels([])
 
+        edge_labels = {}
 
+        # Determine the maximum edge weight and labels
+        max_weight = 0
+        for (u, v, d) in G.edges(data=True):
+            if d['weight'] > max_weight:
+                max_weight = d['weight']
+
+        bbox_opts = dict(alpha=0, lw=0)
+
+        # Draw all the nodes
+        nx.draw_networkx_labels(G, pos=layout, font_size=30, font_color='r', font_weight='bold')
+
+        # Draw some curved edges
+        seen = {}
+
+        for (u, v, d) in G.edges(data=True):
+            if u == v:
+                ax.text(layout[u][0] - (len(str(d['weight'])) - 1) * 0.006, layout[u][1] - 0.08,
+                        int(d['weight']), fontsize=15)
+                continue
+
+            n1 = layout[u]
+            n2 = layout[v]
+            rad = 0.1
+
+            if (u, v) in seen:
+                rad=seen.get((u, v))
+                rad=(rad+np.sign(rad)*0.1)*-1
+
+            e = FancyArrowPatch(n1, n2, arrowstyle='fancy',
+                                connectionstyle='arc3,rad=%s'%rad,
+                                mutation_scale=d['weight'] / max_weight * 4000,
+                                lw=2,
+                                alpha=0.2,
+                                color='g')
+            seen[(u, v)]=rad
+            ax.add_patch(e)
+
+        for (u, v, d) in G.edges(data=True):
+            if u == v:
+                G.remove_edge(u, v)
+            else:
+                edge_labels[(u, v)] = int(d['weight'])
+
+        nx.draw_networkx_edge_labels(G, pos=layout, edge_labels=edge_labels, label_pos=0.9, font_size=16,
+            bbox=bbox_opts)
 
 def empty_percent_parameter_plot(N, repeats, nr_iters):
     '''
