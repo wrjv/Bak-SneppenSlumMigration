@@ -763,7 +763,6 @@ class Slums(object):
         #plt.show()
 
     def plot_network(self):
-
         figure = plt.figure()
 
 
