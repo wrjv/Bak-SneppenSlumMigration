@@ -9,9 +9,9 @@ Slum migration is a phenomenon mostly studied by social sciences and a topic dif
 Bak-Sneppen does not have empty cells, but this modified model does.
 
 Each time step, the following steps are taken:
-1. Select the cell with the lowest fitness within the model.
-2. Select a random empty cell and give this cell a random new fitness.
-3. Empty the previously selected cell at 1) and lower the cells within[von Neumann Neighbourhood](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood) by a certain factor.
+A. Select the cell with the lowest fitness within the model.
+B. Select a random empty cell and give this cell a random new fitness.
+C. Empty the previously selected cell at 1) and lower the cells within[von Neumann Neighbourhood](https://en.wikipedia.org/wiki/Von_Neumann_neighborhood) by a certain factor.
 
 <img src="http://slum.life/images/bak-sneppen_expl.png" width="100%" alt="An indian slum."/>
 
