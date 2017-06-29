@@ -62,6 +62,13 @@ When visualizing the simulation, the values plotted are the ages. These are defi
 </div>
 <span class="description">A simulation of the basic Slum Migration Model.</span>
 
+<div class='gif_container'>
+<img class='gif' src="http://slum.life/videos/slum_barebones2.png" width="100%"/>
+<div class="overlay"></div>
+<div class="play_button">&#9658;</div>
+</div>
+<span class="description">A simulation of the basic Slum Migration Model further in time and larger grid.</span>
+
 ## Avalanches
 
 Just like in the [Bak-Tang-Wiesenfeld model](https://en.wikipedia.org/wiki/Abelian_sandpile_model) a single changing cell might induce a cascade of changing cells (avalanche). A single person moving away might inspire its neighbours to move away, and they again might inspire theirs, etc. To quantify this behaviour we measure the avalanche size. As an avalanche starts the fitness of the starting cell is set as limit for the avalanche. As long as the consecutive mutations are below this value its still part of the same avalanche, otherwise another started.
@@ -77,7 +84,7 @@ The slum size used and the empty percentage of cells within a slum often have ne
 
 Another effect can be seen with very small slum sizes. In this particular cases avalanches seem to encounter themselves through the periodic boundaries.
 
-<img src="http://slum.life/images/decreasefactor30x20000.svg" width="49%" class="no-border" style="margin: auto"/>
+<img src="http://slum.life/images/decreasefactor30x20000.svg" width="49%" class="no-border middle"/>
 <span class="description">The effect of the decrease factor of the neighbouring cells on the K. Each factor was tested 30 times for 20000 time steps.</span>
 
 The decrease factor seems only to be having an effect on the variance, but not on the mean of the K-values. Once the decrease factor reaches 1, there can only be one avalanche in the whole system, which makes the K fitting negligible.
