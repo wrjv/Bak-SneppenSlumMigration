@@ -684,7 +684,7 @@ class Slums(object):
 
         denax = plt.subplot2grid((1 + rows, cols), (rows, 2))
         denax.set_xlim([0, 1])
-        denax.set_ylim([0.6, 1])
+        denax.set_ylim([0, 1])
         plt.title("Slum densities")
         plt.ylabel("density")
         plt.xlabel("time")
@@ -764,10 +764,10 @@ class Slums(object):
                     img.set_array(-np.ones((self.slum_size, self.slum_size)))
 
         figure.subplots_adjust(wspace=0.44)
-        plt.savefig('../docs/videos/slum_multiple.png')
+        plt.savefig('../docs/videos/slum_new_slum.png')
         ani = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
                                     blit=False)
-        ani.save('../docs/videos/slum_multiple.gif', writer='imagemagick')
+        ani.save('../docs/videos/slum_new_slum.gif', writer='imagemagick')
         plt.show()
 
     def plot_network(self):
@@ -831,12 +831,13 @@ class Slums(object):
 
             nx.draw_networkx_edge_labels(G, pos=layout, edge_labels=edge_labels, label_pos=0.9, font_size=16,
                                          bbox=bbox_opts)
+            if i == 0:
+                plt.savefig('../docs/videos/slum_network_new.png')
 
 
-        ani = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=80,
+        ani = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=200,
                                     blit=False)
-        plt.savefig('../docs/videos/slum_network.png')
-        ani.save('../docs/videos/slum_network.gif', writer='imagemagick')
+        ani.save('../docs/videos/slum_network_new.gif', writer='imagemagick')
         plt.show()
 
 
@@ -1125,7 +1126,7 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
     # plt.xkcd()
-    # slums = Slums(6, (30, 30), empty_percent=0.1, time_limit=20000, static_people=True, static_slums=True)
+    slums = Slums(2, (30, 30), empty_percent=0.1, time_limit=20000, static_people=True, static_slums=False)
     # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
 
@@ -1134,13 +1135,13 @@ def main():
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 20, 25000)
     # nrofslums_parameter_plot(np.linspace(1,8,8), 10, 20000)
     # effect_of_location(10, 20000)
-    cell_decrease_factor_plot(np.linspace(0.1, 1, 10), 30, 20000)
+    # cell_decrease_factor_plot(np.linspace(0.1, 1, 10), 30, 20000)
 
     # slums.execute(save_steps=1000, net_freq=50)
     # slums.plot_network()
 
     # slums.plot_network()
-    # slums.make_dashboard()
+    slums.make_dashboard()
 
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
