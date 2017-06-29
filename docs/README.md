@@ -50,6 +50,13 @@
  .gif {
  	cursor: pointer;
  }
+
+ .description {
+ 	display: block;
+ 	width: 100%;
+ 	text-align: center;
+ 	font-style: italic;
+ }
 </style>
 
 ## A 2D Bak-Sneppen Slum Migration Model
@@ -84,9 +91,13 @@ Each time step, the following steps are taken:
 <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Dharavi_India.jpg" width="100%"/>
 
 <img src="http://slum.life/images/nrslums10x20000.png" width="100%"/>
+<span class="description">The effect of the number of slums on the K of the powerlaw distribution of avalanche sizes. The total number of cells within the simulation remained the same. Each size was tested 10 times for 20000 time steps.</span>
 
 <img class='gif' src="http://slum.life/videos/slum_multiple.png" width="100%"/>
+<span class="description"></span>
 Avalanches .
+
+Ages
 
 ## The Destination
 
