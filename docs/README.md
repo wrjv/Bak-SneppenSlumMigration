@@ -95,7 +95,7 @@ Just like in the [Bak-Tang-Wiesenfeld model](https://en.wikipedia.org/wiki/Abeli
 ## The Destination
 
 ### The Optimal Location within a Slum
-When moving to a new spot, people don't move to a random cell. People mostly move to spots where people already live. Therefor the probability of someone moving to a certain empty cell is calculated as follows:
+When moving to a new spot, people don't move to a random cell. People mostly move to spots where people already live. Therefor the probability of someone moving to a certain empty cell within a given slum is calculated as follows:
 
 <img src="https://latex.codecogs.com/gif.latex?p&space;=&space;\frac{\&hash;neighbours^2&space;&plus;&space;0.01}{p_{total}}" class="latex"/>
 
