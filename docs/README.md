@@ -19,12 +19,6 @@
            }
          });
 
-     
-     var gifs = 0
-     $( ".gif" ).each(function() {
-        $( this ).addClass( "gif_" + str(gifs) );
-        $("<div class=\"play_button\">&#9658;</div>").insertAfter(this);
-     });
  });
 
  document.getElementById("project_title").innerHTML = "Complex Systems Simulation";
@@ -95,7 +89,10 @@ Each time step, the following steps are taken:
 
 <img src="http://slum.life/images/bak-sneppen_expl.png" width="100%"/>
 
+<div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
+<div class=\"play_button\">&#9658;</div>
+</div>
 <span class="description">A simulation of the basic Slum Migration Model.</span>
 
 ## Influence of Slum Parameters
@@ -110,7 +107,10 @@ Each time step, the following steps are taken:
 <img src="http://slum.life/images/nrslums10x20000.svg" width="100%"/>
 <span class="description">The effect of the number of slums on the K of the powerlaw distribution of avalanche sizes. The total number of cells within the simulation remained the same. Each size was tested 10 times for 20000 time steps.</span>
 
+<div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_multiple.png" width="100%"/>
+<div class=\"play_button\">&#9658;</div>
+</div>
 <span class="description"></span>
 Avalanches .
 
