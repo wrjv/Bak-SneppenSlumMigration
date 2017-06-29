@@ -524,14 +524,15 @@ class Slums(object):
         Plot the avalanche sizes.
         '''
 
-        (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
-        plt.clf()
-        plt.loglog(bins[:-1], counts / sum(counts))
+        # (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
+        # plt.clf()
+        # plt.loglog(bins[:-1], counts / sum(counts))
 
-        plt.title("avalanche sizes")
-        plt.xlabel(r"S$")
-        plt.ylabel(r"P(S)$")
-        plt.show()
+        # plt.title("avalanche sizes")
+        # plt.xlabel(r"S$")
+        # plt.ylabel(r"P(S)$")
+        # plt.show()
+
 
     def plot_growth_over_time(self):
         '''
@@ -1046,25 +1047,69 @@ def effect_of_location(replicates, iterations):
     plt.savefig('strategy.svg', format='svg')
     plt.show()
 
+def plot_avalanche_sizes():
+    x_list = []
+    y_list = []
+    for _ in range(3):
+        slums = Slums(1, (30, 30), empty_percent=0.1, time_limit=30000, static_people=True, static_slums=True)
+        slums.execute(save_steps=100, net_freq=250)
+
+
+        x_list += [x for x in sorted(list(set(slums.avalanche_sizes[-1]))) if x != 0]
+        y_list += [slums.avalanche_sizes[-1].count(x) for x in x_list]
+
+    bound = -1
+
+    y_list = [y for (x,y) in sorted(zip(x_list,y_list))]
+    x_list = sorted(x_list)
+
+
+    for i in range(len(x_list) - 1):
+        if x_list[i + 1] - x_list[i] > 5:
+            bound = i
+
+    if bound > 0:
+        x_list = x_list[:bound]
+        y_list = y_list[:bound]
+
+    # Plot the avalanche sizes.
+    pwax = plt.subplot2grid((1, 1), (0, 0))
+    line, = pwax.loglog(x_list, y_list, ".")
+
+    # Plot the powerlaw based on the avalanche sizes.
+    popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+
+    power_list = [y for y in powerlaw(x_list, *popt) if y > 1]
+
+    line_fit, = pwax.plot(x_list[:len(power_list)], power_list, 'r-',
+                          label=r'$K=' + str(np.round(popt[1], 3)) + "$")
+
+    plt.title("avalanche sizes")
+    plt.legend()
+    plt.xlabel(r"$size$")
+    plt.ylabel(r"$nr\ of\ occurences$")
+    plt.show()
+
+
 def main():
     '''
     Runs a sample slum and shows different related plots.
     '''
-    # empty_percent_parameter_plot(10, 10, 1000)
-    #plt.xkcd()
-    slums = Slums(6, (30, 30), empty_percent=0.1, time_limit=20000, static_people=True, static_slums=True)
+    # plt.xkcd()
+    # slums = Slums(6, (30, 30), empty_percent=0.1, time_limit=20000, static_people=True, static_slums=True)
     # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
 
-    #plt.rcParams.update({'font.size': 14})
+    # plt.rcParams.update({'font.size': 14})
     # empty_percent_parameter_plot(10, 10, 20000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 20, 25000)
     # nrofslums_parameter_plot(np.linspace(1,8,8), 10, 20000)
     # effect_of_location(10, 20000)
 
-
     slums.execute(save_steps=1000, net_freq=50)
     slums.plot_network()
+
+    # slums.plot_network()
     # slums.make_dashboard()
 
     # slums.plot_barrier_distribution()
