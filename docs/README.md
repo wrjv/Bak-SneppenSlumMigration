@@ -28,74 +28,8 @@
  document.getElementById("project_title").innerHTML = "Complex Systems Simulation";
 </script>
 
+<link rel="stylesheet" type="text/css" href="http://slum.life/style.css">
 </head>
-
-
-<style>
- img {
-    margin: 0 auto;
-    display: block;
-    max-width: 100%;
- }
-
- img.latex, img.no-border {
-    border: 0; 
-    outline: 0;
-    box-shadow: none;
- }
-
- #main_content, .inner {
-    max-width: 880px !important;
- }
-
- #project_title, #project_tagline {
-    text-align: center
- }
-
- .gif {
- }
-
- .description {
-    display: block;
-    width: 100%;
-    text-align: center;
-    font-style: italic;
- }
-
- .gif_container {
-    cursor: pointer;
-    position: relative;
- }
-
- .play_button {
-    border-radius: 100%;
-    height: 50px;
-    line-height: 50px;
-    width: 50px;
-    border: 5px solid black;
-    background-color: white;
-    position: absolute;
-    top: 50%;
-    margin-top: -25px;
-    left: 50%;
-    margin-left: -25px;
-    font-size: 15px;
-    text-align: center;
-    z-index: 50;
- }
-
- .overlay {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0px;
-    bottom: 0px;
-    left: 0px;
-    right: 0px;
-    background-color: rgba(0,0,0,0.4);
-    z-index: 25;
- }
-</style>
 
 ## A 2D Bak-Sneppen Slum Migration Model
 
