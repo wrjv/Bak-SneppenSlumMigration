@@ -13,7 +13,7 @@ from scipy.stats import gaussian_kde
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-from matplotlib.patches import FancyArrowPatch, Circle
+from matplotlib.patches import FancyArrowPatch
 import networkx as nx
 
 
@@ -24,7 +24,7 @@ class Slums(object):
 
     # pylint: disable=too-many-instance-attributes, too-many-arguments
 
-    # It's reasonable to have 12 variables, to be able to keep track of all parameters
+    # It's reasonable to have this many variables, to be able to keep track of all parameters
     # and all slums.
 
     def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25, random_select=False,
@@ -35,6 +35,7 @@ class Slums(object):
         self.time_limit = time_limit
 
         self.save_steps = 1
+        self.net_freq = 25
 
         self.slum_size = slum_size[0]
         self.static_slums = static_slums
@@ -213,14 +214,25 @@ class Slums(object):
         return True
 
     def reset_migration(self):
+        '''
+        Reset the migration matrix.
+
+        PARAMETERS
+        ===================================================
+        None
+        '''
+
         # Create migration dict
         self.migrations = {}
         self.migrations['new'] = {}
+
         for i in range(self.n_slums):
             self.migrations[i] = {}
             self.migrations['new'][i] = 0
+
             for j in range(self.n_slums):
                 self.migrations[i][j] = 0
+
         # The variable where the execute function will place the migration matrix in
         self.migration_matrix = None
 
@@ -322,8 +334,8 @@ class Slums(object):
 
         if self.strict_select:
             return np.argmax(pvalues)
-        else:
-            return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)[0]
+
+        return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)[0]
 
     def alt_find_optimal_location(self):
         '''
@@ -525,21 +537,6 @@ class Slums(object):
         plt.ylabel(r"$log_{10}(C(X))$")
         plt.show()
 
-    def plot_avalanche_size(self):
-        '''
-        Plot the avalanche sizes.
-        '''
-
-        # (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
-        # plt.clf()
-        # plt.loglog(bins[:-1], counts / sum(counts))
-
-        # plt.title("avalanche sizes")
-        # plt.xlabel(r"S$")
-        # plt.ylabel(r"P(S)$")
-        # plt.show()
-
-
     def plot_growth_over_time(self):
         '''
         Plot the growth of slums over time
@@ -605,7 +602,7 @@ class Slums(object):
         figure = plt.figure(figsize=(14, 9))
 
         for i in range(size):
-            slumaxarr.append(plt.subplot2grid((1 + rows, cols), (i // cols , (i % cols))))
+            slumaxarr.append(plt.subplot2grid((1 + rows, cols), (i // cols, (i % cols))))
 
         for i, slumaxes in enumerate(slumaxarr):
             slumaxes.set_xticklabels([])
@@ -670,14 +667,14 @@ class Slums(object):
         bd2ax.set_yticklabels([])
         line_min, = bdax.plot(x_space, self.barrier_dists[-1][0](x_space), label='minima')
         bdax.set_ylabel(r"$P(B)$")
-        line_bd, = bd2ax.plot(x_space, self.barrier_dists[-1][1](x_space), color='g', label='barriers')
+        line_bd, = bd2ax.plot(x_space, self.barrier_dists[-1][1](x_space), color='g',
+                              label='barriers')
         plt.title("barrier and minumum barriers dist (R, P)")
         plt.legend()
 
         bd2ax.set_ylabel(r"$R(B)$")
 
-
-        # plot the density over time
+        # Plot the density over time
         densities = [[] for _ in range(len(self.states[-1]))]
         for i in range(len(self.states[-1])):
             for j in range(len(self.states)):
@@ -721,13 +718,14 @@ class Slums(object):
             if len(x_list) > 4 and show_powerlaw:
                 bound = -1
 
-                for i in range(len(x_list) - 1):
-                    if x_list[i + 1] - x_list[i] > 5:
-                        bound = i
+                for j in range(len(x_list) - 1):
+                    if x_list[j + 1] - x_list[i] > 5:
+                        bound = j
 
                 try:
                     if bound > 0:
-                        popt, _ = curve_fit(powerlaw, x_list[:bound], y_list[:bound], bounds=((0, 0), (np.inf, 6)))
+                        popt, _ = curve_fit(powerlaw, x_list[:bound], y_list[:bound],
+                                            bounds=((0, 0), (np.inf, 6)))
                     else:
                         popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
 
@@ -768,81 +766,103 @@ class Slums(object):
                     img.set_array(-np.ones((self.slum_size, self.slum_size)))
 
         figure.subplots_adjust(wspace=0.44)
+
+        # Commented code saves animations.
         #plt.savefig('../docs/videos/barebones_fitness.png')
         ani = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
-                                    blit=False)
+                                      blit=False)
         #ani.save('../docs/videos/barebones_fitness.gif', writer='imagemagick')
         plt.show()
 
     def plot_network(self):
+        '''
+        Plot the migration network of slums.
+
+        PARAMETERS
+        ===================================================
+        None
+        '''
+
         figure = plt.figure(figsize=(14, 9))
 
         def animate(i):
-            G = nx.from_numpy_matrix(self.migration_matrices[i][:-1, :-1], create_using=nx.DiGraph())
-            layout = nx.circular_layout(G)
-            figure.clf()
-            ax = figure.gca()
+            '''
+            Used to animate the migration network of slums.
 
-            ax.set_ylim(-1.25, 1.25)
-            ax.set_xlim(-1.25, 1.25)
-            ax.set_yticklabels([])
-            ax.set_xticklabels([])
+            PARAMETERS
+            ===================================================
+            i: integer
+            The frame to display.
+            '''
+
+            graph = nx.from_numpy_matrix(self.migration_matrices[i][:-1, :-1],
+                                         create_using=nx.DiGraph())
+            layout = nx.circular_layout(graph)
+            figure.clf()
+            axes = figure.gca()
+
+            axes.set_ylim(-1.25, 1.25)
+            axes.set_xlim(-1.25, 1.25)
+            axes.set_yticklabels([])
+            axes.set_xticklabels([])
             plt.title('iteration: ' + str(i * self.net_freq))
             edge_labels = {}
 
             # Determine the maximum edge weight and labels
             max_weight = 0
-            for (u, v, d) in G.edges(data=True):
-                if d['weight'] > max_weight and u != v:
-                    max_weight = d['weight']
+            for (node1, node2, data) in graph.edges(data=True):
+                if data['weight'] > max_weight and node1 != node2:
+                    max_weight = data['weight']
 
             bbox_opts = dict(alpha=0, lw=0)
 
             # Draw all the nodes
-            nx.draw_networkx_labels(G, pos=layout, font_size=30, font_color='r', font_weight='bold')
+            nx.draw_networkx_labels(graph, pos=layout, font_size=30, font_color='r',
+                                    font_weight='bold')
 
             # Draw some curved edges
             seen = {}
 
-            for (u, v, d) in G.edges(data=True):
-                if u == v:
-                    ax.text(layout[u][0] - (len(str(d['weight'])) - 1) * 0.006, layout[u][1] - 0.12,
-                            "Self: " + str(int(d['weight'])), fontsize=15)
+            for (node1, node2, data) in graph.edges(data=True):
+                if node1 == node2:
+                    axes.text(layout[node1][0] - (len(str(data['weight'])) - 1) * 0.006,
+                              layout[node1][1] - 0.12, "Self: " + str(int(data['weight'])),
+                              fontsize=15)
                     continue
 
-                n1 = layout[u]
-                n2 = layout[v]
+                coord1 = layout[node1]
+                coord2 = layout[node2]
                 rad = 0.1
 
-                if (u, v) in seen:
-                    rad = seen.get((u, v))
+                if (node1, node2) in seen:
+                    rad = seen.get((node1, node2))
                     rad = (rad + np.sign(rad) * 0.1) * -1
 
-                e = FancyArrowPatch(n1, n2, arrowstyle='fancy',
-                                    connectionstyle='arc3,rad=%s' % rad,
-                                    mutation_scale=d['weight'] / max_weight * 25,
-                                    lw=2,
-                                    alpha=0.2,
-                                    color='g')
-                seen[(u, v)] = rad
-                ax.add_patch(e)
+                arrow = FancyArrowPatch(coord1, coord2, arrowstyle='fancy',
+                                        connectionstyle='arc3,rad=%s' % rad,
+                                        mutation_scale=data['weight'] / max_weight * 25,
+                                        lw=2,
+                                        alpha=0.2,
+                                        color='g')
+                seen[(node1, node2)] = rad
+                axes.add_patch(arrow)
 
-            for (u, v, d) in G.edges(data=True):
-                if u == v:
-                    G.remove_edge(u, v)
+            for (node1, node2, data) in graph.edges(data=True):
+                if node1 == node2:
+                    graph.remove_edge(node1, node2)
                 else:
-                    edge_labels[(u, v)] = int(d['weight'])
+                    edge_labels[(node1, node2)] = int(data['weight'])
 
-            nx.draw_networkx_edge_labels(G, pos=layout, edge_labels=edge_labels, label_pos=0.9, font_size=16,
-                                         bbox=bbox_opts)
+            nx.draw_networkx_edge_labels(graph, pos=layout, edge_labels=edge_labels, label_pos=0.9,
+                                         font_size=16, bbox=bbox_opts)
             if i == 0:
                 plt.savefig('../docs/videos/slum_network_np.png')
 
-
-        ani = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=200,
-                                    blit=False)
+        ani = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)),
+                                      interval=200, blit=False)
         ani.save('../docs/videos/slum_network_np.gif', writer='imagemagick')
         plt.show()
+
 
 # x, a and k are commonly used variables in a powerlaw distribution.
 # pylint: disable=invalid-name
@@ -898,31 +918,21 @@ def main():
     '''
     Runs a sample slum and shows different related plots.
     '''
-    # plt.xkcd()
-    slums = Slums(2, (30, 30), empty_percent=0.1, time_limit=200, static_people=True, static_slums=True)
-    # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
-    # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
 
-    #plt.rcParams.update({'font.size': 14})
-    # empty_percent_parameter_plot(10, 10, 20000)
-    # singleslumsize_parameter_plot(np.linspace(5,50,10), 20, 25000)
-    # nrofslums_parameter_plot(np.linspace(1,8,8), 10, 20000)
-    # effect_of_location(10, 20000)
-    # cell_decrease_factor_plot(np.linspace(0.1, 1, 10), 30, 20000)
+    slums = Slums(2, (30, 30), empty_percent=0.1, time_limit=200, static_people=True,
+                  static_slums=True)
 
     slums.execute(save_steps=20, net_freq=50)
-    #slums.plot_network()
-    # slums.plot_network()
 
     print('Simulation has ended.')
-    # slums.plot_network()
+    slums.plot_network()
+
     slums.make_dashboard()
 
-    # slums.plot_barrier_distribution()
-    # slums.plot_avalanche_distance()
-    # slums.plot_avalanche_size()
-    # slums.plot_growth_over_time()
-    # slums.plot_slums(start=0)
+    slums.plot_barrier_distribution()
+    slums.plot_avalanche_distance()
+    slums.plot_growth_over_time()
+    slums.plot_slums(start=0)
 
 
 if __name__ == '__main__':
