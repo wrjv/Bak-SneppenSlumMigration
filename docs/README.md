@@ -35,7 +35,7 @@
  img {
     margin: 0 auto;
     display: block;
-    max-width: 2000px;
+    max-width: 100%;
  }
 
  img.latex, img.no-border {
