@@ -4,7 +4,7 @@
     max-width: 100%;
  }
 
- img.latex {
+ img.latex, img.middle {
     display: block !important;
  }
 
