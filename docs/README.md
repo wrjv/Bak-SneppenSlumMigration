@@ -13,11 +13,18 @@
          {
            var src = $(this).attr("src");
            if(src.includes("png")) {
-           	$(this).attr("src", src.replace(/\.png$/i, ".gif"));
+            $(this).attr("src", src.replace(/\.png$/i, ".gif"));
            } else {
-           	$(this).attr("src", src.replace(/\.gif$/i, ".png"));
+            $(this).attr("src", src.replace(/\.gif$/i, ".png"));
            }
          });
+
+     
+     var gifs = 0
+     $( ".gif" ).each(function() {
+        $( this ).addClass( "gif_" + str(gifs) );
+        $("<div class=\"play_button\">&#9658;</div>").insertAfter(this);
+     });
  });
 
  document.getElementById("project_title").innerHTML = "Complex Systems Simulation";
@@ -28,34 +35,43 @@
 
 <style>
  img {
- 	margin: 0 auto;
- 	display: block;
-  	max-width: 2000px;
+    margin: 0 auto;
+    display: block;
+    max-width: 2000px;
  }
 
  img.latex {
- 	border: 0; 
- 	outline: 0;
- 	box-shadow: none;
+    border: 0; 
+    outline: 0;
+    box-shadow: none;
  }
 
  #main_content, .inner {
- 	max-width: 880px !important;
+    max-width: 880px !important;
  }
 
  #project_title, #project_tagline {
- 	text-align: center
+    text-align: center
  }
 
  .gif {
- 	cursor: pointer;
+    cursor: pointer;
  }
 
  .description {
- 	display: block;
- 	width: 100%;
- 	text-align: center;
- 	font-style: italic;
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-style: italic;
+ }
+
+ .play_button {
+    border-radius: 100%;
+    height: 50px;
+    line-height: 50px;
+    width: 50px;
+    border: 5px solid black;
+    background-color: white;
  }
 </style>
 
@@ -80,6 +96,7 @@ Each time step, the following steps are taken:
 <img src="http://slum.life/images/bak-sneppen_expl.png" width="100%"/>
 
 <img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
+<span class="description">A simulation of the basic Slum Migration Model.</span>
 
 ## Influence of Slum Parameters
 
