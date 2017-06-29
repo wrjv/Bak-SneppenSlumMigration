@@ -681,10 +681,10 @@ class Slums(object):
 
         denax = plt.subplot2grid((1 + rows, cols), (rows, 2))
         denax.set_xlim([0, 1])
-        denax.set_ylim([0, 1])
+        denax.set_ylim([0.6, 1])
         plt.title("Slum densities")
         plt.ylabel("density")
-        plt.xlabel("iteration")
+        plt.xlabel("time")
         lines = []
 
         for _ in range(len(self.states[-1])):
@@ -1050,7 +1050,7 @@ def main():
     '''
     # empty_percent_parameter_plot(10, 10, 1000)
     #plt.xkcd()
-    slums = Slums(3, (30, 30), empty_percent=0.1, time_limit=500, static_people=True, static_slums=True)
+    slums = Slums(3, (30, 30), empty_percent=0.1, time_limit=40000, static_people=True, static_slums=True)
     # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
 
@@ -1058,12 +1058,12 @@ def main():
     # empty_percent_parameter_plot(10, 10, 20000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 20, 25000)
     # nrofslums_parameter_plot(np.linspace(1,8,8), 10, 20000)
-    effect_of_location(10, 20000)
+    # effect_of_location(10, 20000)
 
 
-    # slums.execute(save_steps=1, net_freq=25)
+    slums.execute(save_steps=100, net_freq=25)
     # slums.plot_network()
-    # slums.make_dashboard()
+    slums.make_dashboard()
 
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
