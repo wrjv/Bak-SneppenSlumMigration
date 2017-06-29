@@ -320,7 +320,7 @@ class Slums(object):
         # Normalise the pvalues and make a choice of a location for a cell to go to
         pvalues = pvalues / np.sum(pvalues)
 
-        if self.strict_select:    
+        if self.strict_select:
             return np.argmax(pvalues)
         else:
             return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)[0]
