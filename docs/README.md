@@ -11,16 +11,13 @@
      $(".gif_container").click(
          function()
          {
-           var d = new Date();
            var src = $(this).children(".gif").attr("src");
-           if(!src.includes("?")) {
-            $(this).children(".png").hide());
-            $(this).children(".gif").attr("src", $(this).children(".gif").attr("src") + "?" + str(d.getTime()));
+           if(src.includes("png")) {
+            $(this).children(".gif").attr("src", src.replace(/\.png$/i, ".gif"));
             $(this).children(".overlay").hide();
             $(this).children(".play_button").hide();
            } else {
-            $(this).children(".png").show());
-            $(this).children(".gif").attr("src", ($(this).children(".gif").attr("src")).split("?")[0]);
+            $(this).children(".gif").attr("src", src.replace(/\.gif$/i, ".png"));
             $(this).children(".overlay").show();
             $(this).children(".play_button").show()
            }
@@ -56,11 +53,10 @@ Each time step, the following steps are taken:
 
 ## Ages
 
-When visualizing the simulation, the values plotted are the ages. These are defined as the number of timesteps that a person lives in a certain cell. This means that the age of a cell is incremented during each timestep that someone lives in certain cell and is set to zero when someone moves to another cell. A blue cell represents a young age, while a red cell represents an old age.
+When visualizing the simulation, the values plotted are the ages. These are defined as the number of timesteps that a person lives in a certain cell. This means that the age of a cell is incremented during each timestep that someone lives in certain cell and is set to zero when someone moves to another cell.
 
 <div class='gif_container'>
-<img class='png' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
-<img class='gif' src="http://slum.life/videos/slum_barebones.gif" width="100%"/>
+<img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
 <div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
@@ -88,16 +84,14 @@ Another effect can be seen with very small slum sizes. In this particular cases 
 <span class="description">The effect of the number of slums on the K of the powerlaw distribution of avalanche sizes. The total number of cells within the simulation remained the same. Each size was tested 10 times for 20000 time steps.</span>
 
 <div class='gif_container'>
-<img class='png' src="http://slum.life/videos/slum_multiple.png" width="100%"/>
-<img class='gif' src="http://slum.life/videos/slum_multiple.gif" width="100%"/>
+<img class='gif' src="http://slum.life/videos/slum_multiple.png" width="100%"/>
 <div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
 <span class="description"></span>
 
 <div class='gif_container'>
-<img class='png' src="http://slum.life/videos/slum_network.png" width="100%"/>
-<img class='gif' src="http://slum.life/videos/slum_network.gif" width="100%"/>
+<img class='gif' src="http://slum.life/videos/slum_network.png" width="100%"/>
 <div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
@@ -121,16 +115,14 @@ The effects of these three different moving strategies on the K of the powerlaw 
 ## Emergence of new slums
 
 <div class='gif_container'>
-<img class='png' src="http://slum.life/videos/slum_new_slum.png" width="100%"/>
-<img class='gif' src="http://slum.life/videos/slum_new_slum.gif" width="100%"/>
+<img class='gif' src="http://slum.life/videos/slum_new_slum.png" width="100%"/>
 <div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
 <span class="description"></span>
 
 <div class='gif_container'>
-<img class='png' src="http://slum.life/videos/slum_network_new.png" width="100%"/>
-<img class='gif' src="http://slum.life/videos/slum_network_new.gif" width="100%"/>
+<img class='gif' src="http://slum.life/videos/slum_network_new.png" width="100%"/>
 <div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
