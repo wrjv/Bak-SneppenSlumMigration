@@ -34,7 +34,7 @@
     max-width: 2000px;
  }
 
- img.latex {
+ img.latex, img.no-border {
     border: 0; 
     outline: 0;
     box-shadow: none;
@@ -97,14 +97,14 @@ Each time step, the following steps are taken:
 
 ## Influence of Slum Parameters
 
-<img src="http://slum.life/images/emptypercent10x20000.svg" width="50%"/>
-<img src="http://slum.life/images/slumsize20x25000.svg" width="50%"/>
+<img src="http://slum.life/images/emptypercent10x20000.svg" width="50%" class="no-border"/>
+<img src="http://slum.life/images/slumsize20x25000.svg" width="50%" class="no-border"/>
 
 
 ## More Slums
 <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Dharavi_India.jpg" width="100%"/>
 
-<img src="http://slum.life/images/nrslums10x20000.svg" width="100%"/>
+<img src="http://slum.life/images/nrslums10x20000.svg" width="100%" class="no-border"/>
 <span class="description">The effect of the number of slums on the K of the powerlaw distribution of avalanche sizes. The total number of cells within the simulation remained the same. Each size was tested 10 times for 20000 time steps.</span>
 
 <div class='gif_container'>
@@ -121,7 +121,7 @@ Ages
 ### The Optimal Location within a Slum
 
 ### The Optimal Slum
-<img src="http://slum.life/images/strategy10x20000.svg" width="100%"/>
+<img src="http://slum.life/images/strategy10x20000.svg" width="100%" class="no-border"/>
 
 ## New Slum Locations
 
