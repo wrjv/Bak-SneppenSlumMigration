@@ -537,29 +537,6 @@ class Slums(object):
         plt.ylabel(r"$log_{10}(C(X))$")
         plt.show()
 
-    def plot_growth_over_time(self):
-        '''
-        Plot the growth of slums over time
-        '''
-
-        growths = [[] for _ in range(len(self.states[-1]))]
-        scaler = self.save_steps
-
-        for state in self.states:
-            # pylint: disable=consider-using-enumerate
-            for index in range(len(state)):
-                growths[index].append(state[index].full_cells())
-
-        for slum in growths:
-            maxim = len(growths[0])
-            minim = len(slum)
-            plt.plot(range((maxim - minim) * scaler, maxim * scaler, scaler), slum)
-
-        plt.title("growth of slums over time")
-        plt.xlabel("number of iterations")
-        plt.ylabel("population size of slum")
-        plt.show()
-
     def setup_slum_anim(self, cmap, max_age):
         '''
         Initialises all grids used in the slum animation.
@@ -931,7 +908,6 @@ def main():
 
     slums.plot_barrier_distribution()
     slums.plot_avalanche_distance()
-    slums.plot_growth_over_time()
     slums.plot_slums(start=0)
 
 
