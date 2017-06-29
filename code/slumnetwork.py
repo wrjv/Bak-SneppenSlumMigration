@@ -98,7 +98,7 @@ class Slums(object):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
                 self.avalanche_sizes.append(deepcopy(self.avalanche_size))
-                # self.barrier_dists.append(self.get_barrier_distribution())
+                self.barrier_dists.append(self.get_barrier_distribution())
 
             iterator += 1
 
@@ -271,8 +271,6 @@ class Slums(object):
         distribution.
         '''
         wait = np.random.exponential(1 / lamb)
-        while wait > 500:
-            wait = np.random.exponential(1 / lamb)
         return int(self.time + wait)
 
     def find_optimal_location(self, origin_slum):
@@ -1129,22 +1127,22 @@ def main():
     Runs a sample slum and shows different related plots.
     '''
     # plt.xkcd()
-    slums = Slums(2, (30, 30), empty_percent=0.06, time_limit=100000, static_people=False, static_slums=False)
+    slums = Slums(2, (30, 30), empty_percent=0.06, time_limit=40000, static_people=False, static_slums=False)
     # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
 
-    plt.rcParams.update({'font.size': 14})
+    #plt.rcParams.update({'font.size': 14})
     # empty_percent_parameter_plot(10, 10, 20000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 20, 25000)
     # nrofslums_parameter_plot(np.linspace(1,8,8), 10, 20000)
     # effect_of_location(10, 20000)
     # cell_decrease_factor_plot(np.linspace(0.1, 1, 10), 30, 20000)
 
-    slums.execute(save_steps=200, net_freq=50)
+    slums.execute(save_steps=100, net_freq=50)
     #slums.plot_network()
     # slums.plot_network()
 
-
+    print('Simulation has ended.')
     # slums.plot_network()
     slums.make_dashboard()
 
