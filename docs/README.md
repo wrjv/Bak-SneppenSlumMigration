@@ -69,6 +69,13 @@ When visualizing the simulation, the values plotted are the ages. These are defi
 </div>
 <span class="description">A simulation of the basic Slum Migration Model further in time and larger grid.</span>
 
+
+<div class='gif_container'>
+<img class='gif' src="http://slum.life/videos/slum_barebones_fitness.png" width="100%"/>
+<div class="overlay"></div>
+<div class="play_button">&#9658;</div>
+</div>
+<span class="description">A simulation of the basic Slum Migration Model showing fitness values.</span>
 ## Avalanches
 
 Just like in the [Bak-Tang-Wiesenfeld model](https://en.wikipedia.org/wiki/Abelian_sandpile_model) a single changing cell might induce a cascade of changing cells (avalanche). A single person moving away might inspire its neighbours to move away, and they again might inspire theirs, etc. To quantify this behaviour we measure the avalanche size. As an avalanche starts the fitness of the starting cell is set as limit for the avalanche. As long as the consecutive mutations are below this value its still part of the same avalanche, otherwise another started.
