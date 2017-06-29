@@ -81,6 +81,13 @@ Just like in the [Bak-Tang-Wiesenfeld model](https://en.wikipedia.org/wiki/Abeli
 <div class="play_button">&#9658;</div>
 </div>
 <span class="description"></span>
+
+<div class='gif_container'>
+<img class='gif' src="http://slum.life/videos/slum_network.png" width="100%"/>
+<div class="overlay"></div>
+<div class="play_button">&#9658;</div>
+</div>
+<span class="description"></span>
 Avalanches .
 
 Ages
