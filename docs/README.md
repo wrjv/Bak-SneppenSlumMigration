@@ -118,7 +118,7 @@ The effects of these three different moving strategies on the K of the powerlaw 
 
 ## Emergence of new slums
 
-
+Even though there is an interaction between slums, one important part of slum behaviour is still missing: the emergence of new slums. In real situations we see new slums appear. The introduction of slums in the Slum Migration Model happens when all slums are at least 50% full and at least 98% of the busiest slum is filled with cells. When a slum is introduced, there is a strong influx into the new slum, until the same population density is reached in all slums. These effects can be seen below.
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_new_slum.png" width="100%"/>
