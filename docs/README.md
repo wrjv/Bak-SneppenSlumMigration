@@ -109,7 +109,7 @@ Each time step, the following steps are taken:
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_multiple.png" width="100%"/>
-<div class=\"play_button\">&#9658;</div>
+<div class="play_button">&#9658;</div>
 </div>
 <span class="description"></span>
 Avalanches .
