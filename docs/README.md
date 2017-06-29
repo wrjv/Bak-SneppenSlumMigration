@@ -8,14 +8,18 @@
  
  $(document).ready(function()
  {
-     $(".gif").click(
+     $(".gif_container").click(
          function()
          {
-           var src = $(this).attr("src");
+           var src = $(this).children(".gif").attr("src");
            if(src.includes("png")) {
-            $(this).attr("src", src.replace(/\.png$/i, ".gif"));
+            $(this).children(".gif").attr("src", src.replace(/\.png$/i, ".gif"));
+            $(this).children(".overlay").hide();
+            $(this).children(".play_button").hide();
            } else {
-            $(this).attr("src", src.replace(/\.gif$/i, ".png"));
+            $(this).children(".gif").attr("src", src.replace(/\.gif$/i, ".png"));
+            $(this).children(".overlay").show();
+            $(this).children(".play_button").show()
            }
          });
 
@@ -24,50 +28,8 @@
  document.getElementById("project_title").innerHTML = "Complex Systems Simulation";
 </script>
 
+<link rel="stylesheet" type="text/css" href="http://slum.life/style.css">
 </head>
-
-
-<style>
- img {
-    margin: 0 auto;
-    display: block;
-    max-width: 2000px;
- }
-
- img.latex {
-    border: 0; 
-    outline: 0;
-    box-shadow: none;
- }
-
- #main_content, .inner {
-    max-width: 880px !important;
- }
-
- #project_title, #project_tagline {
-    text-align: center
- }
-
- .gif {
-    cursor: pointer;
- }
-
- .description {
-    display: block;
-    width: 100%;
-    text-align: center;
-    font-style: italic;
- }
-
- .play_button {
-    border-radius: 100%;
-    height: 50px;
-    line-height: 50px;
-    width: 50px;
-    border: 5px solid black;
-    background-color: white;
- }
-</style>
 
 ## A 2D Bak-Sneppen Slum Migration Model
 
@@ -89,26 +51,32 @@ Each time step, the following steps are taken:
 
 <img src="http://slum.life/images/bak-sneppen_expl.png" width="100%"/>
 
+## Ages
+
+When visualizing the simulation, the values plotted are the ages. These are defined as the number of timesteps that a person lives in a certain cell. This means that the age of a cell is incremented during each timestep that someone lives in certain cell and is set to zero when someone moves to another cell.
+
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
-<div class=\"play_button\">&#9658;</div>
+<div class="overlay"></div>
+<div class="play_button">&#9658;</div>
 </div>
 <span class="description">A simulation of the basic Slum Migration Model.</span>
 
 ## Influence of Slum Parameters
 
-<img src="http://slum.life/images/emptypercent10x20000.svg" width="50%"/>
-<img src="http://slum.life/images/slumsize20x25000.svg" width="50%"/>
+<img src="http://slum.life/images/emptypercent10x20000.svg" width="50%" class="no-border"/>
+<img src="http://slum.life/images/slumsize20x25000.svg" width="50%" class="no-border"/>
 
 
 ## More Slums
 <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Dharavi_India.jpg" width="100%"/>
 
-<img src="http://slum.life/images/nrslums10x20000.svg" width="100%"/>
+<img src="http://slum.life/images/nrslums10x20000.svg" width="100%" class="no-border"/>
 <span class="description">The effect of the number of slums on the K of the powerlaw distribution of avalanche sizes. The total number of cells within the simulation remained the same. Each size was tested 10 times for 20000 time steps.</span>
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_multiple.png" width="100%"/>
+<div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
 <span class="description"></span>
@@ -121,7 +89,7 @@ Ages
 ### The Optimal Location within a Slum
 
 ### The Optimal Slum
-<img src="http://slum.life/images/strategy10x20000.svg" width="100%"/>
+<img src="http://slum.life/images/strategy10x20000.svg" width="100%" class="no-border"/>
 
 ## New Slum Locations
 
