@@ -28,7 +28,7 @@ class Slums(object):
     # and all slums.
 
     def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25, random_select=False,
-                 time_limit=10000, static_slums=False, static_people=False):
+                 time_limit=10000, static_slums=False, static_people=False, strict_select=False):
         # Set some overall parameters.
         self.time = 0
         self.time_limit = time_limit
@@ -40,6 +40,8 @@ class Slums(object):
         self.static_people = static_people
 
         self.random_select = random_select
+        self.strict_select = strict_select
+        assert not (random_select and strict_select), "strict select can not be true when randomly selecting" 
 
         self.threshold = 0
         self.n_slums = n_slums
@@ -310,10 +312,11 @@ class Slums(object):
         pvalues = np.array(pvalues) ** 10
         # Normalise the pvalues and make a choice of a location for a cell to go to.
         pvalues = pvalues / np.sum(pvalues)
-        # return np.argmax(pvalues)
 
-
-        return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)[0]
+        if self.strict_select:    
+            return np.argmax(pvalues)
+        else:
+            return np.random.choice(range(len(self.slum_list)), 1, p=pvalues)[0]
 
     def alt_find_optimal_location(self):
         '''
@@ -841,11 +844,13 @@ def empty_percent_parameter_plot(N, repeats, nr_iters):
     ===================================================
     None
     '''
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
     empty_percents = np.linspace(0.05, 0.95, N)
     Ks = [[] for _ in range(N)]
 
     for i, empty_percent in enumerate(empty_percents):
-        for _ in range(nr_iters):
+        for _ in range(repeats):
             slums = Slums(4, (30, 30), empty_percent=empty_percent, time_limit=nr_iters, static_people=True, static_slums=True)
             slums.execute(save_steps=int(nr_iters/100))
             
@@ -855,14 +860,17 @@ def empty_percent_parameter_plot(N, repeats, nr_iters):
 
             Ks[i].append(K[1])
 
-    for i in range(len(Ks)):
-        Ks[i] = np.mean(Ks[i])
+    # for i in range(len(Ks)):
+    #     Ks[i] = np.mean(Ks[i])
 
-    plt.plot(empty_percents, Ks)
-    plt.title("effect of empty percent on K")
-    plt.xlabel("empty percentage")
-    plt.ylabel("K")
-
+    # plt.plot(empty_percents, Ks)
+    plt.boxplot(Ks)
+    ax.set_xticklabels([str(empty_percent) for empty_percent in empty_percents])
+    print(Ks)
+    plt.title(r"$effect\ of\ empty\ percent\ on\ K$")
+    plt.xlabel(r"$empty\ percentage$")
+    plt.ylabel(r"$K$")
+    plt.savefig('emptypercent.svg', format='svg')
     plt.show()
 
 
@@ -880,6 +888,8 @@ def singleslumsize_parameter_plot(sizes, repeats, nr_iters):
     ===================================================
     None
     '''
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
     sizes = [int(size) for size in sizes]
     Ks = [[] for _ in sizes]
     for i, size in enumerate(sizes):
@@ -894,13 +904,16 @@ def singleslumsize_parameter_plot(sizes, repeats, nr_iters):
 
             Ks[i].append(K[1])
 
-    stds  = [np.std(K)  for K in Ks]
-    means = [np.mean(K) for K in Ks]
+    # stds  = [np.std(K)  for K in Ks]
+    # means = [np.mean(K) for K in Ks]
 
-    plt.errorbar(sizes, means, stds)
-    plt.title("effect of (single) slum size on K")
-    plt.xlabel("slum size NxN")
-    plt.ylabel("K")
+    plt.boxplot(Ks)
+    ax.set_xticklabels([str(size) for size in sizes])
+    # plt.errorbar(sizes, means, stds)
+    plt.title(r"$effect\ of\ (single)\ slum\ size\ on\ K$")
+    plt.xlabel(r"$slum\ size\ NxN$")
+    plt.ylabel(r"$K$")
+    plt.savefig('slumsize.svg', format='svg')
     plt.show()
 
 def nrofslums_parameter_plot(nrs, repeats, nr_iters):
@@ -917,6 +930,8 @@ def nrofslums_parameter_plot(nrs, repeats, nr_iters):
     ===================================================
     None
     '''
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
     nrs = [int(nr) for nr in nrs]
     Ks = [[] for _ in nrs]
     totalsize = 80
@@ -935,10 +950,13 @@ def nrofslums_parameter_plot(nrs, repeats, nr_iters):
     stds  = [np.std(K)  for K in Ks]
     means = [np.mean(K) for K in Ks]
 
-    plt.errorbar(nrs, means, stds)
-    plt.title("effect of the number of slums on K")
-    plt.xlabel("number of slums")
-    plt.ylabel("K")
+    # plt.errorbar(nrs, means, stds)
+    plt.boxplot(Ks)
+    ax.set_xticklabels([str(nr) for nr in nrs])
+    plt.title(r"$effect\ of\ the\ number\ of\ slums\ on\ K$")
+    plt.xlabel(r"$number\ of\ slums$")
+    plt.ylabel(r"$K$")
+    plt.savefig('nrslums.svg', format='svg')
     plt.show()
 
 
@@ -991,20 +1009,51 @@ def get_colormap():
 
     return cmap
 
+def effect_of_location(replicates, iterations):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    Ks = [[], [], []]
+    for i, selectors in enumerate([[True, False],[False, False],[False, True]]):
+        for _ in range(replicates):
+            random_select, strict_select = selectors[0], selectors[1]
+            slums = Slums(4, (30,30), empty_percent=0.1, time_limit=iterations, static_people=True, static_slums=True, 
+                random_select=random_select, strict_select=strict_select)
+            slums.execute(save_steps=int(iterations/100))
+
+            x_list = [x for x in sorted(slums.avalanche_sizes[-1]) if x != 0]
+            y_list = [slums.avalanche_sizes[-1].count(x) for x in x_list]
+
+            K, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+
+            Ks[i].append(K[1])
+
+    stds  = [np.std(K)  for K in Ks]
+    means = [np.mean(K) for K in Ks]
+
+    # plt.errorbar(nrs, means, stds)
+    plt.boxplot(Ks)
+    # ax.set_xticklabels([str(nr) for nr in nrs])
+    plt.title(r"$effect\ of\ slum\ selection\ strategy\ K$")
+    plt.ylabel(r"$K$")
+    ax.set_xticklabels(["random", "mild preference", "best choice"])
+    plt.savefig('strategy.svg', format='svg')
+    plt.show()
 
 def main():
     '''
     Runs a sample slum and shows different related plots.
     '''
-    # empty_percent_parameter_plot(10, 10, 1000)
+    plt.rcParams.update({'font.size': 14})
+    # empty_percent_parameter_plot(10, 10, 20000)
+    # singleslumsize_parameter_plot(np.linspace(5,50,10), 20, 25000)
+    # nrofslums_parameter_plot(np.linspace(1,8,8), 10, 20000)
+    effect_of_location(10, 20000)
 
-    slums = Slums(3, (30, 30), empty_percent=0.1, time_limit=500, static_people=True, static_slums=True)
-    # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
-    # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
+    # slums = Slums(1, (30, 30), empty_percent=0.25, time_limit=2500, static_people=True, static_slums=True)
 
-    slums.execute(save_steps=25, net_freq=25)
+    # slums.execute(save_steps=1, net_freq=25)
     # slums.plot_network()
-    slums.make_dashboard()
+    # slums.make_dashboard()
 
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()
