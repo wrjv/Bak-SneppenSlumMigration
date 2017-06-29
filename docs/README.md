@@ -99,17 +99,16 @@ Ages
 ## The Destination
 
 ### The Optimal Location within a Slum
+When moving to a new spot, people don't move to a random cell. People mostly move to spots where people already live. Therefor the probability of someone moving to a certain empty cell is calculated as follows:
+
+<img src="https://latex.codecogs.com/gif.latex?p&space;=&space;\frac{\&hash;neighbours^2&space;&plus;&space;0.01}{p_{total}}" class="latex"/>
 
 ### A Better Slum Selection Strategy
-In real life, people won't move to a random slum. They will probably have a preference for slums where people are happier than they currently are. 
+In real life, people won't move to a random slum. They will probably have a preference for slums where people are happier than they currently are.
 
 The effects of these three different moving strategies on the K of the powerlaw distribution are shown in the figure below.
 
 <img src="http://slum.life/images/strategy10x20000.svg" width="100%" class="no-border"/>
 <span class="description">The effect of slum selection strategy on the K of the powerlaw distribution of avalanche sizes. The total number of cells within the simulation remained the same. Each size was tested 10 times for 20000 time steps.</span>
 
-## New Slum Locations
-
-
-
-
+## Emergence of new slums
