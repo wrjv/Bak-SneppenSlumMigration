@@ -17,6 +17,7 @@ class BaxSneppen2D(object):
     '''
     A simple Bax-Sneppen 2D model with basic functions to populate and advance the model.
     '''
+
     def __init__(self, slum_size=(15, 15), empty_percent=0.3, cell_decrease_factor=0.8):
         # Set the cell decrease factor parameter.
         self.cell_decrease_factor = cell_decrease_factor
@@ -86,13 +87,37 @@ class BaxSneppen2D(object):
 
         return np.min(self.state)
 
-    def count_neighbours(self, state, x, y):
+    # This is a logical function to have within the class.
+    # pylint: disable=no-self-use
+    def count_neighbours(self, state, x_cell, y_cell):
+        '''
+        Returns the index of the cell with the minimum cell
+        value in the state.
+
+        PARAMETERS
+        ===================================================
+        state: numpy.ndarray
+        The state in which the cell resides.
+
+        x_cell: integer
+        The x-coordinate of the cell.
+
+        y_cell: integer
+        The y-coordinate of the cell
+
+        RETURNS
+        ===================================================
+        integer
+        The number of neighbours of the cell at
+        (x_cell, y_cell).
+        '''
+
         neighbours = 0
         combinations = [[-1, 0], [1, 0], [0, -1], [0, 1]]
 
         for x_dif, y_dif in combinations:
-            x_coor = (x + x_dif) % len(state)
-            y_coor = (y + y_dif) % len(state[0])
+            x_coor = (x_cell + x_dif) % len(state)
+            y_coor = (y_cell + y_dif) % len(state[0])
 
             if state[x_coor][y_coor] != 2:
                 neighbours += 1
@@ -100,21 +125,48 @@ class BaxSneppen2D(object):
         return neighbours
 
     def init_neighbour_counts(self):
-        for x in range(len(self.state)):
-            for y in range(len(self.state[0])):
-                if self.state[x][y] == 2:
-                    count = self.count_neighbours(self.state, x, y)
-                    self.neighbour_counts[(x, y)] = count
+        '''
+        Initialises the neighbour counts of all cells.
 
-    def update_neighbour_counts(self, state, x, y, update_value):
+        PARAMETERS
+        ===================================================
+        None
+        '''
+
+        for x_cell in range(len(self.state)):
+            for y_cell in range(len(self.state[0])):
+                if self.state[x_cell][y_cell] == 2:
+                    count = self.count_neighbours(self.state, x_cell, y_cell)
+                    self.neighbour_counts[(x_cell, y_cell)] = count
+
+    def update_neighbour_counts(self, state, x_cell, y_cell, update_value):
+        '''
+        Returns the index of the cell with the minimum cell
+        value in the state.
+
+        PARAMETERS
+        ===================================================
+        state: numpy.ndarray
+        The state in which the cell resides.
+
+        x_cell: integer
+        The x-coordinate of the cell.
+
+        y_cell: integer
+        The y-coordinate of the cell
+
+        update_value: integer
+        The change in the neighbour count.
+        '''
+
         combinations = [[-1, 0], [1, 0], [0, -1], [0, 1]]
 
         if update_value < 0:
-            self.neighbour_counts[(x, y)] = self.count_neighbours(state, x, y)
+            self.neighbour_counts[(x_cell, y_cell)] = self.count_neighbours(state, x_cell, y_cell)
 
         for x_dif, y_dif in combinations:
-            x_coor = (x + x_dif) % len(state)
-            y_coor = (y + y_dif) % len(state[0])
+            x_coor = (x_cell + x_dif) % len(state)
+            y_coor = (y_cell + y_dif) % len(state[0])
 
             if state[x_coor][y_coor] == 2:
                 self.neighbour_counts[(x_coor, y_coor)] += update_value
@@ -151,11 +203,13 @@ class BaxSneppen2D(object):
         The average cell value in the state. Range between
         0 and 1.
         '''
+
         non_empty = self.state[self.state != 2]
-        if len(non_empty) > 0:
+
+        if non_empty.any():
             return np.mean(non_empty)
-        else:
-            return 0
+
+        return 0
 
     def has_empty(self):
         '''
@@ -179,6 +233,20 @@ class BaxSneppen2D(object):
         return True
 
     def get_density(self):
+        '''
+        Returns the density of the current state.
+
+        PARAMETERS
+        ===================================================
+        None
+
+        RETURNS
+        ===================================================
+        float
+        The density of the current state. If the state is
+        empty, -1 is returned.
+        '''
+
         non_empty_size = np.sum(self.state != 2)
 
         if non_empty_size != 0:
