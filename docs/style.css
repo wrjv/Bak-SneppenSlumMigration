@@ -4,11 +4,15 @@
     max-width: 100%;
  }
 
+ img.latex {
+    display: block !important;
+ }
+
  img.latex, img.no-border {
     border: 0; 
     outline: 0;
     box-shadow: none;
-    margin: 0 auto !important;
+    margin: 5px auto 5px auto !important;
  }
 
  #main_content, .inner {

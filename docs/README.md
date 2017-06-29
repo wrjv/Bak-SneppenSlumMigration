@@ -131,9 +131,10 @@ When moving to a new spot, people don't move to a random cell. People mostly mov
 </div>
 <span class="description">Animation of two slums over time. At around the 3000th iteration a third slum emerges. This causes a strong influx of population into the new slum. Once the three slums reach the same density the old pattern of oscillating densities emerges again.</span>
 
+
 <div class='gif_container'>
-<img class='gif' src="http://slum.life/videos/slum_network_new.png" width="100%"/>
+<img class='gif' src="http://slum.life/videos/slum_new_person.png" width="100%"/>
 <div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
-<span class="description">Animation of traffic between initially two slums. A third slum emerges and we see that this slum has around the same inflow as the others, however we see that there is almost no migration away from this slum, explaining the quick growth of the slum to the size of the other two.</span>
+<span class="description">Description.</span>
