@@ -8,14 +8,18 @@
  
  $(document).ready(function()
  {
-     $(".gif").click(
+     $(".gif_container").click(
          function()
          {
-           var src = $(this).attr("src");
+           var src = $(this).children(".gif").attr("src");
            if(src.includes("png")) {
-            $(this).attr("src", src.replace(/\.png$/i, ".gif"));
+            $(this).children(".gif").attr("src", src.replace(/\.png$/i, ".gif"));
+            $(this).children(".overlay").hide();
+            $(this).children(".play_button").hide();
            } else {
-            $(this).attr("src", src.replace(/\.gif$/i, ".png"));
+            $(this).children(".gif").attr("src", src.replace(/\.gif$/i, ".png"));
+            $(this).children(".overlay").show();
+            $(this).children(".play_button").show()
            }
          });
 
@@ -24,50 +28,8 @@
  document.getElementById("project_title").innerHTML = "Complex Systems Simulation";
 </script>
 
+<link rel="stylesheet" type="text/css" href="http://slum.life/style.css">
 </head>
-
-
-<style>
- img {
-    margin: 0 auto;
-    display: block;
-    max-width: 2000px;
- }
-
- img.latex, img.no-border {
-    border: 0; 
-    outline: 0;
-    box-shadow: none;
- }
-
- #main_content, .inner {
-    max-width: 880px !important;
- }
-
- #project_title, #project_tagline {
-    text-align: center
- }
-
- .gif {
-    cursor: pointer;
- }
-
- .description {
-    display: block;
-    width: 100%;
-    text-align: center;
-    font-style: italic;
- }
-
- .play_button {
-    border-radius: 100%;
-    height: 50px;
-    line-height: 50px;
-    width: 50px;
-    border: 5px solid black;
-    background-color: white;
- }
-</style>
 
 ## A 2D Bak-Sneppen Slum Migration Model
 
@@ -91,7 +53,8 @@ Each time step, the following steps are taken:
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
-<div class=\"play_button\">&#9658;</div>
+<div class="overlay"></div>
+<div class="play_button">&#9658;</div>
 </div>
 <span class="description">A simulation of the basic Slum Migration Model.</span>
 
@@ -100,7 +63,6 @@ Each time step, the following steps are taken:
 Just like in the [Bak-Tang-Wiesenfeld model](https://en.wikipedia.org/wiki/Abelian_sandpile_model) a single changing cell might induce a cascade of changing cells (avalanche). A single person moving away might inspire its neighbours to move away, and they again might inspire theirs, etc. To quantify this behaviour we measure the avalanche size. As an avalanche starts the fitness of the starting cell is set as limit for the avalanche. As long as the consecutive mutations are below this value its still part of the same avalanche, otherwise another started.
 
 <img src="http://slum.life/images/avalanche_sizes.svg" width="100%"/>
-
 ## Influence of Slum Parameters
 
 <img src="http://slum.life/images/emptypercent10x20000.svg" width="50%" class="no-border"/>
@@ -115,6 +77,7 @@ Just like in the [Bak-Tang-Wiesenfeld model](https://en.wikipedia.org/wiki/Abeli
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_multiple.png" width="100%"/>
+<div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
 <span class="description"></span>
