@@ -524,14 +524,15 @@ class Slums(object):
         Plot the avalanche sizes.
         '''
 
-        (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
-        plt.clf()
-        plt.loglog(bins[:-1], counts / sum(counts))
+        # (counts, bins, _) = plt.hist(self.avalanche_size, bins=100)
+        # plt.clf()
+        # plt.loglog(bins[:-1], counts / sum(counts))
 
-        plt.title("avalanche sizes")
-        plt.xlabel(r"S$")
-        plt.ylabel(r"P(S)$")
-        plt.show()
+        # plt.title("avalanche sizes")
+        # plt.xlabel(r"S$")
+        # plt.ylabel(r"P(S)$")
+        # plt.show()
+
 
     def plot_growth_over_time(self):
         '''
@@ -682,7 +683,7 @@ class Slums(object):
 
         denax = plt.subplot2grid((1 + rows, cols), (rows, 2))
         denax.set_xlim([0, 1])
-        denax.set_ylim([0.6, 1])
+        denax.set_ylim([0, 1])
         plt.title("Slum densities")
         plt.ylabel("density")
         plt.xlabel("time")
@@ -762,10 +763,10 @@ class Slums(object):
                     img.set_array(-np.ones((self.slum_size, self.slum_size)))
 
         figure.subplots_adjust(wspace=0.44)
-        plt.savefig('../docs/videos/slum_multiple.png')
+        plt.savefig('../docs/videos/slum_new_slum.png')
         ani = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
                                     blit=False)
-        ani.save('../docs/videos/slum_multiple.gif', writer='imagemagick')
+        ani.save('../docs/videos/slum_new_slum.gif', writer='imagemagick')
         plt.show()
 
     def plot_network(self):
@@ -829,12 +830,13 @@ class Slums(object):
 
             nx.draw_networkx_edge_labels(G, pos=layout, edge_labels=edge_labels, label_pos=0.9, font_size=16,
                                          bbox=bbox_opts)
+            if i == 0:
+                plt.savefig('../docs/videos/slum_network_new.png')
 
 
-        ani = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=80,
+        ani = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=200,
                                     blit=False)
-        plt.savefig('../docs/videos/slum_network.png')
-        ani.save('../docs/videos/slum_network.gif', writer='imagemagick')
+        ani.save('../docs/videos/slum_network_new.gif', writer='imagemagick')
         plt.show()
 
 
@@ -1047,26 +1049,70 @@ def effect_of_location(replicates, iterations):
     plt.savefig('strategy.svg', format='svg')
     plt.show()
 
+def plot_avalanche_sizes():
+    x_list = []
+    y_list = []
+    for _ in range(3):
+        slums = Slums(1, (30, 30), empty_percent=0.1, time_limit=30000, static_people=True, static_slums=True)
+        slums.execute(save_steps=100, net_freq=250)
+
+
+        x_list += [x for x in sorted(list(set(slums.avalanche_sizes[-1]))) if x != 0]
+        y_list += [slums.avalanche_sizes[-1].count(x) for x in x_list]
+
+    bound = -1
+
+    y_list = [y for (x,y) in sorted(zip(x_list,y_list))]
+    x_list = sorted(x_list)
+
+
+    for i in range(len(x_list) - 1):
+        if x_list[i + 1] - x_list[i] > 5:
+            bound = i
+
+    if bound > 0:
+        x_list = x_list[:bound]
+        y_list = y_list[:bound]
+
+    # Plot the avalanche sizes.
+    pwax = plt.subplot2grid((1, 1), (0, 0))
+    line, = pwax.loglog(x_list, y_list, ".")
+
+    # Plot the powerlaw based on the avalanche sizes.
+    popt, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+
+    power_list = [y for y in powerlaw(x_list, *popt) if y > 1]
+
+    line_fit, = pwax.plot(x_list[:len(power_list)], power_list, 'r-',
+                          label=r'$K=' + str(np.round(popt[1], 3)) + "$")
+
+    plt.title("avalanche sizes")
+    plt.legend()
+    plt.xlabel(r"$size$")
+    plt.ylabel(r"$nr\ of\ occurences$")
+    plt.show()
+
+
 def main():
     '''
     Runs a sample slum and shows different related plots.
     '''
-    # empty_percent_parameter_plot(10, 10, 1000)
-    #plt.xkcd()
-    slums = Slums(6, (30, 30), empty_percent=0.1, time_limit=20000, static_people=True, static_slums=True)
+    # plt.xkcd()
+    slums = Slums(2, (30, 30), empty_percent=0.1, time_limit=20000, static_people=True, static_slums=False)
     # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
 
-    #plt.rcParams.update({'font.size': 14})
+    # plt.rcParams.update({'font.size': 14})
     # empty_percent_parameter_plot(10, 10, 20000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 20, 25000)
     # nrofslums_parameter_plot(np.linspace(1,8,8), 10, 20000)
     # effect_of_location(10, 20000)
 
-
-    slums.execute(save_steps=1000, net_freq=50)
+    slums.execute(save_steps=50, net_freq=50)
     slums.plot_network()
-    # slums.make_dashboard()
+
+    # slums.plot_network()
+    slums.make_dashboard()
 
     # slums.plot_barrier_distribution()
     # slums.plot_avalanche_distance()

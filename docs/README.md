@@ -1,11 +1,11 @@
 <head>
 
- <script 
- 
+ <script
+
  src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js">
  </script>
  <script>
- 
+
  $(document).ready(function()
  {
      $(".gif_container").click(
@@ -33,7 +33,7 @@
 
 ## A 2D Bak-Sneppen Slum Migration Model
 
-Slum migration is a phenomenon mostly studied by social sciences and a topic difficult to quantify and make tangible. By modifying a 2D [Bak-Sneppen model](https://en.wikipedia.org/wiki/Bak%E2%80%93Sneppen_model), often used to model evolution, we attempt to generate the migration patterns. We show that by using only a few rules in a simple cellular automaton complex migration patterns start to occur. 
+Slum migration is a phenomenon mostly studied by social sciences and a topic difficult to quantify and make tangible. By modifying a 2D [Bak-Sneppen model](https://en.wikipedia.org/wiki/Bak%E2%80%93Sneppen_model), often used to model evolution, we attempt to generate the migration patterns. We show that by using only a few rules in a simple cellular automaton complex migration patterns start to occur.
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/b/ba/Slums_in_Caracas%2C_Venezuela.jpg" width="100%"/>
 
@@ -72,7 +72,6 @@ Just like in the [Bak-Tang-Wiesenfeld model](https://en.wikipedia.org/wiki/Abeli
 <img src="http://slum.life/images/emptypercent10x20000.svg" width="50%" class="no-border"/>
 <img src="http://slum.life/images/slumsize20x25000.svg" width="50%" class="no-border"/>
 
-
 ## More Slums
 <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Dharavi_India.jpg" width="100%"/>
 
@@ -92,9 +91,6 @@ Just like in the [Bak-Tang-Wiesenfeld model](https://en.wikipedia.org/wiki/Abeli
 <div class="play_button">&#9658;</div>
 </div>
 <span class="description"></span>
-Avalanches .
-
-Ages
 
 ## The Destination
 
@@ -104,7 +100,7 @@ When moving to a new spot, people don't move to a random cell. People mostly mov
 <img src="https://latex.codecogs.com/gif.latex?p&space;=&space;\frac{\&hash;neighbours^2&space;&plus;&space;0.01}{p_{total}}" class="latex"/>
 
 ### A Better Slum Selection Strategy
-In real life, people won't move to a random slum. They will probably have a preference for slums where people are happier than they currently are.
+In real life, people won't move to a random slum. They will probably have a preference for slums where people are happier than they currently are. Instead of moving randomly, their strategy would move to a slum with happier people. A third more extreme moving strategy would be to pick the slum with the happiest people which has room for a new person.
 
 The effects of these three different moving strategies on the K of the powerlaw distribution are shown in the figure below.
 
@@ -112,3 +108,17 @@ The effects of these three different moving strategies on the K of the powerlaw 
 <span class="description">The effect of slum selection strategy on the K of the powerlaw distribution of avalanche sizes. The total number of cells within the simulation remained the same. Each size was tested 10 times for 20000 time steps.</span>
 
 ## Emergence of new slums
+
+<div class='gif_container'>
+<img class='gif' src="http://slum.life/videos/slum_new_slum.png" width="100%"/>
+<div class="overlay"></div>
+<div class="play_button">&#9658;</div>
+</div>
+<span class="description"></span>
+
+<div class='gif_container'>
+<img class='gif' src="http://slum.life/videos/slum_network_new.png" width="100%"/>
+<div class="overlay"></div>
+<div class="play_button">&#9658;</div>
+</div>
+<span class="description"></span>
