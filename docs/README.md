@@ -120,7 +120,7 @@ When moving to a new spot, people don't move to a random cell. People mostly mov
 <img src="https://latex.codecogs.com/gif.latex?p&space;=&space;\frac{\&hash;neighbours^2&space;&plus;&space;0.01}{p_{total}}" class="latex"/>
 
 
-## Emergence of new slums
+## Emergence of New Slums
 
 Even though there is an interaction between slums, one important part of slum behaviour is still missing: the emergence of new slums. In real situations we see new slums appear. The introduction of slums in the Slum Migration Model happens when all slums are at least 50% full and at least 98% of the busiest slum is filled with cells. When a slum is introduced, there is a strong influx into the new slum, until the same population density is reached in all slums. These effects can be seen below.
 
@@ -131,10 +131,13 @@ Even though there is an interaction between slums, one important part of slum be
 </div>
 <span class="description">Animation of two slums over time. At around the 3000th iteration a third slum emerges. This causes a strong influx of population into the new slum. Once the three slums reach the same density the old pattern of oscillating densities emerges again.</span>
 
+## An Increasing Population
+
+An increase in the number of slums implicity means that there is a decrease in the number of filled cells within the slums. This is not realistic. In real life slums experience a population growth, because there is a birth surplus and people are still drawn from the countryside towards the bigger cities. In our model people are added in exponentially distributed intervals based on the maximum slum density.
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_new_person.png" width="100%"/>
 <div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
-<span class="description">Description.</span>
+<span class="description">Animation of two slums over time. At around the 1000th iteration a third slum emerges and at around the 34000th iteration a fourth slum emerges. In this simulation people are added.</span>
