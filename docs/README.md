@@ -71,7 +71,7 @@ When visualizing the simulation, the values plotted are the ages. These are defi
 
 
 <div class='gif_container'>
-<img class='gif' src="http://slum.life/videos/slum_barebones_fitness.png" width="100%"/>
+<img class='gif' src="http://slum.life/videos/barebones_fitness.png" width="100%"/>
 <div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
