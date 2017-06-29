@@ -4,8 +4,11 @@
     max-width: 100%;
  }
 
- img.latex, img.no-border {
+ img.latex, img.middle {
     display: block !important;
+ }
+
+ img.latex, img.no-border {
     border: 0; 
     outline: 0;
     box-shadow: none;

@@ -77,7 +77,7 @@ The slum size used and the empty percentage of cells within a slum often have ne
 
 Another effect can be seen with very small slum sizes. In this particular cases avalanches seem to encounter themselves through the periodic boundaries.
 
-<img src="http://slum.life/images/decreasefactor30x20000.svg" width="49%" class="no-border" style="margin: auto"/>
+<img src="http://slum.life/images/decreasefactor30x20000.svg" width="49%" class="no-border middle"/>
 <span class="description">The effect of the decrease factor of the neighbouring cells on the K. Each factor was tested 30 times for 20000 time steps.</span>
 
 The decrease factor seems only to be having an effect on the variance, but not on the mean of the K-values. Once the decrease factor reaches 1, there can only be one avalanche in the whole system, which makes the K fitting negligible.
