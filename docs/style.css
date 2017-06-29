@@ -4,6 +4,10 @@
     max-width: 100%;
  }
 
+ img.latex {
+    display: block !important;
+ }
+
  img.latex, img.no-border {
     border: 0; 
     outline: 0;
