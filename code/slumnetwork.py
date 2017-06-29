@@ -829,11 +829,12 @@ class Slums(object):
 
             nx.draw_networkx_edge_labels(G, pos=layout, edge_labels=edge_labels, label_pos=0.9, font_size=16,
                                          bbox=bbox_opts)
+            if i == 0:
+                plt.savefig('../docs/videos/slum_network.png')
 
 
-        ani = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=80,
+        ani = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=200,
                                     blit=False)
-        plt.savefig('../docs/videos/slum_network.png')
         ani.save('../docs/videos/slum_network.gif', writer='imagemagick')
         plt.show()
 
