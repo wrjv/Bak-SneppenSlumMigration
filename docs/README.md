@@ -80,6 +80,10 @@ The slum size used and the empty percentage of cells within a slum often have ne
 
 Another effect can be seen with very small slum sizes. In this particular cases avalanches seem to encounter themselves through the periodic boundaries.
 
+<img src="http://slum.life/images/decreasefactor30x20000.svg" width="49%" class="no-border"/>
+<span class="description">The effect of the decrease factor of the neighbouring cells on the K. Each factor was tested 30 times for 20000 time steps.</span>
+
+
 ## More Slums
 <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Dharavi_India.jpg" width="100%"/>
 
@@ -92,7 +96,7 @@ Another effect can be seen with very small slum sizes. In this particular cases 
 <div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
-<span class="description"></span>
+<span class="description">Animation of three slums over time, with the corresponding avalanche sizes, barrier distribution and slum densities.</span>
 
 <div class='gif_container'>
 <img class='png' src="http://slum.life/videos/slum_network.png" width="100%"/>
@@ -100,7 +104,7 @@ Another effect can be seen with very small slum sizes. In this particular cases 
 <div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
-<span class="description"></span>
+<span class="description">Animation of the traffic between six slums per 50 iterations. We see first see a fully connected graph, which indicates we didn't reach the critical state yet. At around 4500 iterations we reach the (start of the) critical state and we see clear patterns of some slums attracting a lot of influx, while others only have outflux.</span>
 
 ## The Destination
 
@@ -119,13 +123,15 @@ The effects of these three different moving strategies on the K of the powerlaw 
 
 ## Emergence of new slums
 
+
+
 <div class='gif_container'>
 <img class='png' src="http://slum.life/videos/slum_new_slum.png" width="100%"/>
 <img class='gif' src="http://slum.life/videos/slum_new_slum.gif" width="100%"/>
 <div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
-<span class="description"></span>
+<span class="description">Animation of two slums over time. At around the 3000th iteration a third slum emerges. This causes a strong influx of population into the new slum. Once the three slums reach the same density the old pattern of oscillating densities emerges again.</span>
 
 <div class='gif_container'>
 <img class='png' src="http://slum.life/videos/slum_network_new.png" width="100%"/>
@@ -133,4 +139,4 @@ The effects of these three different moving strategies on the K of the powerlaw 
 <div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
-<span class="description"></span>
+<span class="description">Animation of traffic between initially two slums. A third slum emerges and we see that this slum has around the same inflow as the others, however we see that there is almost no migration away from this slum, explaining the quick growth of the slum to the size of the other two.</span>
