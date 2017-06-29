@@ -72,7 +72,6 @@ Just like in the [Bak-Tang-Wiesenfeld model](https://en.wikipedia.org/wiki/Abeli
 <img src="http://slum.life/images/emptypercent10x20000.svg" width="50%" class="no-border"/>
 <img src="http://slum.life/images/slumsize20x25000.svg" width="50%" class="no-border"/>
 
-
 ## More Slums
 <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Dharavi_India.jpg" width="100%"/>
 
@@ -92,16 +91,13 @@ Just like in the [Bak-Tang-Wiesenfeld model](https://en.wikipedia.org/wiki/Abeli
 <div class="play_button">&#9658;</div>
 </div>
 <span class="description"></span>
-Avalanches .
-
-Ages
 
 ## The Destination
 
 ### The Optimal Location within a Slum
 
 ### A Better Slum Selection Strategy
-In real life, people won't move to a random slum. They will probably have a preference for slums where people are happier than they currently are. 
+In real life, people won't move to a random slum. They will probably have a preference for slums where people are happier than they currently are. Instead of moving randomly, their strategy would move to a slum with happier people. A third more extreme moving strategy would be to pick the slum with the happiest people which has room for a new person. 
 
 The effects of these three different moving strategies on the K of the powerlaw distribution are shown in the figure below.
 
