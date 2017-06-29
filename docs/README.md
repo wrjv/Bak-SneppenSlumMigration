@@ -8,14 +8,16 @@
  
  $(document).ready(function()
  {
-     $(".gif").click(
+     $(".gif_container").click(
          function()
          {
-           var src = $(this).attr("src");
+           var src = $(this).children(".gif").attr("src");
            if(src.includes("png")) {
-            $(this).attr("src", src.replace(/\.png$/i, ".gif"));
+            $(this).children(".gif").attr("src", src.replace(/\.png$/i, ".gif"));
+            $(this).children(".play_button").hide()
            } else {
-            $(this).attr("src", src.replace(/\.gif$/i, ".png"));
+            $(this).children(".gif").attr("src", src.replace(/\.gif$/i, ".png"));
+            $(this).children(".play_button").show()
            }
          });
 
@@ -49,7 +51,6 @@
  }
 
  .gif {
-    cursor: pointer;
  }
 
  .description {
@@ -59,6 +60,11 @@
     font-style: italic;
  }
 
+ .gif_container {
+    cursor: pointer;
+    position: relative;
+ }
+
  .play_button {
     border-radius: 100%;
     height: 50px;
@@ -66,6 +72,13 @@
     width: 50px;
     border: 5px solid black;
     background-color: white;
+    position: absolute;
+    top: 50%;
+    margin-top: -25px;
+    left: 50%;
+    margin-left: ;
+    font-size: 15px;
+    text-align: center;
  }
 </style>
 
@@ -91,7 +104,7 @@ Each time step, the following steps are taken:
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
-<div class=\"play_button\">&#9658;</div>
+<div class="play_button">&#9658;</div>
 </div>
 <span class="description">A simulation of the basic Slum Migration Model.</span>
 
