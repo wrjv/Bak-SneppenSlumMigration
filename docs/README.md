@@ -8,16 +8,15 @@
  
  $(document).ready(function()
  {
-     $(".gif").hover(
+     $(".gif").click(
          function()
          {
            var src = $(this).attr("src");
-           $(this).attr("src", src.replace(/\.png$/i, ".gif"));
-         },
-         function()
-         {
-           var src = $(this).attr("src");
-           $(this).attr("src", src.replace(/\.gif$/i, ".png"));
+           if(src.includes("png")) {
+           	$(this).attr("src", src.replace(/\.png$/i, ".gif"));
+           } else {
+           	$(this).attr("src", src.replace(/\.gif$/i, ".png"));
+           }
          });
  });
 
@@ -47,6 +46,17 @@
  #project_title, #project_tagline {
  	text-align: center
  }
+
+ .gif {
+ 	cursor: pointer;
+ }
+
+ .description {
+ 	display: block;
+ 	width: 100%;
+ 	text-align: center;
+ 	font-style: italic;
+ }
 </style>
 
 ## A 2D Bak-Sneppen Slum Migration Model
@@ -67,15 +77,27 @@ Each time step, the following steps are taken:
 <li>Empty the previously selected cell at A. and lower the cells within the <a href="https://en.wikipedia.org/wiki/Von_Neumann_neighborhood">von Neumann Neighbourhood</a> by a certain factor.</li>
 </ol>
 
-<img src="http://slum.life/images/bak-sneppen_expl.png" width="100%" alt="Basic Bax-Sneppen steps."/>
+<img src="http://slum.life/images/bak-sneppen_expl.png" width="100%"/>
 
-<img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%" alt="An indian slum."/>
+<img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
 
 ## Influence of Slum Parameters
+
+<img src="http://slum.life/images/emptypercent10x20000.png" width="50%"/>
+<img src="http://slum.life/images/singleslum10x20000.png" width="50%"/>
+
 
 ## More Slums
 <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Dharavi_India.jpg" width="100%"/>
 
+<img src="http://slum.life/images/nrslums10x20000.png" width="100%"/>
+<span class="description">The effect of the number of slums on the K of the powerlaw distribution of avalanche sizes. The total number of cells within the simulation remained the same. Each size was tested 10 times for 20000 time steps.</span>
+
+<img class='gif' src="http://slum.life/videos/slum_multiple.png" width="100%"/>
+<span class="description"></span>
+Avalanches .
+
+Ages
 
 ## The Destination
 
