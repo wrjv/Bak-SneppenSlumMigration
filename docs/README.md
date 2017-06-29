@@ -49,11 +49,7 @@ Each time step, the following steps are taken:
 <li>Empty the previously selected cell at A. and lower the cells within the <a href="https://en.wikipedia.org/wiki/Von_Neumann_neighborhood">von Neumann Neighbourhood</a> by a certain factor.</li>
 </ol>
 
-<img src="http://slum.life/images/bak-sneppen_expl.png" width="100%"/>
-
-## Ages
-
-When visualizing the simulation, the values plotted are the ages. These are defined as the number of timesteps that a person lives in a certain cell. This means that the age of a cell is incremented during each timestep that someone lives in certain cell and is set to zero when someone moves to another cell.
+<img src="http://slum.life/images/bak-sneppen_expl.png" width="100%" class="no-border"/>
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
@@ -62,6 +58,11 @@ When visualizing the simulation, the values plotted are the ages. These are defi
 </div>
 <span class="description">A simulation of the basic Slum Migration Model.</span>
 
+## Avalanches
+
+Just like in the [Bak-Tang-Wiesenfeld model](https://en.wikipedia.org/wiki/Abelian_sandpile_model) a single changing cell might induce a cascade of changing cells (avalanche). A single person moving away might inspire its neighbours to move away, and they again might inspire theirs, etc. To quantify this behaviour we measure the avalanche size. As an avalanche starts the fitness of the starting cell is set as limit for the avalanche. As long as the consecutive mutations are below this value its still part of the same avalanche, otherwise another started.
+
+<img src="http://slum.life/images/avalanche_sizes.svg" width="100%"/>
 ## Influence of Slum Parameters
 
 <img src="http://slum.life/images/emptypercent10x20000.svg" width="50%" class="no-border"/>
@@ -80,13 +81,6 @@ When visualizing the simulation, the values plotted are the ages. These are defi
 <div class="play_button">&#9658;</div>
 </div>
 <span class="description"></span>
-
-<div class='gif_container'>
-<img class='gif' src="http://slum.life/videos/slum_network.png" width="100%"/>
-<div class="overlay"></div>
-<div class="play_button">&#9658;</div>
-</div>
-<span class="description"></span>
 Avalanches .
 
 Ages
@@ -95,8 +89,13 @@ Ages
 
 ### The Optimal Location within a Slum
 
-### The Optimal Slum
+### A Better Slum Selection Strategy
+In real life, people won't move to a random slum. They will probably have a preference for slums where people are happier than they currently are. 
+
+The effects of these three different moving strategies on the K of the powerlaw distribution are shown in the figure below.
+
 <img src="http://slum.life/images/strategy10x20000.svg" width="100%" class="no-border"/>
+<span class="description">The effect of slum selection strategy on the K of the powerlaw distribution of avalanche sizes. The total number of cells within the simulation remained the same. Each size was tested 10 times for 20000 time steps.</span>
 
 ## New Slum Locations
 
