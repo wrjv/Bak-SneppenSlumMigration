@@ -89,6 +89,10 @@ Each time step, the following steps are taken:
 
 <img src="http://slum.life/images/bak-sneppen_expl.png" width="100%"/>
 
+## Ages
+
+When visualizing the simulation, the values plotted are the ages. These are defined as the number of timesteps that a person lives in a certain cell. This means that the age of a cell is incremented during each timestep that someone lives in certain cell and is set to zero when someone moves to another cell.
+
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
 <div class=\"play_button\">&#9658;</div>
