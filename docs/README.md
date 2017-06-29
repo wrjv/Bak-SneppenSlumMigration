@@ -145,3 +145,16 @@ Even though there is an interaction between slums, one important part of slum be
 <div class="play_button">&#9658;</div>
 </div>
 <span class="description">Description.</span>
+
+## What's next?
+
+### validation
+
+<img src="https://ai2-s2-public.s3.amazonaws.com/figures/2016-11-08/ee78c1fd6243a874411518b5180c87917ed54bf6/6-Figure2-1.png" width="100%"/>
+<span class="description">[Kit, Oleksandr and Matthias Lüdeke. “Automated detection of slum area change in Hyderabad, India using multitemporal satellite imagery.” (2013).](https://www.semanticscholar.org/paper/Automated-detection-of-slum-area-change-in-Hyderab-Kit-L%C3%BCdeke/ee78c1fd6243a874411518b5180c87917ed54bf6)</span>
+
+A logical step would be to check how the model compares to real data. There are first hints that the avalanches also follow a power law, and the densities of slums grow sinusoidal. This has to be tested still however.
+
+### define fitness
+
+Happyness (fitness) is now defined as a number between 0-1, but has no meaning in the real world. A logical next step would be to replace this number with a real-life measurable number and see if it the model holds. This then can also be compared to the model, and maybe even predications can be made.
