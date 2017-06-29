@@ -90,6 +90,7 @@ class Slums(object):
         # Make sure the animation function knows the distance between
         # each step.
         self.save_steps = save_steps
+        self.net_freq = net_freq
 
         # Keep updating the states until the time limit is reached.
         while self.update_state(moore):
@@ -594,7 +595,7 @@ class Slums(object):
         cols = ceil(size ** 0.5) + 1
         rows = ceil(size / cols)
 
-        figure = plt.figure(figsize=(13, 10))
+        figure = plt.figure(figsize=(14, 9))
 
         for i in range(size):
             slumaxarr.append(plt.subplot2grid((1 + rows, cols), (i // cols , (i % cols))))
@@ -651,20 +652,24 @@ class Slums(object):
 
         plt.title("avalanche sizes")
         plt.legend()
-        plt.xlabel(r"(S)$")
+        plt.xlabel(r"$S$")
         plt.ylabel(r"$P(S)$")
 
         # Plot the barrier distributions
         x_space = np.linspace(0, 1, 300)
         bdax = plt.subplot2grid((1 + rows, cols), (rows, 1))
         bdax.set_yticklabels([])
-
+        bdax.set_xlabel(r"$B$")
+        bd2ax = bdax.twinx()
+        bd2ax.set_yticklabels([])
         line_min, = bdax.plot(x_space, self.barrier_dists[-1][0](x_space), label='minima')
-        line_bd, = bdax.plot(x_space, self.barrier_dists[-1][1](x_space), label='barriers')
-        plt.title("barrier and minumum barriers distribution")
-        plt.legend()
-        plt.xlabel(r"$B$")
-        plt.ylabel(r"$P(B)$")
+        bdax.set_ylabel(r"$P(B)$")
+        line_bd, = bd2ax.plot(x_space, self.barrier_dists[-1][1](x_space), color='g', label='barriers')
+        plt.title("barrier and minumum barriers dist (R, P)")
+        #plt.legend()
+
+        bd2ax.set_ylabel(r"$R(B)$")
+
 
         # plot the density over time
         densities = [[] for _ in range(len(self.states[-1]))]
@@ -677,9 +682,10 @@ class Slums(object):
 
         denax = plt.subplot2grid((1 + rows, cols), (rows, 2))
         denax.set_xlim([0, 1])
-        denax.set_ylim([0, 1])
+        denax.set_ylim([0.6, 1])
         plt.title("Slum densities")
-        plt.ylabel(r"$density$")
+        plt.ylabel("density")
+        plt.xlabel("time")
         lines = []
 
         for _ in range(len(self.states[-1])):
@@ -755,6 +761,7 @@ class Slums(object):
                 for img in imgs:
                     img.set_array(-np.ones((self.slum_size, self.slum_size)))
 
+        figure.subplots_adjust(wspace=0.44)
         plt.savefig('../docs/videos/slum_multiple.png')
         ani = animation.FuncAnimation(figure, animate, range(0, len(self.states)), interval=2,
                                     blit=False)
@@ -765,7 +772,7 @@ class Slums(object):
         figure = plt.figure()
 
         def animate(i):
-            G = nx.from_numpy_matrix(self.migration_matrices[i], create_using=nx.DiGraph())
+            G = nx.from_numpy_matrix(self.migration_matrices[i][:-1, :-1], create_using=nx.DiGraph())
             layout = nx.circular_layout(G)
             figure.clf()
             ax = figure.gca()
@@ -774,7 +781,7 @@ class Slums(object):
             ax.set_xlim(-1.25, 1.25)
             ax.set_yticklabels([])
             ax.set_xticklabels([])
-
+            plt.title('iteration: ' + str(i * self.net_freq))
             edge_labels = {}
 
             # Determine the maximum edge weight and labels
@@ -793,8 +800,8 @@ class Slums(object):
 
             for (u, v, d) in G.edges(data=True):
                 if u == v:
-                    ax.text(layout[u][0] - (len(str(d['weight'])) - 1) * 0.006, layout[u][1] - 0.08,
-                            int(d['weight']), fontsize=15)
+                    ax.text(layout[u][0] - (len(str(d['weight'])) - 1) * 0.006, layout[u][1] - 0.12,
+                            "Self: " + str(int(d['weight'])), fontsize=15)
                     continue
 
                 n1 = layout[u]
@@ -823,10 +830,10 @@ class Slums(object):
             nx.draw_networkx_edge_labels(G, pos=layout, edge_labels=edge_labels, label_pos=0.9, font_size=16,
                                          bbox=bbox_opts)
 
-        ani = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=600,
+        plt.savefig('../docs/videos/slum_network.png')
+        ani = animation.FuncAnimation(figure, animate, range(0, len(self.migration_matrices)), interval=400,
                                     blit=False)
-        ani.to_html5_video()
-        #ani.save('slum_barebones.mp4', writer='ffmpeg', dpi=480, bitrate=2000)
+        ani.save('../docs/videos/slum_network.gif', writer='imagemagick')
         plt.show()
 
 
@@ -1043,16 +1050,21 @@ def main():
     '''
     Runs a sample slum and shows different related plots.
     '''
-    plt.rcParams.update({'font.size': 14})
+    # empty_percent_parameter_plot(10, 10, 1000)
+    #plt.xkcd()
+    slums = Slums(6, (30, 30), empty_percent=0.1, time_limit=20000, static_people=True, static_slums=True)
+    # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
+    # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
+
+    #plt.rcParams.update({'font.size': 14})
     # empty_percent_parameter_plot(10, 10, 20000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 20, 25000)
     # nrofslums_parameter_plot(np.linspace(1,8,8), 10, 20000)
-    effect_of_location(10, 20000)
+    # effect_of_location(10, 20000)
 
-    # slums = Slums(1, (30, 30), empty_percent=0.25, time_limit=2500, static_people=True, static_slums=True)
 
-    # slums.execute(save_steps=1, net_freq=25)
-    # slums.plot_network()
+    slums.execute(save_steps=1000, net_freq=50)
+    slums.plot_network()
     # slums.make_dashboard()
 
     # slums.plot_barrier_distribution()
