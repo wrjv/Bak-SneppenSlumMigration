@@ -42,7 +42,8 @@ class Slums(object):
 
         self.random_select = random_select
         self.strict_select = strict_select
-        assert not (random_select and strict_select), "strict select can not be true when randomly selecting" 
+        assert not (random_select and strict_select),\
+            "strict select can not be true when randomly selecting"
 
         self.threshold = 0
         self.n_slums = n_slums
@@ -62,7 +63,8 @@ class Slums(object):
         self.migration_matrix = None
 
         # Set some variables to keep track of all slums.
-        self.slum_list = [BaxSneppen2D(slum_size, empty_percent, cell_decrease_factor) for _ in range(n_slums)]
+        self.slum_list = [BaxSneppen2D(slum_size, empty_percent,
+                                       cell_decrease_factor) for _ in range(n_slums)]
         self.states = []
 
         self.previous_location = [(0, 0) for _ in range(n_slums)]
@@ -177,7 +179,8 @@ class Slums(object):
         if not self.static_slums:
             if max(slum_densities) > 0.98 and min(slum_densities) > 0.5:
                 print("New slum built.")
-                self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size), empty_percent=1))
+                self.slum_list.append(BaxSneppen2D((self.slum_size, self.slum_size),
+                                                   empty_percent=1))
                 self.previous_location.append((0, 0))
                 self.distances.append([])
 
@@ -313,7 +316,8 @@ class Slums(object):
             pvalues.append(parameters[i][2])
 
         pvalues = np.array(pvalues) ** 10
-        # Normalise the pvalues and make a choice of a location for a cell to go to.
+
+        # Normalise the pvalues and make a choice of a location for a cell to go to
         pvalues = pvalues / np.sum(pvalues)
 
         if self.strict_select:    
