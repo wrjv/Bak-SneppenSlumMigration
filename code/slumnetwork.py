@@ -614,7 +614,7 @@ class Slums(object):
         imgs = list()
 
         for slum, axes in zip(self.states[0], slumaxarr):
-            imgs.append(axes.imshow(slum.ages, aspect='auto', cmap=cmap, interpolation='nearest',
+            imgs.append(axes.imshow(slum.state, aspect='auto', cmap=cmap, interpolation='nearest',
                                     vmin=0, vmax=max_age))
 
         return figure, imgs, rows, cols, n_slums, slumaxarr
@@ -628,7 +628,7 @@ class Slums(object):
 
         cmap = get_colormap()
         max_age = max([np.max(slum.ages) for slum in self.slum_list])
-
+        max_age = 1
         # n_slums is used in the nested animate function.
         # pylint: disable=unused-variable
         figure, imgs, rows, cols, n_slums, slumaxarr = self.setup_slum_anim(cmap, max_age)
@@ -760,7 +760,7 @@ class Slums(object):
             plt.suptitle('iteration: ' + str(i * self.save_steps))
 
             for slum, img, in zip(self.states[i], imgs):
-                img.set_array(slum.ages)
+                img.set_array(slum.state)
 
             figure.canvas.draw()
 
@@ -769,10 +769,10 @@ class Slums(object):
                     img.set_array(-np.ones((self.slum_size, self.slum_size)))
 
         figure.subplots_adjust(wspace=0.44)
-        plt.savefig('../docs/videos/slum_new_person.png')
+        plt.savefig('../docs/videos/barebones_fitness.png')
         ani = animation.FuncAnimation(figure, animate, range(int(0.9*len(self.states)), len(self.states)), interval=2,
                                     blit=False)
-        ani.save('../docs/videos/slum_new_person.gif', writer='imagemagick')
+        ani.save('../docs/videos/barebones_fitness.gif', writer='imagemagick')
         plt.show()
 
     def plot_network(self):
@@ -890,7 +890,7 @@ def get_colormap():
 
     # pylint: disable=maybe-no-member
     cmap = plt.cm.jet
-    cmap.set_under((1, 1, 1, 1))
+    cmap.set_over((1, 1, 1, 1))
 
     return cmap
 
