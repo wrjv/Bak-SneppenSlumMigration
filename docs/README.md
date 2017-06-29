@@ -77,15 +77,26 @@ The slum size used and the empty percentage of cells within a slum often have ne
 
 Another effect can be seen with very small slum sizes. In this particular cases avalanches seem to encounter themselves through the periodic boundaries.
 
-<img src="http://slum.life/images/decreasefactor30x20000.svg" width="49%" class="no-border"/>
+<img src="http://slum.life/images/decreasefactor30x20000.svg" width="49%" class="no-border" align="middle"/>
 <span class="description">The effect of the decrease factor of the neighbouring cells on the K. Each factor was tested 30 times for 20000 time steps.</span>
 
+The decrease factor seems only to be having an effect on the variance, but not on the mean of the K-values. Once the decrease factor reaches 1, there can only be one avalanche in the whole system, which makes the K fitting negligible.
 
 ## More Slums
 <img src="https://upload.wikimedia.org/wikipedia/commons/4/44/Dharavi_India.jpg" width="100%"/>
 
+So far we modelled a system with only one slum, however in reality often a network of slums exists. We expanded our model so that it can contains multiple slums with migration between them. 
+
+### A Better Slum Selection Strategy
+In real life, people won't move to a random slum. They will probably have a preference for slums where people are happier than they currently are. Instead of moving randomly, their strategy would move to a slum with happier people. A third more extreme moving strategy would be to pick the slum with the happiest people which has room for a new person.
+
+The effects of these three different moving strategies on the K of the powerlaw distribution are shown in the figure below.
+
+<img src="http://slum.life/images/strategy10x20000.svg" width="100%" class="no-border"/>
+<span class="description">The effect of slum selection strategy on the K of the powerlaw distribution of avalanche sizes. Each strategy was tested 10 times for 20000 time steps.</span>
+
 <img src="http://slum.life/images/nrslums10x20000.svg" width="100%" class="no-border"/>
-<span class="description">The effect of the number of slums on the K of the powerlaw distribution of avalanche sizes. The total number of cells within the simulation remained the same. Each size was tested 10 times for 20000 time steps.</span>
+<span class="description">The effect of the number of slums on the K of the powerlaw distribution of avalanche sizes. The total number of cells within the simulation remained the same. Each size was tested 10 times for 20000 time steps. The migration strategy was 'mild preference'.</span>
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_multiple.png" width="100%"/>
@@ -108,13 +119,6 @@ When moving to a new spot, people don't move to a random cell. People mostly mov
 
 <img src="https://latex.codecogs.com/gif.latex?p&space;=&space;\frac{\&hash;neighbours^2&space;&plus;&space;0.01}{p_{total}}" class="latex"/>
 
-### A Better Slum Selection Strategy
-In real life, people won't move to a random slum. They will probably have a preference for slums where people are happier than they currently are. Instead of moving randomly, their strategy would move to a slum with happier people. A third more extreme moving strategy would be to pick the slum with the happiest people which has room for a new person.
-
-The effects of these three different moving strategies on the K of the powerlaw distribution are shown in the figure below.
-
-<img src="http://slum.life/images/strategy10x20000.svg" width="100%" class="no-border"/>
-<span class="description">The effect of slum selection strategy on the K of the powerlaw distribution of avalanche sizes. Each strategy was tested 10 times for 20000 time steps.</span>
 
 ## Emergence of new slums
 
