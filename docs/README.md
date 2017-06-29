@@ -8,14 +8,18 @@
  
  $(document).ready(function()
  {
-     $(".gif").click(
+     $(".gif_container").click(
          function()
          {
-           var src = $(this).attr("src");
+           var src = $(this).children(".gif").attr("src");
            if(src.includes("png")) {
-            $(this).attr("src", src.replace(/\.png$/i, ".gif"));
+            $(this).children(".gif").attr("src", src.replace(/\.png$/i, ".gif"));
+            $(this).children(".overlay").hide();
+            $(this).children(".play_button").hide();
            } else {
-            $(this).attr("src", src.replace(/\.gif$/i, ".png"));
+            $(this).children(".gif").attr("src", src.replace(/\.gif$/i, ".png"));
+            $(this).children(".overlay").show();
+            $(this).children(".play_button").show()
            }
          });
 
@@ -24,50 +28,8 @@
  document.getElementById("project_title").innerHTML = "Complex Systems Simulation";
 </script>
 
+<link rel="stylesheet" type="text/css" href="http://slum.life/style.css">
 </head>
-
-
-<style>
- img {
-    margin: 0 auto;
-    display: block;
-    max-width: 2000px;
- }
-
- img.latex, img.no-border {
-    border: 0; 
-    outline: 0;
-    box-shadow: none;
- }
-
- #main_content, .inner {
-    max-width: 880px !important;
- }
-
- #project_title, #project_tagline {
-    text-align: center
- }
-
- .gif {
-    cursor: pointer;
- }
-
- .description {
-    display: block;
-    width: 100%;
-    text-align: center;
-    font-style: italic;
- }
-
- .play_button {
-    border-radius: 100%;
-    height: 50px;
-    line-height: 50px;
-    width: 50px;
-    border: 5px solid black;
-    background-color: white;
- }
-</style>
 
 ## A 2D Bak-Sneppen Slum Migration Model
 
@@ -95,7 +57,8 @@ When visualizing the simulation, the values plotted are the ages. These are defi
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
-<div class=\"play_button\">&#9658;</div>
+<div class="overlay"></div>
+<div class="play_button">&#9658;</div>
 </div>
 <span class="description">A simulation of the basic Slum Migration Model.</span>
 
@@ -113,6 +76,7 @@ When visualizing the simulation, the values plotted are the ages. These are defi
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_multiple.png" width="100%"/>
+<div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
 <span class="description"></span>
