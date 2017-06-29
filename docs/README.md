@@ -80,6 +80,9 @@ When visualizing the simulation, the values plotted are the ages. These are defi
 
 Just like in the [Bak-Tang-Wiesenfeld model](https://en.wikipedia.org/wiki/Abelian_sandpile_model) a single changing cell might induce a cascade of changing cells (avalanche). A single person moving away might inspire its neighbours to move away, and they again might inspire theirs, etc. To quantify this behaviour we measure the avalanche size. As an avalanche starts the fitness of the starting cell is set as limit for the avalanche. As long as the consecutive mutations are below this value its still part of the same avalanche, otherwise another started.
 
+The distribution of the avalanche sizes follows a power law:
+<img src="https://latex.codecogs.com/gif.latex?f(x)&space;=&space;ax^{-k}}" class="latex"/>
+
 <img src="http://slum.life/images/avalanche_sizes.svg" width="100%"/>
 ## Influence of Slum Parameters
 
