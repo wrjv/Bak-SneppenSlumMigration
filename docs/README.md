@@ -62,6 +62,13 @@ When visualizing the simulation, the values plotted are the ages. These are defi
 </div>
 <span class="description">A simulation of the basic Slum Migration Model.</span>
 
+<div class='gif_container'>
+<img class='gif' src="http://slum.life/videos/slum_barebones2.png" width="100%"/>
+<div class="overlay"></div>
+<div class="play_button">&#9658;</div>
+</div>
+<span class="description">A simulation of the basic Slum Migration Model further in time and larger grid.</span>
+
 ## Avalanches
 
 Just like in the [Bak-Tang-Wiesenfeld model](https://en.wikipedia.org/wiki/Abelian_sandpile_model) a single changing cell might induce a cascade of changing cells (avalanche). A single person moving away might inspire its neighbours to move away, and they again might inspire theirs, etc. To quantify this behaviour we measure the avalanche size. As an avalanche starts the fitness of the starting cell is set as limit for the avalanche. As long as the consecutive mutations are below this value its still part of the same avalanche, otherwise another started.
@@ -141,3 +148,16 @@ An increase in the number of slums implicity means that there is a decrease in t
 <div class="play_button">&#9658;</div>
 </div>
 <span class="description">Animation of two slums over time. At around the 1000th iteration a third slum emerges and at around the 34000th iteration a fourth slum emerges. In this simulation people are added.</span>
+
+## What's next?
+
+### validation
+
+<img src="https://ai2-s2-public.s3.amazonaws.com/figures/2016-11-08/ee78c1fd6243a874411518b5180c87917ed54bf6/6-Figure2-1.png" width="100%"/>
+<span class="description">[Kit, Oleksandr and Matthias Lüdeke. “Automated detection of slum area change in Hyderabad, India using multitemporal satellite imagery.” (2013).](https://www.semanticscholar.org/paper/Automated-detection-of-slum-area-change-in-Hyderab-Kit-L%C3%BCdeke/ee78c1fd6243a874411518b5180c87917ed54bf6)</span>
+
+A logical step would be to check how the model compares to real data. There are first hints that the avalanches also follow a power law, and the densities of slums grow sinusoidal. This has to be tested still however.
+
+### define fitness
+
+Happyness (fitness) is now defined as a number between 0-1, but has no meaning in the real world. A logical next step would be to replace this number with a real-life measurable number and see if it the model holds. This then can also be compared to the model, and maybe even predications can be made.
