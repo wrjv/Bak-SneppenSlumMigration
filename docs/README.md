@@ -49,7 +49,7 @@ Each time step, the following steps are taken:
 <li>Empty the previously selected cell at A. and lower the cells within the <a href="https://en.wikipedia.org/wiki/Von_Neumann_neighborhood">von Neumann Neighbourhood</a> by a certain factor.</li>
 </ol>
 
-<img src="http://slum.life/images/bak-sneppen_expl.png" width="100%"/>
+<img src="http://slum.life/images/bak-sneppen_expl.png" width="100%" class="no-border"/>
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
