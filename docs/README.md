@@ -14,9 +14,11 @@
            var src = $(this).children(".gif").attr("src");
            if(src.includes("png")) {
             $(this).children(".gif").attr("src", src.replace(/\.png$/i, ".gif"));
-            $(this).children(".play_button").hide()
+            $(this).children(".overlay").hide();
+            $(this).children(".play_button").hide();
            } else {
             $(this).children(".gif").attr("src", src.replace(/\.gif$/i, ".png"));
+            $(this).children(".overlay").show();
             $(this).children(".play_button").show()
            }
          });
@@ -79,6 +81,19 @@
     margin-left: ;
     font-size: 15px;
     text-align: center;
+    z-index: 50;
+ }
+
+ .overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    background-color: rgba(0,0,0,0.4);
+    z-index: 25;
  }
 </style>
 
@@ -104,6 +119,7 @@ Each time step, the following steps are taken:
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_barebones.png" width="100%"/>
+<div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
 <span class="description">A simulation of the basic Slum Migration Model.</span>
@@ -122,6 +138,7 @@ Each time step, the following steps are taken:
 
 <div class='gif_container'>
 <img class='gif' src="http://slum.life/videos/slum_multiple.png" width="100%"/>
+<div class="overlay"></div>
 <div class="play_button">&#9658;</div>
 </div>
 <span class="description"></span>
