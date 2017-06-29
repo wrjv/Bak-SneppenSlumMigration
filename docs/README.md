@@ -23,6 +23,7 @@
            }
          });
 
+  $(".copyright").html("This implementation was built by Nicky Kessels, Maarten van der Sande, Wessel Klijnsma and <a href="https://github.com/WillemVermeulen">Willem Vermeulen</a>.");
  });
 
  document.getElementById("project_title").innerHTML = "Complex Systems Simulation";
