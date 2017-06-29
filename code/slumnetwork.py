@@ -28,7 +28,8 @@ class Slums(object):
     # and all slums.
 
     def __init__(self, n_slums, slum_size=(15, 15), empty_percent=0.25, random_select=False,
-                 time_limit=10000, static_slums=False, static_people=False, strict_select=False):
+                 time_limit=10000, static_slums=False, static_people=False, strict_select=False,
+                 cell_decrease_factor=0.8):
         # Set some overall parameters.
         self.time = 0
         self.time_limit = time_limit
@@ -61,7 +62,7 @@ class Slums(object):
         self.migration_matrix = None
 
         # Set some variables to keep track of all slums.
-        self.slum_list = [BaxSneppen2D(slum_size, empty_percent) for _ in range(n_slums)]
+        self.slum_list = [BaxSneppen2D(slum_size, empty_percent, cell_decrease_factor) for _ in range(n_slums)]
         self.states = []
 
         self.previous_location = [(0, 0) for _ in range(n_slums)]
@@ -97,7 +98,7 @@ class Slums(object):
             if iterator % save_steps == 0:
                 self.states.append(deepcopy(self.slum_list))
                 self.avalanche_sizes.append(deepcopy(self.avalanche_size))
-                self.barrier_dists.append(self.get_barrier_distribution())
+                # self.barrier_dists.append(self.get_barrier_distribution())
 
             iterator += 1
 
@@ -1095,6 +1096,33 @@ def plot_avalanche_sizes():
     plt.ylabel(r"$nr\ of\ occurences$")
     plt.show()
 
+def cell_decrease_factor_plot(nrs, repeats, nr_iters):
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    Ks = [[] for _ in nrs]
+    for i, nr in enumerate(nrs):
+        for _ in range(repeats):
+            print(nr)
+            slums = Slums(1, (30, 30), empty_percent=0.1, time_limit=nr_iters, static_people=True, static_slums=True, cell_decrease_factor=nr)
+            slums.execute(save_steps=10)
+
+            x_list = [x for x in sorted(slums.avalanche_sizes[-1]) if x != 0]
+            y_list = [slums.avalanche_sizes[-1].count(x) for x in x_list]
+
+            K, _ = curve_fit(powerlaw, x_list, y_list, bounds=((0, 0), (np.inf, 6)))
+
+            Ks[i].append(K[1])
+
+    # plt.errorbar(nrs, means, stds)
+    print(Ks)
+    plt.boxplot(Ks)
+    ax.set_xticklabels([str(nr) for nr in nrs])
+    plt.title(r"$effect\ of\ the\ decrease\ factor\ of\ neighbours\ on\ K$")
+    plt.xlabel(r"$decrease\ factor$")
+    plt.ylabel(r"$K$")
+    plt.savefig('decreasefactor.svg', format='svg')
+    plt.show()
+
 
 def main():
     '''
@@ -1105,14 +1133,17 @@ def main():
     # nrofslums_parameter_plot(np.linspace(1,5,5), 10, 1000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 10, 1000)
 
-    # plt.rcParams.update({'font.size': 14})
+    plt.rcParams.update({'font.size': 14})
     # empty_percent_parameter_plot(10, 10, 20000)
     # singleslumsize_parameter_plot(np.linspace(5,50,10), 20, 25000)
     # nrofslums_parameter_plot(np.linspace(1,8,8), 10, 20000)
     # effect_of_location(10, 20000)
+    # cell_decrease_factor_plot(np.linspace(0.1, 1, 10), 30, 20000)
 
     slums.execute(save_steps=200, net_freq=50)
     #slums.plot_network()
+    # slums.plot_network()
+
 
     # slums.plot_network()
     slums.make_dashboard()
