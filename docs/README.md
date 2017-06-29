@@ -105,7 +105,19 @@ The effects of these three different moving strategies on the K of the powerlaw 
 <span class="description">The effect of slum selection strategy on the K of the powerlaw distribution of avalanche sizes. The total number of cells within the simulation remained the same. Each size was tested 10 times for 20000 time steps.</span>
 
 ## New Slum Locations
+<div class='gif_container'>
+<img class='gif' src="http://slum.life/videos/slum_new_slum.png" width="100%"/>
+<div class="overlay"></div>
+<div class="play_button">&#9658;</div>
+</div>
+<span class="description"></span>
 
+<div class='gif_container'>
+<img class='gif' src="http://slum.life/videos/slum_network_new.png" width="100%"/>
+<div class="overlay"></div>
+<div class="play_button">&#9658;</div>
+</div>
+<span class="description"></span>
 
 
 
