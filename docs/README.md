@@ -11,15 +11,16 @@
      $(".gif_container").click(
          function()
          {
+           var d = new Date();
            var src = $(this).children(".gif").attr("src");
-           if(src.includes("png")) {
+           if(!src.includes("?")) {
             $(this).children(".png").hide());
-            $(this).children(".gif").attr("src", src.replace(/\.png$/i, ".gif"));
+            $(this).children(".gif").attr("src", $(this).children(".gif").attr("src") + "?" + str(d.getTime()));
             $(this).children(".overlay").hide();
             $(this).children(".play_button").hide();
            } else {
             $(this).children(".png").show());
-            $(this).children(".gif").attr("src", src.replace(/\.png$/i, ".gif"));
+            $(this).children(".gif").attr("src", ($(this).children(".gif").attr("src")).split("?")[0]);
             $(this).children(".overlay").show();
             $(this).children(".play_button").show()
            }
