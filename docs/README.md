@@ -78,7 +78,7 @@
     top: 50%;
     margin-top: -25px;
     left: 50%;
-    margin-left: ;
+    margin-left: -25px;
     font-size: 15px;
     text-align: center;
     z-index: 50;
